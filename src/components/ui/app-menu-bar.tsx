@@ -55,14 +55,11 @@ export default function AppMenuBar() {
       {/* 库 */}
       <MenubarMenu>
         <MenubarTrigger className="bg-transparent hover:bg-transparent text-slate-700 hover:text-blue-600 transition-colors cursor-pointer text-xl sm:text-2xl flex items-center gap-2">
-          <LibraryBig className="w-5 h-5" strokeWidth={2} />
-          <span className="hidden sm:inline">Library</span>
+          <a href="/notes" class="flex items-center gap-2 w-full h-full">
+            <LibraryBig className="w-5 h-5" strokeWidth={2} />
+            <span className="hidden sm:inline">Library</span>
+          </a>
         </MenubarTrigger>
-        <MenubarContent className="font-sans">
-          <MenubarItem>Handbook</MenubarItem>
-          <MenubarItem>Books</MenubarItem>
-          <MenubarItem>Movies</MenubarItem>
-        </MenubarContent>
       </MenubarMenu>
 
       {/* 通知 */}
