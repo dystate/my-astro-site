@@ -1,79 +1,118 @@
 ---
-// src/pages/calendar.astro
 import AppMenuBar from "@/components/ui/app-menu-bar";
 import "@/styles/global.css";
+
+// 模拟一些手绘素材数据（你可以放你的扫描件路径）
+const handDrawnAssets = [
+  { date: 5, img: "/scans/text-01.png", note: "今天心情不错" },
+  { date: 12, img: "/scans/sketch-02.png", note: "重要的会议" },
+  { date: 20, img: "/scans/doodle-03.png", note: "灵感迸发！" },
+];
+
+const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 ---
 
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>日历 - Dystate</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <title>手绘日历 - Dystate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-[#f0f0f0] min-h-screen font-['VT323'] antialiased">
+  <body class="bg-[#fdfdfd] min-h-screen font-['Caveat'] antialiased text-slate-800">
     
-    <div class="fixed inset-0 z-0 opacity-[0.05] pointer-events-none" 
-         style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;">
+    <div class="fixed inset-0 z-0 opacity-40 pointer-events-none" 
+         style="background-image: url('https://www.transparenttextures.com/patterns/paper.png');">
     </div>
 
     <div class="relative z-10 flex flex-col min-h-screen">
       
-      <header class="sticky top-0 z-50 w-full py-6 bg-[#f0f0f0]/90 backdrop-blur-md border-b-4 border-black">
+      <header class="w-full py-8">
         <div class="max-w-[1200px] mx-auto px-10 flex items-center justify-between">
-          <a href="/" class="text-4xl font-bold no-underline tracking-widest">
-            <span class="text-blue-600">D</span>y<span class="text-green-500">st</span>ate<span class="text-yellow-500">_</span>
+          <a href="/" class="text-5xl font-['Zhi_Mang_Xing'] no-underline text-slate-900">
+            Dystate<span class="text-blue-500">.</span>
           </a>
-
           <nav class="flex-1 flex justify-center">
             <AppMenuBar client:load />
           </nav>
-
           <div class="min-w-[180px] text-right flex justify-end">
-             <span class="text-base bg-black text-white border-2 border-black px-3 py-1 font-mono tracking-tight shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">
+             <span class="text-2xl font-['Zhi_Mang_Xing'] border-b-2 border-black px-2">
                 793400999@qq.com
              </span>
           </div>
         </div>
       </header>
 
-      <main class="flex-1 max-w-[1200px] mx-auto w-full p-6 sm:p-10">
+      <main class="flex-1 max-w-[1200px] mx-auto w-full p-6">
         
-        <div class="w-full bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col overflow-hidden">
-          
-          <div class="bg-black text-white px-4 py-2 flex justify-between items-center">
-            <span class="text-2xl tracking-widest">CALENDAR.EXE</span>
-            <div class="flex gap-2">
-               <div class="w-4 h-4 border-2 border-white"></div>
-               <div class="w-4 h-4 border-2 border-white bg-white"></div>
-            </div>
-          </div>
-
-          <div class="p-2 sm:p-6 bg-[#f8f9fa]">
-            <div class="calendar-wrapper relative border-2 border-black bg-white overflow-hidden">
-              <iframe https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23ffffff&ctz=Asia%2FShanghai&showTi
-                src="https://calendar.google.com/calendar/embed?height=800&wkst=2&ctz=Asia%2FShanghai&hl=zh_CN&mode=AGENDA&showTz=0&showPrint=0&showTitle=0&src=eGlhbGluZ3NoaTI1QGdtYWlsLmNvbQ&src=ZW4uY2hpbmEjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23039be5&color=%230b8043" style="border-width:0" width="1068" height="600" frameborder="0" scrolling="no"" 
-                style="border-width:0" 
-                width="100%" 
-                height="600" 
-                frameborder="0" 
-                scrolling="no"
-                class="google-calendar-iframe"
-              ></iframe>
-
-              <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,118,0.06))] bg-[length:100%_4px,3px_100%]"></div>
-            </div>
-          </div>
+        <div class="text-center mb-12 relative">
+            <h1 class="text-7xl font-bold tracking-widest relative z-10">June 2026</h1>
+            <svg class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-64 h-4 opacity-60" viewBox="0 0 500 20" preserveAspectRatio="none">
+                <path d="M5,10 Q100,5 250,12 T495,8" fill="none" stroke="black" stroke-width="4" stroke-linecap="round" />
+            </svg>
         </div>
 
-        <div class="mt-8 flex gap-4">
-           <div class="bg-blue-100 border-2 border-blue-600 p-4 font-sans text-sm text-blue-800">
-             <strong>提示:</strong> 这里的计划仅供参考，具体安排请通过邮件确认。
-           </div>
+        <div class="grid grid-cols-7 gap-2 sm:gap-4 mt-10">
+          {weekDays.map(wd => (
+            <div class="text-center text-3xl font-bold opacity-50 mb-4">{wd}</div>
+          ))}
+
+          {days.map(day => {
+            const asset = handDrawnAssets.find(a => a.date === day);
+            return (
+              <div class="sketch-box group relative min-h-[140px] p-2 border-2 border-slate-900/30 hover:border-blue-500 transition-colors">
+                <span class="text-2xl font-bold">{day}</span>
+                
+                {asset && (
+                  <div class="absolute inset-0 flex flex-col items-center justify-center p-2">
+                    <img 
+                      src={asset.img} 
+                      alt="Hand drawn scan" 
+                      class="max-w-[80%] max-h-[70%] object-contain rotate-3 group-hover:rotate-0 transition-transform"
+                      style="filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.1));"
+                    />
+                    <p class="font-['Zhi_Mang_Xing'] text-xl text-blue-600 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {asset.note}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        <div class="mt-20 flex justify-center">
+            <div class="relative p-10 max-w-xl border-2 border-dashed border-black rounded-[50px_20px_40px_10px/20px_40px_10px_50px]">
+                <p class="text-3xl font-['Zhi_Mang_Xing'] leading-relaxed">
+                    " 笔尖触碰纸张的瞬间，是思绪最自由的时刻。这里的每一笔每一画，都是对时间的真实记录。 "
+                </p>
+            </div>
         </div>
       </main>
+
+      <footer class="p-10 text-center text-2xl font-['Zhi_Mang_Xing'] opacity-40">
+        - 记录生活的手绘日志 -
+      </footer>
 
     </div>
 
     <style>
-      /* CSS 渲染魔法：强制微调 Google
+      /* 手绘风的核心：不规则的边框 */
+      .sketch-box {
+        border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+      }
+      
+      /* 模拟手绘的抖动线条动画（可选） */
+      @keyframes jitter {
+        0% { border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+        50% { border-radius: 220px 20px 240px 25px / 25px 240px 20px 220px; }
+        100% { border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+      }
+      
+      .sketch-box:hover {
+        animation: jitter 0.3s ease-in-out infinite;
+      }
+    </style>
+  </body>
+</html>
