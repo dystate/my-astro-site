@@ -51,7 +51,7 @@ const bgColor = frontmatter.bgColor || "#ffffff";
     </main>
 
     <style is:global>
-      /* 强制清除所有 Markdown 渲染图片的边距和修饰 */
+      /* 强制清除所有 Markdown 渲染图片的边距和修饰，并控制缩放 */
       .prose img {
         border: none !important;
         box-shadow: none !important;
@@ -60,6 +60,18 @@ const bgColor = frontmatter.bgColor || "#ffffff";
         margin: 0 auto 20px auto !important; /* 居中并留出底部间距 */
         border-radius: 0 !important;
         display: block !important;
+        
+        /* 【关键新增】：将图片宽度缩小到原来的一半（50%） */
+        width: 50% !important; 
+        height: auto !important; /* 确保高度按比例缩放，不变形 */
+      }
+
+      /* 针对手机端的优化（可选） */
+      @media (max-width: 640px) {
+        .prose img {
+          /* 手机屏幕本身就小，如果 50% 觉得太小看不清，可以把这里改成 70% 或 80% */
+          width: 70% !important; 
+        }
       }
     </style>
   </body>
