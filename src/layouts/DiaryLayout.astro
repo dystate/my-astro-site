@@ -16,14 +16,16 @@ const bgColor = frontmatter.bgColor || "#ffffff";
   </head>
   <body class="antialiased relative overflow-x-hidden min-h-screen" style={`background-color: ${bgColor};`}>
     
-    <div class="fixed inset-0 z-0 pointer-events-none">
-      <div class="w-full h-full bg-center bg-no-repeat bg-contain" 
-           style={`
-             background-image: url('${bgImage}'); 
-             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%); 
-             mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
-           `}>
-      </div>
+    <div class="fixed inset-0 z-0 flex flex-col items-center justify-center pointer-events-none">
+      <img 
+        src={bgImage} 
+        alt="Background" 
+        class="w-full h-auto max-h-screen object-contain block"
+        style={`
+          -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); 
+          mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+        `}
+      />
     </div>
 
     <button 
@@ -37,10 +39,10 @@ const bgColor = frontmatter.bgColor || "#ffffff";
     </button>
 
     <main class="relative z-10 flex justify-center min-h-screen">
-      <article class="w-full max-w-4xl px-4 pt-24 pb-32">
+      <article class="w-full max-w-4xl px-4 pt-24 pb-32 text-black">
         
         <div class="prose prose-slate prose-xl max-w-none 
-          prose-p:text-slate-900 prose-p:leading-relaxed
+          prose-p:leading-relaxed
           prose-img:m-0 prose-img:p-0 prose-img:border-none prose-img:shadow-none prose-img:rounded-none">
           <slot />
         </div>
@@ -49,7 +51,7 @@ const bgColor = frontmatter.bgColor || "#ffffff";
     </main>
 
     <style is:global>
-      /* 彻底清除 Markdown 渲染图片的默认边距和修饰，方便你做拼贴 */
+      /* 强制清除所有 Markdown 渲染图片的边距和修饰 */
       .prose img {
         border: none !important;
         box-shadow: none !important;
