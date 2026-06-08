@@ -1,0 +1,139 @@
+---
+import AppMenuBar from "@/components/ui/app-menu-bar";
+import "@/styles/global.css";
+
+// 1. 自动抓取 notes 文件夹下的所有 markdown 日志
+let allLogs = [];
+try {
+  const matches = import.meta.glob('./notes/*.md', { eager: true });
+  allLogs = Object.values(matches);
+} catch (e) {
+  console.warn("未找到日志文件");
+}
+
+// 2. 按日期降序排列（确保每个分类里的书都是最新的在前面）
+const sortedLogs = allLogs.sort((a, b) => {
+  const dateA = new Date(a.frontmatter.date || 0).valueOf();
+  const dateB = new Date(b.frontmatter.date || 0).valueOf();
+  return dateB - dateA; 
+});
+
+// 3. 将日志按 category 属性进行分组
+const groupedLogs = sortedLogs.reduce((acc, log) => {
+  // 如果没有写分类，就默认放进 "UNSORTED" 货架
+  const cat = log.frontmatter.category ? log.frontmatter.category.toUpperCase() : "UNSORTED";
+  if (!acc[cat]) {
+    acc[cat] = [];
+  }
+  acc[cat].push(log);
+  return acc;
+}, {});
+
+// 4. 书脊颜色预设
+const spineColors = [
+  "bg-white", 
+  "bg-blue-100", 
+  "bg-pink-100", 
+  "bg-yellow-100", 
+  "bg-green-100",
+  "bg-slate-800 text-white" 
+];
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>日志库 - Dystate</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#f0f0f0] min-h-screen font-['VT323'] antialiased">
+    
+    <div class="fixed inset-0 z-0 opacity-[0.05] pointer-events-none" 
+         style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;">
+    </div>
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+      
+      <header class="sticky top-0 z-50 w-full py-6 bg-[#f0f0f0]/90 backdrop-blur-md border-b-4 border-black">
+        <div class="max-w-[1200px] mx-auto px-10 flex items-center justify-between">
+          <a href="/" class="text-4xl font-bold no-underline tracking-widest">
+            <span class="text-blue-600">D</span>y<span class="text-green-500">st</span>ate<span class="text-yellow-500">_</span>
+          </a>
+          <nav class="flex-1 flex justify-center">
+            <AppMenuBar client:load />
+          </nav>
+          <div class="min-w-[180px] text-right flex justify-end">
+             <span class="text-base bg-black text-white border-2 border-black px-3 py-1 font-mono tracking-tight shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">
+                793400999@qq.com
+             </span>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 max-w-[1000px] mx-auto w-full p-10 mt-10">
+        
+        <div class="flex justify-between items-end border-b-4 border-black pb-4 mb-16">
+            <h1 class="text-6xl font-bold">ARCHIVE</h1>
+            <span class="text-xl text-slate-500">共收录 {sortedLogs.length} 篇日志</span>
+        </div>
+
+        {/* 遍历所有的分类组 */}
+        {Object.keys(groupedLogs).length === 0 ? (
+            <div class="text-2xl text-slate-400">书架空空如也...</div>
+        ) : (
+            Object.entries(groupedLogs).map(([category, logs]) => (
+                <div class="mb-24">
+                    
+                    {/* 分类标签牌 */}
+                    <div class="flex items-center gap-4 mb-8">
+                        <h2 class="text-3xl font-bold bg-black text-white px-4 py-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
+                            {category}
+                        </h2>
+                        <span class="text-slate-400 text-lg">{logs.length} ITEMS</span>
+                    </div>
+
+                    {/* 单层书架容器 */}
+                    <div class="flex flex-wrap gap-x-2 gap-y-12 items-end justify-start px-4">
+                        {logs.map((log, index) => {
+                            const colorClass = spineColors[index % spineColors.length];
+                            const isDark = colorClass.includes('bg-slate-800');
+                            
+                            return (
+                                <a 
+                                    href={log.url} 
+                                    class={`group relative block w-16 sm:w-20 h-[320px] border-4 border-black transition-all duration-300 hover:-translate-y-6 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] cursor-pointer ${colorClass}`}
+                                >
+                                    <div class={`h-4 border-b-4 border-black w-full ${isDark ? 'bg-slate-700' : 'bg-black/10'}`}></div>
+
+                                    <div class="flex flex-col items-center justify-between h-[280px] py-4">
+                                        <span class="font-bold text-2xl border-b-2 border-current pb-1">
+                                            {String(index + 1).padStart(2, '0')}
+                                        </span>
+                                        <h3 
+                                            class="font-sans font-bold text-lg sm:text-xl tracking-widest px-2 overflow-hidden flex-1 mt-4" 
+                                            style="writing-mode: vertical-rl; text-orientation: mixed;"
+                                        >
+                                            {log.frontmatter.title || "未命名日志"}
+                                        </h3>
+                                        <span class="text-xs font-mono font-bold uppercase tracking-tighter mt-4 rotate-180" style="writing-mode: vertical-rl;">
+                                            {log.frontmatter.date || ""}
+                                        </span>
+                                    </div>
+
+                                    <div class={`absolute bottom-0 h-4 border-t-4 border-black w-full ${isDark ? 'bg-slate-700' : 'bg-black/10'}`}></div>
+                                </a>
+                            );
+                        })}
+                    </div>
+
+                    {/* 单层书架的底板 */}
+                    <div class="w-full h-4 bg-black mt-2 shadow-[0_8px_0px_0px_rgba(0,0,0,0.2)]"></div>
+                </div>
+            ))
+        )}
+
+      </main>
+    </div>
+  </body>
+</html>
