@@ -3,7 +3,7 @@
 import "@/styles/global.css";
 const { frontmatter } = Astro.props;
 
-// 背景图和底色，建议在 Markdown 里设置 bgColor 
+// 背景图和底色
 const bgImage = frontmatter.background || ""; 
 const bgColor = frontmatter.bgColor || "#ffffff"; 
 ---
@@ -13,17 +13,22 @@ const bgColor = frontmatter.bgColor || "#ffffff";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{frontmatter.title} - Dystate</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   </head>
   <body class="antialiased relative overflow-x-hidden min-h-screen" style={`background-color: ${bgColor};`}>
     
-    <div class="fixed inset-0 z-0 bg-center bg-no-repeat bg-contain pointer-events-none" 
-         style={`background-image: url(${bgImage});`}>
+    <div class="fixed inset-0 z-0 pointer-events-none">
+      <div class="w-full h-full bg-center bg-no-repeat bg-contain" 
+           style={`
+             background-image: url('${bgImage}'); 
+             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%); 
+             mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+           `}>
+      </div>
     </div>
 
     <button 
       onclick="history.back()" 
-      class="fixed top-8 left-8 z-[100] group p-2 hover:opacity-60 transition-opacity"
+      class="fixed top-8 left-6 z-[100] group p-2 transition-opacity mix-blend-difference text-white hover:opacity-50"
       title="返回"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -32,10 +37,10 @@ const bgColor = frontmatter.bgColor || "#ffffff";
     </button>
 
     <main class="relative z-10 flex justify-center min-h-screen">
-      <article class="w-full max-w-4xl px-6 pt-24 pb-32">
+      <article class="w-full max-w-4xl px-4 pt-24 pb-32">
         
         <div class="prose prose-slate prose-xl max-w-none 
-          prose-p:text-slate-800 prose-p:leading-relaxed
+          prose-p:text-slate-900 prose-p:leading-relaxed
           prose-img:m-0 prose-img:p-0 prose-img:border-none prose-img:shadow-none prose-img:rounded-none">
           <slot />
         </div>
@@ -44,21 +49,15 @@ const bgColor = frontmatter.bgColor || "#ffffff";
     </main>
 
     <style is:global>
-      /* 强制去掉所有图片边框和装饰 */
+      /* 彻底清除 Markdown 渲染图片的默认边距和修饰，方便你做拼贴 */
       .prose img {
         border: none !important;
         box-shadow: none !important;
         background: transparent !important;
         padding: 0 !important;
-        margin: 20px 0 !important;
+        margin: 0 auto 20px auto !important; /* 居中并留出底部间距 */
         border-radius: 0 !important;
-      }
-
-      /* 针对手机端的优化 */
-      @media (max-width: 640px) {
-        .prose p {
-          font-size: 1.1rem;
-        }
+        display: block !important;
       }
     </style>
   </body>
