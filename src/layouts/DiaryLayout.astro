@@ -3,9 +3,29 @@
 import "@/styles/global.css";
 const { frontmatter } = Astro.props;
 
-// 背景图和底色
 const bgImage = frontmatter.background || ""; 
 const bgColor = frontmatter.bgColor || "#ffffff"; 
+
+// 获取排版方位，转换为小写，默认居中
+const alignStr = (frontmatter.align || "center").toLowerCase();
+
+// 【九宫格计算引擎】：利用外边距自动推倒实现全方位定位
+// 垂直方向
+let vMargin = "my-auto"; // 默认垂直居中
+if (alignStr.includes("top")) vMargin = "mb-auto";      // 往下推，所以靠上
+if (alignStr.includes("bottom")) vMargin = "mt-auto";   // 往上推，所以靠下
+
+// 水平方向
+let hMargin = "mx-auto"; // 默认水平居中
+let dataHAlign = "center"; // 用于通知 CSS 图片该往哪边靠
+if (alignStr.includes("left")) { 
+    hMargin = "mr-auto";    // 往右推，所以靠左
+    dataHAlign = "left"; 
+}
+if (alignStr.includes("right")) { 
+    hMargin = "ml-auto";    // 往左推，所以靠右
+    dataHAlign = "right"; 
+}
 ---
 
 <html lang="zh-CN">
@@ -38,8 +58,12 @@ const bgColor = frontmatter.bgColor || "#ffffff";
       </svg>
     </button>
 
-    <main class="relative z-10 flex justify-center min-h-screen">
-      <article class="w-full max-w-4xl px-4 pt-24 pb-32 text-black">
+    <main class="relative z-10 flex flex-col min-h-screen px-6 pt-24 pb-12 sm:px-16">
+      
+      <article 
+        class={`w-full max-w-4xl text-black ${vMargin} ${hMargin} transition-all duration-700 ease-out`} 
+        data-halign={dataHAlign}
+      >
         
         <div class="prose prose-slate prose-xl max-w-none 
           prose-p:leading-relaxed
@@ -51,26 +75,43 @@ const bgColor = frontmatter.bgColor || "#ffffff";
     </main>
 
     <style is:global>
-      /* 强制清除所有 Markdown 渲染图片的边距和修饰，并控制缩放 */
+      /* 基础图片样式控制 */
       .prose img {
         border: none !important;
         box-shadow: none !important;
         background: transparent !important;
         padding: 0 !important;
-        margin: 0 auto 20px auto !important; /* 居中并留出底部间距 */
         border-radius: 0 !important;
         display: block !important;
-        
-        /* 【关键新增】：将图片宽度缩小到原来的一半（50%） */
         width: 50% !important; 
-        height: auto !important; /* 确保高度按比例缩放，不变形 */
+        height: auto !important;
+        margin-top: 0 !important;
+        margin-bottom: 20px !important;
+        transition: margin 0.5s ease;
       }
 
-      /* 针对手机端的优化（可选） */
+      /* 智能图片对齐：接收 article 传来的方位指令 */
+      article[data-halign="left"] .prose img {
+        margin-left: 0 !important;
+        margin-right: auto !important;
+      }
+      
+      article[data-halign="center"] .prose img {
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+
+      article[data-halign="right"] .prose img {
+        margin-left: auto !important;
+        margin-right: 0 !important;
+      }
+
+      /* 移动端安全带：手机屏幕太小，强制水平居中，防止内容贴着屏幕边缘看不见 */
       @media (max-width: 640px) {
         .prose img {
-          /* 手机屏幕本身就小，如果 50% 觉得太小看不清，可以把这里改成 70% 或 80% */
           width: 70% !important; 
+          margin-left: auto !important;
+          margin-right: auto !important;
         }
       }
     </style>
