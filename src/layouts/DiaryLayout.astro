@@ -2,8 +2,10 @@
 // src/layouts/DiaryLayout.astro
 import "@/styles/global.css";
 const { frontmatter } = Astro.props;
-// 这里默认使用一张带鲜花的示例 live 图作为 Zine 的背景，你可以通过 frontmatter 在 markdown 里自定义
-const bgImage = frontmatter.background || "https://images.unsplash.com/photo-1549495528-9842a5d2b3b0?q=80&w=1920&auto=format&fit=crop"; 
+
+// 背景图和底色，建议在 Markdown 里设置 bgColor 
+const bgImage = frontmatter.background || ""; 
+const bgColor = frontmatter.bgColor || "#ffffff"; 
 ---
 
 <html lang="zh-CN">
@@ -11,111 +13,53 @@ const bgImage = frontmatter.background || "https://images.unsplash.com/photo-154
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{frontmatter.title} - Dystate</title>
-    {/* 核心字体：引入手绘字体：Zhi Mang Xing (毛笔/草书标题)，Caveat (手写体正文) */}
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-white text-slate-900 antialiased font-['Caveat'] relative overflow-x-hidden">
+  <body class="antialiased relative overflow-x-hidden min-h-screen" style={`background-color: ${bgColor};`}>
     
-    <aside class="fixed left-0 top-0 h-screen w-20 flex flex-col items-center py-10 z-50 bg-white/30 backdrop-blur-sm">
-      <a href="/" class="mb-12">
-        <div class="w-10 h-10 border-2 border-black flex items-center justify-center font-bold text-xl font-['VT323']">D</div>
-      </a>
-      {/* 侧边 icons 可以保留，样式更柔和 */}
-      <nav class="flex flex-col gap-8 text-slate-400">
-        <a href="/" class="hover:text-black transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </a>
-        <button class="hover:text-red-500 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-        </button>
-        <button class="hover:text-black transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        </button>
-        <button class="hover:text-black transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-        </button>
-      </nav>
-    </aside>
+    <div class="fixed inset-0 z-0 bg-center bg-no-repeat bg-contain pointer-events-none" 
+         style={`background-image: url(${bgImage});`}>
+    </div>
 
-    <main class="ml-20 flex justify-center pb-32">
-      <article class="w-full max-w-5xl px-6 pt-16 relative">
+    <button 
+      onclick="history.back()" 
+      class="fixed top-8 left-8 z-[100] group p-2 hover:opacity-60 transition-opacity"
+      title="返回"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <main class="relative z-10 flex justify-center min-h-screen">
+      <article class="w-full max-w-4xl px-6 pt-24 pb-32">
         
-        <div class="absolute inset-0 z-0 overflow-hidden rounded-[40px] shadow-[12px_12px_0px_0px_rgba(0,0,0,0.2)]">
-            <img 
-              src={bgImage} 
-              alt="Diary background image" 
-              class="w-full h-full object-cover rounded-[40px]" 
-            />
-            <div class="absolute inset-0 bg-black/10 rounded-[40px]"></div>
-        </div>
-
-        <div class="flex justify-between items-center relative z-20 mb-20 text-black/70 px-4">
-          <div class="flex items-center gap-2">
-            <div class="w-10 h-10 border-2 border-dashed border-black/30 rounded-full flex items-center justify-center font-['VT323'] text-lg">01</div>
-            <div class="text-xl font-bold font-['Zhi_Mang_Xing']">{frontmatter.date ? new Date(frontmatter.date).toLocaleDateString('zh-CN', {year: 'numeric', month: 'long', day: 'numeric'}) : "2026年6月8日"}</div>
-          </div>
-          <div class="flex items-center gap-3">
-             <span class="w-10 h-10 border-2 border-dashed border-black/30 rounded-full flex items-center justify-center text-xs font-['VT323']">2/12</span>
-          </div>
-        </div>
-
-        <div class="prose prose-slate prose-lg max-w-none 
-          prose-headings:text-black prose-headings:font-bold prose-headings:font-['Zhi_Mang_Xing'] 
-          prose-p:leading-relaxed prose-p:text-slate-800 prose-p:font-['Caveat']
-          prose-img:border-2 prose-img:border-black prose-img:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]
-          relative z-20">
-          
-          {/* 这里是用户的 Markdown 内容，我们将通过 CSS 自动将它分割成小纸片贴在背景上 */}
+        <div class="prose prose-slate prose-xl max-w-none 
+          prose-p:text-slate-800 prose-p:leading-relaxed
+          prose-img:m-0 prose-img:p-0 prose-img:border-none prose-img:shadow-none prose-img:rounded-none">
           <slot />
         </div>
 
-        <footer class="mt-40 pt-10 border-t border-black/10 flex justify-center items-center text-slate-400 font-['Zhi_Mang_Xing'] text-2xl relative z-20">
-           - 记录思绪的手绘日志 -
-        </footer>
       </article>
     </main>
 
     <style is:global>
-        /* 针对 DiaryLayout 的全局 slot 内容美化：核心魔法！将段落和特定元素分割成小纸片效果 */
-        .prose p, .prose h2, .prose h3, .prose h4 {
-            background-color: white; /* 纸片背景色 */
-            border-radius: 10px; /* 纸片圆角 */
-            padding: 20px; /* 纸片内边距 */
-            display: inline-block; /* 核心：让它变成独立的小块 */
-            border: 2px dashed rgba(0,0,0,0.2); /* 纸片边框 */
-            margin-bottom: 30px; /* 纸片外边距 */
-            transform: rotate(-1deg); /* 轻微旋转营造拼贴感 */
-            box-shadow: 4px 4px 0px 0px rgba(0,0,0,0.1); /* 纸片阴影 */
-            box-decoration-break: clone; /* 针对超长内容的特殊效果 */
-            position: relative; /* 用于放胶带 */
-        }
+      /* 强制去掉所有图片边框和装饰 */
+      .prose img {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 20px 0 !important;
+        border-radius: 0 !important;
+      }
 
-        /* 为奇数位的纸片应用不同的旋转方向，增加随意感 */
-        .prose p:nth-of-type(odd), .prose h3:nth-of-type(odd) {
-            transform: rotate(1.5deg);
-        }
-
-        /* 针对 prose 默认样式的清理，防止小纸片出现多余的外边距 */
+      /* 针对手机端的优化 */
+      @media (max-width: 640px) {
         .prose p {
-            margin-top: 0 !important;
+          font-size: 1.1rem;
         }
-
-        /* 在纸片顶部放一个胶带 cutout SVG (Zine Style) */
-        .prose p::before, .prose h3::before {
-            content: "";
-            position: absolute;
-            top: -15px; /* 在纸片上方 */
-            left: 50%;
-            transform: translateX(-50%) rotate(-5deg); /* 轻微旋转 */
-            width: 100px;
-            height: 30px;
-            background-color: #f7df85; /* 胶带颜色 */
-            background-image: linear-gradient(135deg, rgba(255,255,255,0.4) 25%, transparent 25%), linear-gradient(225deg, rgba(255,255,255,0.4) 25%, transparent 25%), linear-gradient(45deg, rgba(255,255,255,0.4) 25%, transparent 25%), linear-gradient(315deg, rgba(255,255,255,0.4) 25%, transparent 25%);
-            background-size: 10px 10px; /* 胶带上的纹理 */
-            border-radius: 5px; /* 胶带圆角 */
-            z-index: 10;
-        }
+      }
     </style>
   </body>
 </html>
