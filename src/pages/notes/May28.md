@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/DiaryLayout.astro
-title: 
+title: 答辩...
 subtitle: 
 date: 2026-05-28
 category: 日记
