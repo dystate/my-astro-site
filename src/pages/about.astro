@@ -1,0 +1,51 @@
+---
+// src/pages/about.astro
+import AppMenuBar from "@/components/ui/app-menu-bar";
+import "@/styles/global.css";
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>关于我 - Dystate</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#f0f0f0] min-h-screen font-['VT323'] antialiased">
+    
+    <div class="fixed inset-0 z-0 opacity-[0.05] pointer-events-none" 
+         style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;">
+    </div>
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+      
+      <header class="sticky top-0 z-50 w-full py-6 bg-[#f0f0f0]/90 backdrop-blur-md border-b-4 border-black">
+        <div class="max-w-[1200px] mx-auto px-10 flex items-center justify-between">
+          <a href="/" class="text-4xl font-bold no-underline tracking-widest">
+            <span class="text-blue-600">D</span>y<span class="text-green-500">st</span>ate<span class="text-yellow-500">_</span>
+          </a>
+
+          <nav class="flex-1 flex justify-center">
+            <AppMenuBar client:load />
+          </nav>
+
+          <div class="min-w-[180px] text-right flex justify-end">
+             <span class="text-base bg-black text-white border-2 border-black px-3 py-1 font-mono tracking-tight shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">
+                793400999@qq.com
+             </span>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 max-w-[1200px] mx-auto w-full p-10 mt-10">
+        <h1 class="text-5xl font-bold border-b-4 border-black pb-4 inline-block mb-8">
+            ABOUT ME
+        </h1>
+        <div class="text-xl font-sans text-slate-700 bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            这里是关于我的介绍内容...
+        </div>
+      </main>
+
+    </div>
+  </body>
+</html>

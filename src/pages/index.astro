@@ -59,8 +59,8 @@ const coverSeeds = ["Journal", "CSS", "Battery", "Pixel", "Code"];
             <AppMenuBar client:load />
           </nav>
 
-          <div class="w-[150px] text-right">
-             <span class="text-sm text-slate-400 uppercase tracking-tighter">793400999@qq.com</span>
+          <div class="w-[150px] text-right flex justify-end">
+             <span class="text-base bg-black text-white border-2 border-black px-3 py-1 font-mono tracking-tight shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">793400999@qq.com</span>
           </div>
         </div>
       </header>
@@ -84,9 +84,11 @@ const coverSeeds = ["Journal", "CSS", "Battery", "Pixel", "Code"];
               感受 / 记录 / 表达 / 创造
             </p>
             <div class="flex gap-4 justify-center mt-6">
-               <button class="bg-blue-600 text-white px-8 py-2 text-2xl hover:bg-black transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]">
-                  关于我
-               </button>
+               <a
+                  href="/about"
+                  class="bg-blue-600 text-white px-8 py-2 text-2xl hover:bg-black transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                  >关于我
+               </a>
             </div>
           </div>
         </section>

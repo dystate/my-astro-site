@@ -45,8 +45,10 @@ export default function AppMenuBar() {
       {/* 日历 */}
       <MenubarMenu>
         <MenubarTrigger className="bg-transparent hover:bg-transparent text-slate-700 hover:text-blue-600 transition-colors cursor-pointer text-xl sm:text-2xl flex items-center gap-2">
-          <Calendar className="w-5 h-5" strokeWidth={2} />
-          <span className="hidden sm:inline">Calendar</span>
+          <a href="/calendar" class="flex items-center gap-2 w-full h-full">
+            <Calendar className="w-5 h-5" strokeWidth={2} />
+            <span className="hidden sm:inline">Calendar</span>
+          </a>
         </MenubarTrigger>
       </MenubarMenu>
 

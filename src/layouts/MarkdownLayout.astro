@@ -1,0 +1,65 @@
+---
+import "@/styles/global.css";
+const { frontmatter } = Astro.props;
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{frontmatter.title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-white font-sans text-slate-900 antialiased">
+    
+    <aside class="fixed left-0 top-0 h-screen w-20 border-r border-slate-200 flex flex-col items-center py-10 z-50 bg-white">
+      <a href="/" class="mb-12">
+        <div class="w-10 h-10 border-2 border-black flex items-center justify-center font-bold text-xl font-['VT323']">D</div>
+      </a>
+      
+      <nav class="flex flex-col gap-8 text-slate-400">
+        <a href="/" class="hover:text-black transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </a>
+        <button class="hover:text-red-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        </button>
+        <button class="hover:text-black transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <button class="hover:text-black transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </button>
+      </nav>
+    </aside>
+
+    <main class="ml-20 flex justify-center pb-32">
+      <article class="max-w-3xl w-full px-10 pt-24">
+        
+        <header class="mb-16">
+          <h1 class="text-5xl font-bold tracking-tight mb-6 leading-tight">
+            {frontmatter.title}
+          </h1>
+          <p class="text-xl text-slate-500 italic border-l-4 border-slate-200 pl-6 py-2">
+            {frontmatter.subtitle || "Exploring the boundaries of digital creation."}
+          </p>
+        </header>
+
+        <div class="prose prose-slate prose-xl max-w-none 
+          prose-headings:text-black prose-headings:font-bold 
+          prose-p:leading-relaxed prose-p:text-slate-700
+          prose-img:border-2 prose-img:border-black prose-img:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
+          <slot />
+        </div>
+
+        <footer class="mt-40 pt-10 border-t border-slate-100 flex justify-between items-center text-slate-400 font-['VT323'] text-xl">
+           <span>© 2026 DYSTATE.</span>
+           <div class="flex items-center gap-2">
+              <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              READING NOW
+           </div>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>

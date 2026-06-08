@@ -1,0 +1,79 @@
+---
+// src/pages/calendar.astro
+import AppMenuBar from "@/components/ui/app-menu-bar";
+import "@/styles/global.css";
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>日历 - Dystate</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#f0f0f0] min-h-screen font-['VT323'] antialiased">
+    
+    <div class="fixed inset-0 z-0 opacity-[0.05] pointer-events-none" 
+         style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;">
+    </div>
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+      
+      <header class="sticky top-0 z-50 w-full py-6 bg-[#f0f0f0]/90 backdrop-blur-md border-b-4 border-black">
+        <div class="max-w-[1200px] mx-auto px-10 flex items-center justify-between">
+          <a href="/" class="text-4xl font-bold no-underline tracking-widest">
+            <span class="text-blue-600">D</span>y<span class="text-green-500">st</span>ate<span class="text-yellow-500">_</span>
+          </a>
+
+          <nav class="flex-1 flex justify-center">
+            <AppMenuBar client:load />
+          </nav>
+
+          <div class="min-w-[180px] text-right flex justify-end">
+             <span class="text-base bg-black text-white border-2 border-black px-3 py-1 font-mono tracking-tight shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">
+                793400999@qq.com
+             </span>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 max-w-[1200px] mx-auto w-full p-6 sm:p-10">
+        
+        <div class="w-full bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col overflow-hidden">
+          
+          <div class="bg-black text-white px-4 py-2 flex justify-between items-center">
+            <span class="text-2xl tracking-widest">CALENDAR.EXE</span>
+            <div class="flex gap-2">
+               <div class="w-4 h-4 border-2 border-white"></div>
+               <div class="w-4 h-4 border-2 border-white bg-white"></div>
+            </div>
+          </div>
+
+          <div class="p-2 sm:p-6 bg-[#f8f9fa]">
+            <div class="calendar-wrapper relative border-2 border-black bg-white overflow-hidden">
+              <iframe https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23ffffff&ctz=Asia%2FShanghai&showTi
+                src="https://calendar.google.com/calendar/embed?height=800&wkst=2&ctz=Asia%2FShanghai&hl=zh_CN&mode=AGENDA&showTz=0&showPrint=0&showTitle=0&src=eGlhbGluZ3NoaTI1QGdtYWlsLmNvbQ&src=ZW4uY2hpbmEjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23039be5&color=%230b8043" style="border-width:0" width="1068" height="600" frameborder="0" scrolling="no"" 
+                style="border-width:0" 
+                width="100%" 
+                height="600" 
+                frameborder="0" 
+                scrolling="no"
+                class="google-calendar-iframe"
+              ></iframe>
+
+              <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,118,0.06))] bg-[length:100%_4px,3px_100%]"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex gap-4">
+           <div class="bg-blue-100 border-2 border-blue-600 p-4 font-sans text-sm text-blue-800">
+             <strong>提示:</strong> 这里的计划仅供参考，具体安排请通过邮件确认。
+           </div>
+        </div>
+      </main>
+
+    </div>
+
+    <style>
+      /* CSS 渲染魔法：强制微调 Google
