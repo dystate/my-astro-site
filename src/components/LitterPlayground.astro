@@ -1,8 +1,14 @@
 ---
 // src/components/LitterPlayground.astro
 
-// 自动抓取 litter 文件夹下的所有 markdown 碎片
-const litters = await Astro.glob('/src/litter/*.md');
+// 【核心修复】：使用相对路径，并改用更安全的 import.meta.glob 防崩溃
+let litters = [];
+try {
+  const matches = import.meta.glob('../litter/*.md', { eager: true });
+  litters = Object.values(matches);
+} catch (e) {
+  console.warn("未找到纸团文件");
+}
 ---
 
 <div class="my-16">
@@ -33,16 +39,20 @@ const litters = await Astro.glob('/src/litter/*.md');
   </div>
 
   <div id="litter-templates" class="hidden">
-    {litters.map((litter, index) => (
-      <template id={`litter-tpl-${index}`}>
-        <div class="mb-4 border-b-4 border-black pb-4">
-            <h3 class="text-3xl font-bold font-['Zhi_Mang_Xing']">{litter.frontmatter.title || "未命名的纸团"}</h3>
-        </div>
-        <div class="prose prose-slate prose-lg max-w-none font-['Caveat'] leading-relaxed">
-            <litter.Content />
-        </div>
-      </template>
-    ))}
+    {litters.map((litter, index) => {
+      // 兼容 import.meta.glob 的组件读取方式
+      const Content = litter.default || litter.Content;
+      return (
+        <template id={`litter-tpl-${index}`}>
+          <div class="mb-4 border-b-4 border-black pb-4">
+              <h3 class="text-3xl font-bold font-['Zhi_Mang_Xing']">{litter.frontmatter?.title || "未命名的纸团"}</h3>
+          </div>
+          <div class="prose prose-slate prose-lg max-w-none font-['Caveat'] leading-relaxed">
+              {Content && <Content />}
+          </div>
+        </template>
+      );
+    })}
   </div>
 
   <div id="litter-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
@@ -61,14 +71,12 @@ const litters = await Astro.glob('/src/litter/*.md');
 </div>
 
 <script>
-  // 仅在客户端运行的交互逻辑
   document.addEventListener('DOMContentLoaded', () => {
     const trashCan = document.getElementById('trash-can');
     const playground = document.getElementById('playground');
     const layer = document.getElementById('paper-balls-layer');
     const templates = document.querySelectorAll('#litter-templates template');
     
-    // 弹窗相关
     const modal = document.getElementById('litter-modal');
     const modalBg = document.getElementById('modal-bg');
     const closeModalBtn = document.getElementById('close-modal');
@@ -78,13 +86,10 @@ const litters = await Astro.glob('/src/litter/*.md');
     let isDragging = false;
     let lastSpawnX = 0;
     let lastSpawnY = 0;
-    // 决定拖动多少像素掉落一个纸团（数值越小掉落越快）
     const spawnThreshold = 100; 
 
-    // 如果没有任何 litter 文件，就不扔纸团了
     if (templates.length === 0) return;
 
-    // --- 拖拽逻辑 ---
     trashCan.addEventListener('pointerdown', (e) => {
       isDragging = true;
       trashCan.setPointerCapture(e.pointerId);
@@ -96,22 +101,17 @@ const litters = await Astro.glob('/src/litter/*.md');
       if (!isDragging) return;
 
       const rect = playground.getBoundingClientRect();
-      
-      // 计算垃圾桶在 playground 中的相对位置
       let x = e.clientX - rect.left;
       let y = e.clientY - rect.top;
 
-      // 防止垃圾桶拖出边界
       x = Math.max(20, Math.min(x, rect.width - 20));
       y = Math.max(30, Math.min(y, rect.height - 30));
 
       trashCan.style.left = `${x}px`;
       trashCan.style.top = `${y}px`;
 
-      // 计算与上一次掉落位置的距离
       const distance = Math.hypot(e.clientX - lastSpawnX, e.clientY - lastSpawnY);
       
-      // 如果距离大于阈值，生成一个纸团
       if (distance > spawnThreshold) {
         spawnPaperBall(x, y);
         lastSpawnX = e.clientX;
@@ -122,16 +122,11 @@ const litters = await Astro.glob('/src/litter/*.md');
     playground.addEventListener('pointerup', () => isDragging = false);
     playground.addEventListener('pointercancel', () => isDragging = false);
 
-    // --- 生成纸团逻辑 ---
     function spawnPaperBall(x, y) {
-      // 随机挑选一个碎片的索引
       const randomIndex = Math.floor(Math.random() * templates.length);
-      
       const ball = document.createElement('div');
-      // 给纸团加上指针样式和掉落动画
       ball.className = `absolute w-8 h-8 cursor-pointer drop-shadow-md animate-pop-out pointer-events-auto hover:scale-110 transition-transform`;
       
-      // 稍微偏离垃圾桶中心掉落，并加上随机旋转
       const offsetX = (Math.random() - 0.5) * 60;
       const offsetY = (Math.random() - 0.5) * 60;
       const rotate = Math.random() * 360;
@@ -140,7 +135,6 @@ const litters = await Astro.glob('/src/litter/*.md');
       ball.style.top = `${y + offsetY}px`;
       ball.style.transform = `translate(-50%, -50%) rotate(${rotate}deg)`;
 
-      // 纸团的像素 SVG
       ball.innerHTML = `
         <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated;" class="w-full h-full">
           <path d="M6 2 H10 V4 H14 V10 H12 V14 H6 V12 H2 V6 H4 V2 Z" fill="#f8f9fa" stroke="black" stroke-width="1.5"/>
@@ -148,27 +142,21 @@ const litters = await Astro.glob('/src/litter/*.md');
         </svg>
       `;
 
-      // 点击纸团打开内容
       ball.addEventListener('click', () => openModal(randomIndex));
-
       layer.appendChild(ball);
 
-      // 超过 15 个纸团自动清理最旧的，防止页面卡顿
       if (layer.children.length > 15) {
         layer.removeChild(layer.firstElementChild);
       }
     }
 
-    // --- 弹窗逻辑 ---
     function openModal(index) {
       const template = document.getElementById(`litter-tpl-${index}`);
       if (!template) return;
 
-      // 把模板里的内容克隆到弹窗中
       modalContent.innerHTML = '';
       modalContent.appendChild(template.content.cloneNode(true));
       
-      // 显示弹窗并执行弹出动画
       modal.classList.remove('hidden');
       setTimeout(() => {
         modalPanel.classList.remove('scale-95', 'opacity-0');
@@ -182,7 +170,7 @@ const litters = await Astro.glob('/src/litter/*.md');
       setTimeout(() => {
         modal.classList.add('hidden');
         modalContent.innerHTML = '';
-      }, 200); // 等待动画播完再隐藏
+      }, 200);
     }
 
     closeModalBtn.addEventListener('click', closeModal);
@@ -191,7 +179,6 @@ const litters = await Astro.glob('/src/litter/*.md');
 </script>
 
 <style>
-  /* 纸团掉落的弹出动画 */
   @keyframes pop-out {
     0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0; }
     50% { transform: translate(-50%, -50%) scale(1.2) rotate(180deg); }
