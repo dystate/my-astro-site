@@ -1,5 +1,5 @@
 ---
-// src/pages/about.astro (移动端只显3词 + 平缓弧度下沉版)
+// src/pages/about.astro (35° 紧凑齿轮 + 移动端自适应版)
 import "@/styles/global.css";
 
 const pageData = [
@@ -40,17 +40,19 @@ const pageData = [
   }
 ];
 
-// 40°完美等分数据
+// 【核心修改】：35° 完美等分阵列。覆盖更密集的圆周，保证视野内紧凑无留白。
 const dialItems = [
-  { angle: -160, target: "photo", label: "Photo" },
-  { angle: -120, target: "home", label: "Home" },
-  { angle: -80, target: "books", label: "Books" },
-  { angle: -40, target: "archive", label: "Archive" },
+  { angle: -175, target: "about", label: "About" },
+  { angle: -140, target: "photo", label: "Photo" },
+  { angle: -105, target: "home", label: "Home" },
+  { angle: -70, target: "books", label: "Books" },
+  { angle: -35, target: "archive", label: "Archive" },
   { angle: 0, target: "about", label: "About" },
-  { angle: 40, target: "photo", label: "Photo" },
-  { angle: 80, target: "home", label: "Home" },
-  { angle: 120, target: "books", label: "Books" },
-  { angle: 160, target: "archive", label: "Archive" }
+  { angle: 35, target: "photo", label: "Photo" },
+  { angle: 70, target: "home", label: "Home" },
+  { angle: 105, target: "books", label: "Books" },
+  { angle: 140, target: "archive", label: "Archive" },
+  { angle: 175, target: "about", label: "About" }
 ];
 ---
 
@@ -169,14 +171,13 @@ const dialItems = [
   ::-webkit-scrollbar { display: none; }
 
   /* ---------------------------------
-     默认样式 (手机端) : 巨型半径，只漏出 3 个词 
+     手机端: 巨型平盘 + 更密集的 35°
      --------------------------------- */
   .dial-word {
     position: absolute;
     left: 50%;
     top: 20px; 
-    /* 核心数学：容器700/2=350，再减去top20，旋转半径高达 330px！弧度极度平缓 */
-    transform-origin: 50% 330px; 
+    transform-origin: 50% 330px; /* 330px 超大半径维持黄线平缓感 */
     font-size: 11px; 
     text-transform: uppercase;
     letter-spacing: 0.25em;
@@ -199,17 +200,16 @@ const dialItems = [
   }
 
   .dial-word.active span {
-    font-size: 16px; /* 手机端激活字号稍小 */
+    font-size: 16px; 
     font-weight: 800;
     color: #111;
   }
 
   /* ---------------------------------
-     大屏样式 (电脑端 lg) : 恢复 200px 标准半径 
+     电脑端: 200px 半径标准盘
      --------------------------------- */
   @media (min-width: 1024px) {
     .dial-word {
-      /* 核心数学：容器440/2=220，再减去top20，恢复完美的 200px 旋转半径 */
       transform-origin: 50% 200px;
       font-size: 13px;
       width: 140px;
