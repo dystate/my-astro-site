@@ -1,51 +1,239 @@
 ---
-// src/pages/about.astro
-import AppMenuBar from "@/components/ui/app-menu-bar";
+// src/pages/about.astro (安全语法版)
 import "@/styles/global.css";
+
+const pageData = [
+  {
+    id: "home",
+    title: "Entering the<br/>Digital Nexus.<br/>System Online.",
+    subtitle: "Welcome to the terminal.",
+    desc: "这是数字世界的主控台。将凌乱的思绪重组，在 0 与 1 的间隙中，构建秩序与美学并存的个人栖息地。",
+    img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1287&auto=format&fit=crop"
+  },
+  {
+    id: "photo",
+    title: "Visualizing<br/>Micro & Macro<br/>Structures.",
+    subtitle: "1:1 Aspect Ratio.",
+    desc: "从宏观的建筑几何，到微观的材料纹理。用图像捕捉转瞬即逝的光影，定格每一次观察的截面。",
+    img: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1287&auto=format&fit=crop"
+  },
+  {
+    id: "about",
+    title: "Dystate is the name,<br/>the Undergraduate &<br/>Explorer of Digital Space.<br/>Relocating to Future.",
+    subtitle: "Relocating to Future.",
+    desc: "致力于在平面的屏幕中寻找立体的呼吸感。探索电化学与审美逻辑的交叉点，为每一次日志提供独特的体验。",
+    img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop"
+  },
+  {
+    id: "archive",
+    title: "The Markdown<br/>Repository &<br/>Knowledge Graph.",
+    subtitle: "Timeline Log.",
+    desc: "一个结构化的数字日记系统。记录 CSS 渲染的实验、文献阅读的切片，以及时间轴上每一处闪光的节点。",
+    img: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?q=80&w=1287&auto=format&fit=crop"
+  },
+  {
+    id: "books",
+    title: "Accumulation of<br/>Theoretical<br/>Foundations.",
+    subtitle: "Read & Think.",
+    desc: "智慧的摄入与消化。通过阅读构建底层逻辑，在字里行间跨越科学与艺术的边界。",
+    img: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1287&auto=format&fit=crop"
+  }
+];
+
+// 【40°完美等分重构】：9 个词刚好填满 360度 (9 * 40 = 360)
+const dialItems = [
+  { angle: -160, target: "photo", label: "Photo" },
+  { angle: -120, target: "home", label: "Home" },
+  { angle: -80, target: "books", label: "Books" },
+  { angle: -40, target: "archive", label: "Archive" },
+  { angle: 0, target: "about", label: "About" },
+  { angle: 40, target: "photo", label: "Photo" },
+  { angle: 80, target: "home", label: "Home" },
+  { angle: 120, target: "books", label: "Books" },
+  { angle: 160, target: "archive", label: "Archive" }
+];
 ---
 
 <html lang="zh-CN">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>关于我 - Dystate</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dystate - Interactive Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-[#f0f0f0] min-h-screen font-['VT323'] antialiased">
+  
+  <body class="bg-[#f4f4f0] text-[#1a1a1a] font-['Inter'] antialiased h-screen w-full overflow-hidden relative selection:bg-black selection:text-white">
     
-    <div class="fixed inset-0 z-0 opacity-[0.05] pointer-events-none" 
-         style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;">
+    <div class="absolute top-10 left-10 -rotate-12 origin-top-left z-20 pointer-events-none">
+      <p class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase leading-tight text-black/40 font-semibold">
+        Archives // 2026<br/>Dystate Project
+      </p>
     </div>
 
-    <div class="relative z-10 flex flex-col min-h-screen">
-      
-      <header class="sticky top-0 z-50 w-full py-6 bg-[#f0f0f0]/90 backdrop-blur-md border-b-4 border-black">
-        <div class="max-w-[1200px] mx-auto px-10 flex items-center justify-between">
-          <a href="/" class="text-4xl font-bold no-underline tracking-widest">
-            <span class="text-blue-600">D</span>y<span class="text-green-500">st</span>ate<span class="text-yellow-500">_</span>
-          </a>
+    <div class="absolute top-8 left-1/2 -translate-x-1/2 z-20">
+      <div class="flex flex-col items-center">
+        <span class="font-['Playfair_Display'] text-4xl italic leading-none text-black">Dy</span>
+        <span class="text-[9px] font-['Inter'] tracking-[0.4em] uppercase mt-1 font-semibold text-black">STATE</span>
+      </div>
+    </div>
 
-          <nav class="flex-1 flex justify-center">
-            <AppMenuBar client:load />
-          </nav>
+    <div class="absolute top-10 right-10 z-20 text-right flex flex-col gap-[2px] text-[10px] tracking-[0.2em] uppercase font-semibold text-black/60">
+      <a href="#" class="hover:text-black transition-colors">Email</a>
+      <a href="#" class="hover:text-black transition-colors">Twitter</a>
+      <a href="#" class="hover:text-black transition-colors">Github</a>
+      <a href="#" class="hover:text-black transition-colors">Obsidian</a>
+    </div>
 
-          <div class="min-w-[180px] text-right flex justify-end">
-             <span class="text-base bg-black text-white border-2 border-black px-3 py-1 font-mono tracking-tight shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">
-                793400999@qq.com
-             </span>
+    <div id="stage-container" class="w-full h-full relative z-10 px-12 pt-32 pb-[160px]">
+      {pageData.map((page) => (
+        <main 
+          id={"page-" + page.id} 
+          class={"absolute inset-0 px-12 pt-32 pb-[160px] flex justify-between transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.3,1)] " + (page.id === 'about' ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-[0.98]')}
+        >
+          <div class="w-[55%] h-full flex flex-col justify-between relative">
+            <div class="max-w-[40rem] mt-6">
+              <h1 class="font-['Playfair_Display'] text-[3rem] xl:text-[3.6rem] leading-[1.1] text-[#111] tracking-tight font-normal" set:html={page.title}>
+              </h1>
+            </div>
+
+            <div class="flex items-end gap-6 mb-4">
+              <div class="w-[90px] h-[120px] bg-white shrink-0 shadow-md border border-black/10 flex items-center justify-center p-2 relative overflow-hidden">
+                 <img src="/avatar.svg" alt="Portrait" class="w-full h-full object-cover grayscale brightness-90 border-2 border-black/10 shadow-inner" />
+              </div>
+              <div class="pb-1">
+                <p class="text-[10px] uppercase tracking-[0.2em] text-black/40 font-bold mb-1">{page.subtitle}</p>
+                <p class="max-w-[260px] text-[12px] leading-[1.6] text-black/70 font-medium">
+                  {page.desc}
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </header>
 
-      <main class="flex-1 max-w-[1200px] mx-auto w-full p-10 mt-10">
-        <h1 class="text-5xl font-bold border-b-4 border-black pb-4 inline-block mb-8">
-            ABOUT ME
-        </h1>
-        <div class="text-xl font-sans text-slate-700 bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            这里是关于我的介绍内容...
-        </div>
-      </main>
-
+          <div class="w-[35%] h-[65vh] mt-4 shadow-2xl overflow-hidden">
+            <img 
+              src={page.img} 
+              alt="Editorial" 
+              class="w-full h-full object-cover grayscale contrast-[1.05]"
+            />
+          </div>
+        </main>
+      ))}
     </div>
+
+    <div class="absolute bottom-8 left-10 text-[9px] tracking-[0.2em] uppercase text-black/40 z-20 font-semibold">
+      © All rights reserved. 2026
+    </div>
+    <div class="absolute bottom-8 right-10 text-[9px] tracking-[0.2em] uppercase text-black/40 z-20 font-semibold">
+      Site by Dystate
+    </div>
+
+
+    <div class="absolute bottom-[10px] left-1/2 -translate-x-1/2 w-[300px] h-[120px] pointer-events-none z-[110]">
+        <svg viewBox="0 0 300 120" class="w-full h-full overflow-visible">
+            <circle cx="150" cy="100" r="4" fill="#111" />
+            <line x1="150" y1="100" x2="150" y2="45" stroke="#111" stroke-width="2.4" />
+            <line x1="150" y1="100" x2="125" y2="75" stroke="#111" stroke-width="1.2" opacity="0.3" />
+            <line x1="150" y1="100" x2="175" y2="75" stroke="#111" stroke-width="1.2" opacity="0.3" />
+        </svg>
+    </div>
+
+
+    <div class="absolute bottom-[-320px] left-1/2 -translate-x-1/2 w-[440px] h-[440px] z-100 pointer-events-none">
+        <div id="dial-wheel" class="relative w-full h-full transition-transform duration-[1000ms] cubic-bezier(0.22, 1, 0.36, 1)">
+            
+            {dialItems.map((item) => (
+                <div 
+                  class={"dial-word " + (item.target === 'about' && item.angle === 0 ? 'active' : '')} 
+                  style={"transform: rotate(" + item.angle + "deg);"} 
+                  data-angle={item.angle} 
+                  data-target={item.target}
+                >
+                    <div class="cursor-pointer"><span>{item.label}</span></div>
+                </div>
+            ))}
+
+        </div>
+    </div>
+
   </body>
 </html>
+
+<style is:global>
+  .dial-word {
+    position: absolute;
+    left: 50%;
+    top: 20px; 
+    transform-origin: 50% 200px; /* 完美的 200px 半径 */
+    font-size: 13px; 
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-weight: 600;
+    width: 140px;
+    text-align: center;
+    margin-left: -70px;
+    user-select: none;
+    pointer-events: auto;
+  }
+
+  .dial-word span {
+    display: inline-block;
+    transition: transform 1000ms cubic-bezier(0.22, 1, 0.36, 1), font-size 0.4s, color 0.4s;
+    color: rgba(0,0,0,0.25);
+  }
+
+  .dial-word:hover span {
+    color: rgba(0,0,0,0.8);
+  }
+
+  .dial-word.active span {
+    font-size: 20px;
+    font-weight: 800;
+    color: #111;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const wheel = document.getElementById('dial-wheel');
+    const items = document.querySelectorAll('.dial-word');
+    const spans = document.querySelectorAll('.dial-word span');
+    const allPages = document.querySelectorAll('main[id^="page-"]');
+
+    function initTypography() {
+        items.forEach(item => {
+            const angle = parseFloat(item.getAttribute('data-angle'));
+            const span = item.querySelector('span');
+            span.style.transform = `rotate(${-angle}deg)`;
+        });
+    }
+
+    initTypography();
+
+    items.forEach(item => {
+        item.addEventListener('click', () => {
+            const targetAngle = parseFloat(item.getAttribute('data-angle'));
+            const targetPageId = item.getAttribute('data-target');
+
+            wheel.style.transform = `rotate(${-targetAngle}deg)`;
+
+            spans.forEach((span, index) => {
+                const originalWordAngle = parseFloat(items[index].getAttribute('data-angle'));
+                span.style.transform = `rotate(${targetAngle - originalWordAngle}deg)`;
+            });
+
+            items.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            allPages.forEach(page => {
+                if(page.id === `page-${targetPageId}`) {
+                    page.classList.remove('opacity-0', 'pointer-events-none', 'scale-[0.98]');
+                    page.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
+                } else {
+                    page.classList.remove('opacity-100', 'pointer-events-auto', 'scale-100');
+                    page.classList.add('opacity-0', 'pointer-events-none', 'scale-[0.98]');
+                }
+            });
+        });
+    });
+  });
+</script>
