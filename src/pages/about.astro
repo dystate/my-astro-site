@@ -1,5 +1,5 @@
 ---
-// src/pages/about.astro (180° 完美半圆遮罩 + 独立指针版)
+// src/pages/about.astro (移动端只显3词 + 平缓弧度下沉版)
 import "@/styles/global.css";
 
 const pageData = [
@@ -84,11 +84,11 @@ const dialItems = [
       <a href="#" class="hover:text-black transition-colors">Obsidian</a>
     </div>
 
-    <div id="stage-container" class="w-full h-full relative z-10 px-6 lg:px-12 pt-24 lg:pt-32 pb-[140px]">
+    <div id="stage-container" class="w-full h-full relative z-10 px-6 lg:px-12 pt-24 lg:pt-32 pb-[160px]">
       {pageData.map((page) => (
         <main 
           id={"page-" + page.id} 
-          class={"absolute inset-0 px-6 lg:px-12 pt-24 lg:pt-32 pb-[140px] flex flex-col lg:flex-row justify-start lg:justify-between items-center lg:items-stretch transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.3,1)] overflow-y-auto lg:overflow-visible " + (page.id === 'about' ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-[0.98]')}
+          class={"absolute inset-0 px-6 lg:px-12 pt-24 lg:pt-32 pb-[160px] flex flex-col lg:flex-row justify-start lg:justify-between items-center lg:items-stretch transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.3,1)] overflow-y-auto lg:overflow-visible " + (page.id === 'about' ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-[0.98]')}
         >
           
           <div class="w-[50%] sm:w-[40%] lg:w-[35%] h-[32vh] lg:h-[65vh] mt-2 lg:mt-4 shadow-2xl overflow-hidden order-1 lg:order-2 shrink-0">
@@ -132,7 +132,7 @@ const dialItems = [
     </div>
 
 
-    <div class="fixed bottom-0 left-0 w-full h-[250px] overflow-hidden pointer-events-none z-[100]">
+    <div class="fixed bottom-0 left-0 w-full h-[140px] lg:h-[250px] overflow-hidden pointer-events-none z-[100]">
         
         <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] z-10">
             <svg viewBox="0 0 200 100" class="w-full h-full overflow-visible">
@@ -143,7 +143,7 @@ const dialItems = [
             </svg>
         </div>
 
-        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[440px] h-[440px]">
+        <div class="absolute left-1/2 -translate-x-1/2 translate-y-1/2 w-[700px] h-[700px] bottom-[-230px] lg:w-[440px] lg:h-[440px] lg:bottom-0">
             <div id="dial-wheel" class="relative w-full h-full transition-transform duration-[1000ms] cubic-bezier(0.22, 1, 0.36, 1)">
                 
                 {dialItems.map((item) => (
@@ -168,21 +168,24 @@ const dialItems = [
 <style is:global>
   ::-webkit-scrollbar { display: none; }
 
+  /* ---------------------------------
+     默认样式 (手机端) : 巨型半径，只漏出 3 个词 
+     --------------------------------- */
   .dial-word {
     position: absolute;
     left: 50%;
-    /* 半径数学验证：圆盘 440/2 = 220。 文字 top=20。 旋转半径 = 220-20 = 200px。完美！ */
     top: 20px; 
-    transform-origin: 50% 200px; 
-    font-size: 13px; 
+    /* 核心数学：容器700/2=350，再减去top20，旋转半径高达 330px！弧度极度平缓 */
+    transform-origin: 50% 330px; 
+    font-size: 11px; 
     text-transform: uppercase;
     letter-spacing: 0.25em;
     font-weight: 600;
-    width: 140px;
+    width: 120px;
     text-align: center;
-    margin-left: -70px;
+    margin-left: -60px;
     user-select: none;
-    pointer-events: auto; /* 必须恢复事件，否则在遮罩层里无法点击 */
+    pointer-events: auto;
   }
 
   .dial-word span {
@@ -196,9 +199,25 @@ const dialItems = [
   }
 
   .dial-word.active span {
-    font-size: 20px;
+    font-size: 16px; /* 手机端激活字号稍小 */
     font-weight: 800;
     color: #111;
+  }
+
+  /* ---------------------------------
+     大屏样式 (电脑端 lg) : 恢复 200px 标准半径 
+     --------------------------------- */
+  @media (min-width: 1024px) {
+    .dial-word {
+      /* 核心数学：容器440/2=220，再减去top20，恢复完美的 200px 旋转半径 */
+      transform-origin: 50% 200px;
+      font-size: 13px;
+      width: 140px;
+      margin-left: -70px;
+    }
+    .dial-word.active span {
+      font-size: 20px;
+    }
   }
 </style>
 
@@ -224,10 +243,8 @@ const dialItems = [
             const targetAngle = parseFloat(item.getAttribute('data-angle'));
             const targetPageId = item.getAttribute('data-target');
 
-            // 只有转盘在转
             wheel.style.transform = `rotate(${-targetAngle}deg)`;
 
-            // 文字永远保持平正
             spans.forEach((span, index) => {
                 const originalWordAngle = parseFloat(items[index].getAttribute('data-angle'));
                 span.style.transform = `rotate(${targetAngle - originalWordAngle}deg)`;
@@ -236,7 +253,6 @@ const dialItems = [
             items.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
 
-            // 页面淡入淡出
             allPages.forEach(page => {
                 if(page.id === `page-${targetPageId}`) {
                     page.classList.remove('opacity-0', 'pointer-events-none', 'scale-[0.98]');
