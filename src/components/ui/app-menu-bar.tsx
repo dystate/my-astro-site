@@ -13,6 +13,7 @@ import {
   Calendar,
   LibraryBig, 
   Bell,
+  User, 
 } from "lucide-react";
 
 export default function AppMenuBar() {
@@ -20,11 +21,13 @@ export default function AppMenuBar() {
     // 移除白色背景和边框，改为透明底色，增大间距，并引入 VT323 像素字体风格
     <Menubar className="border-none bg-transparent shadow-none h-auto p-0 gap-6 sm:gap-10 justify-center font-['VT323']">
       
-      {/* 首页 */}
+      {/* 我 */}
       <MenubarMenu>
         <MenubarTrigger className="bg-transparent hover:bg-transparent text-slate-700 hover:text-blue-600 transition-colors cursor-pointer text-xl sm:text-2xl flex items-center gap-2">
-          <House className="w-5 h-5" strokeWidth={2} />
-          <span className="hidden sm:inline">Home</span>
+          <a href="/about" class="flex items-center gap-2 w-full h-full">
+            <User className="w-5 h-5" strokeWidth={2} />
+            <span className="hidden sm:inline">About</span>
+          </a>
         </MenubarTrigger>
       </MenubarMenu>
 
@@ -34,12 +37,6 @@ export default function AppMenuBar() {
           <Folder className="w-5 h-5" strokeWidth={2} />
           <span className="hidden sm:inline">Projects</span>
         </MenubarTrigger>
-        {/* 下拉菜单强制使用无衬线字体，保证中文小字的可读性 */}
-        <MenubarContent className="font-sans">
-          <MenubarItem>全部项目</MenubarItem>
-          <MenubarItem>新建项目</MenubarItem>
-          <MenubarItem>归档项目</MenubarItem>
-        </MenubarContent>
       </MenubarMenu>
 
       {/* 日历 */}
@@ -55,14 +52,11 @@ export default function AppMenuBar() {
       {/* 库 */}
       <MenubarMenu>
         <MenubarTrigger className="bg-transparent hover:bg-transparent text-slate-700 hover:text-blue-600 transition-colors cursor-pointer text-xl sm:text-2xl flex items-center gap-2">
-          <LibraryBig className="w-5 h-5" strokeWidth={2} />
-          <span className="hidden sm:inline">Library</span>
+          <a href="/notes" class="flex items-center gap-2 w-full h-full">
+            <LibraryBig className="w-5 h-5" strokeWidth={2} />
+            <span className="hidden sm:inline">Library</span>
+          </a>
         </MenubarTrigger>
-        <MenubarContent className="font-sans">
-          <MenubarItem>Handbook</MenubarItem>
-          <MenubarItem>Books</MenubarItem>
-          <MenubarItem>Movies</MenubarItem>
-        </MenubarContent>
       </MenubarMenu>
 
       {/* 通知 */}

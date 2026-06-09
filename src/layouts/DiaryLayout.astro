@@ -1,0 +1,119 @@
+---
+// src/layouts/DiaryLayout.astro
+import "@/styles/global.css";
+const { frontmatter } = Astro.props;
+
+const bgImage = frontmatter.background || ""; 
+const bgColor = frontmatter.bgColor || "#ffffff"; 
+
+// 获取排版方位，转换为小写，默认居中
+const alignStr = (frontmatter.align || "center").toLowerCase();
+
+// 【九宫格计算引擎】：利用外边距自动推倒实现全方位定位
+// 垂直方向
+let vMargin = "my-auto"; // 默认垂直居中
+if (alignStr.includes("top")) vMargin = "mb-auto";      // 往下推，所以靠上
+if (alignStr.includes("bottom")) vMargin = "mt-auto";   // 往上推，所以靠下
+
+// 水平方向
+let hMargin = "mx-auto"; // 默认水平居中
+let dataHAlign = "center"; // 用于通知 CSS 图片该往哪边靠
+if (alignStr.includes("left")) { 
+    hMargin = "mr-auto";    // 往右推，所以靠左
+    dataHAlign = "left"; 
+}
+if (alignStr.includes("right")) { 
+    hMargin = "ml-auto";    // 往左推，所以靠右
+    dataHAlign = "right"; 
+}
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{frontmatter.title} - Dystate</title>
+  </head>
+  <body class="antialiased relative overflow-x-hidden min-h-screen" style={`background-color: ${bgColor};`}>
+    
+    <div class="fixed inset-0 z-0 flex flex-col items-center justify-center pointer-events-none">
+      <img 
+        src={bgImage} 
+        alt="Background" 
+        class="w-full h-auto max-h-screen object-contain block"
+        style={`
+          -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); 
+          mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+        `}
+      />
+    </div>
+
+    <button 
+      onclick="history.back()" 
+      class="fixed top-8 left-6 z-[100] group p-2 transition-opacity mix-blend-difference text-white hover:opacity-50"
+      title="返回"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <main class="relative z-10 flex flex-col min-h-screen px-6 pt-24 pb-12 sm:px-16">
+      
+      <article 
+        class={`w-full max-w-4xl text-black ${vMargin} ${hMargin} transition-all duration-700 ease-out`} 
+        data-halign={dataHAlign}
+      >
+        
+        <div class="prose prose-slate prose-xl max-w-none 
+          prose-p:leading-relaxed
+          prose-img:m-0 prose-img:p-0 prose-img:border-none prose-img:shadow-none prose-img:rounded-none">
+          <slot />
+        </div>
+
+      </article>
+    </main>
+
+    <style is:global>
+      /* 基础图片样式控制 */
+      .prose img {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        display: block !important;
+        width: 50% !important; 
+        height: auto !important;
+        margin-top: 0 !important;
+        margin-bottom: 20px !important;
+        transition: margin 0.5s ease;
+      }
+
+      /* 智能图片对齐：接收 article 传来的方位指令 */
+      article[data-halign="left"] .prose img {
+        margin-left: 0 !important;
+        margin-right: auto !important;
+      }
+      
+      article[data-halign="center"] .prose img {
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+
+      article[data-halign="right"] .prose img {
+        margin-left: auto !important;
+        margin-right: 0 !important;
+      }
+
+      /* 移动端安全带：手机屏幕太小，强制水平居中，防止内容贴着屏幕边缘看不见 */
+      @media (max-width: 640px) {
+        .prose img {
+          width: 70% !important; 
+          margin-left: auto !important;
+          margin-right: auto !important;
+        }
+      }
+    </style>
+  </body>
+</html>

@@ -1,37 +1,7 @@
 ---
 import AppMenuBar from "@/components/ui/app-menu-bar";
+import LitterPlayground from "@/components/LitterPlayground.astro";
 import "@/styles/global.css";
-
-// 1. 尝试读取所有的日志文件 (假设它们存放在 src/pages/notes/ 下，且后缀为 .md)
-// 注意：如果目前没有文件，可能会抛出警告，建议在 notes 目录下至少放一个测试用的 .md 文件。
-let allLogs = [];
-try {
-  // 使用 import.meta.glob 以提供更安全的动态读取方案
-  const matches = import.meta.glob('./notes/*.md', { eager: true });
-  allLogs = Object.values(matches);
-} catch (e) {
-  console.warn("未找到日志文件或读取失败");
-}
-
-// 2. 按日期倒序排列（最新的在最上面）
-const sortedLogs = allLogs.sort((a, b) => {
-  const dateA = new Date(a.frontmatter.date || 0).valueOf();
-  const dateB = new Date(b.frontmatter.date || 0).valueOf();
-  return dateB - dateA; // 降序
-});
-
-// 3. 截取最新的 5 篇
-const recentLogs = sortedLogs.slice(0, 5);
-
-// 4. 预定义 5 种极具像素风格的散落卡片样式和封面种子
-const cardStyles = [
-  "z-10 -rotate-6 -translate-x-40 -translate-y-10",
-  "z-20 rotate-12 translate-x-32 translate-y-8",
-  "z-30 -rotate-3 -translate-x-10 translate-y-32",
-  "z-40 rotate-6 -translate-x-36 translate-y-48",
-  "z-50 -rotate-12 translate-x-20 translate-y-60"
-];
-const coverSeeds = ["Journal", "CSS", "Battery", "Pixel", "Code"];
 ---
 
 <html lang="zh-CN">
@@ -49,99 +19,64 @@ const coverSeeds = ["Journal", "CSS", "Battery", "Pixel", "Code"];
 
     <div class="relative z-10 flex flex-col min-h-screen">
       
-      <header class="sticky top-0 z-50 w-full py-6 bg-[#f0f0f0]/90 backdrop-blur-md border-b-4 border-black">
-        <div class="max-w-[1200px] mx-auto px-10 flex items-center justify-between">
-          <a href="/" class="text-4xl font-bold no-underline tracking-widest">
+      <header class="sticky top-0 z-50 w-full py-4 sm:py-6 bg-[#f0f0f0]/90 backdrop-blur-md border-b-4 border-black">
+        <div class="max-w-[1200px] mx-auto px-4 sm:px-10 flex items-center justify-between">
+          <a href="/" class="text-2xl sm:text-4xl font-bold no-underline tracking-widest shrink-0">
             <span class="text-blue-600">D</span>y<span class="text-green-500">st</span>ate<span class="text-yellow-500">_</span>
           </a>
-
           <nav class="flex-1 flex justify-center">
             <AppMenuBar client:load />
           </nav>
-
-          <div class="w-[150px] text-right flex justify-end">
-             <span class="text-base bg-black text-white border-2 border-black px-3 py-1 font-mono tracking-tight shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">793400999@qq.com</span>
+          <div class="hidden sm:flex min-w-[180px] text-right justify-end shrink-0">
+             <span class="text-base bg-black text-white border-2 border-black px-3 py-1 font-mono tracking-tight shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">
+                793400999@qq.com
+             </span>
           </div>
         </div>
       </header>
 
       <main class="flex-1 flex flex-col w-full">
         
-        <section class="min-h-[85vh] flex flex-col items-center justify-center p-10">
-          <div class="relative mb-8">
-            <div class="w-48 h-48 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] flex items-center justify-center animate-bounce">
-              <img src="/avatar.svg" alt="Pixel Avatar" class="w-40 h-40" style="image-rendering: pixelated;" />
-            </div>
+        <section class="relative h-screen flex flex-col items-center justify-center p-10 overflow-hidden border-b-4 border-black">
+          
+          <div class="absolute inset-0 z-0">
             
-            <div class="absolute -top-10 -right-20 bg-black text-white px-4 py-2 text-xl rounded-none after:content-[''] after:absolute after:top-full after:left-4 after:border-8 after:border-transparent after:border-t-black">
-              你好，地球人！
+            <video autoplay loop muted playsinline class="hidden sm:block w-full h-full object-cover">
+              <source src="/videos/backgroundH.mp4" type="video/mp4" />
+            </video>
+
+            <video autoplay loop muted playsinline class="block sm:hidden w-full h-full object-cover">
+              <source src="/videos/backgroundS.mp4" type="video/mp4" />
+            </video>
+
             </div>
-          </div>
 
-          <div class="text-center space-y-4">
-            <h1 class="text-6xl font-bold text-slate-900">DYSTATE</h1>
-            <p class="text-2xl text-slate-500 max-w-md mx-auto">
-              感受 / 记录 / 表达 / 创造
-            </p>
-            <div class="flex gap-4 justify-center mt-6">
-               <a
-                  href="/about"
-                  class="bg-blue-600 text-white px-8 py-2 text-2xl hover:bg-black transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
-                  >关于我
-               </a>
-            </div>
-          </div>
-        </section>
-
-        <section class="min-h-[80vh] flex flex-col items-center py-20 border-t-8 border-dashed border-slate-300 relative">
-           
-           <div class="flex flex-col items-center mb-16">
-              <h2 class="text-4xl font-bold bg-black text-white px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">RECENT LOGS</h2>
-           </div>
-
-           <div class="w-full max-w-5xl flex flex-wrap justify-center gap-8 px-4">
+          <div class="relative z-10 flex flex-col items-center">
+            
+            <div class="relative mb-8 mt-10 sm:mt-0">
+              <div class="w-40 h-40 sm:w-48 sm:h-48 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] flex items-center justify-center animate-bounce">
+                <img src="/avatar.svg" alt="Pixel Avatar" class="w-32 h-32 sm:w-40 sm:h-40" style="image-rendering: pixelated;" />
+              </div>
               
-              {Array.from({ length: 3 }).map((_, index) => {
-                const log = recentLogs[index];
-                const seed = coverSeeds[index] || "Default";
+              <div class="absolute -top-12 -right-4 sm:-top-10 sm:-right-20 bg-black border-2 border-white text-white px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-xl rounded-none after:content-[''] after:absolute after:top-full after:left-4 after:border-8 after:border-transparent after:border-t-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]">
+                你好，地球人！
+              </div>
+            </div>
 
-                if (log) {
-                  return (
-                    <a href={log.url} class="w-72 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-4 group hover:-translate-y-2 transition-transform duration-300">
-                       {/* 强制 1:1 图片容器 */}
-                       <div class="w-full aspect-square border-2 border-black mb-4 overflow-hidden flex items-center justify-center bg-blue-50">
-                         <img src={`https://api.dicebear.com/7.x/shapes/svg?seed=${seed}`} class="w-full h-full object-cover scale-110" style="image-rendering: pixelated;" />
-                       </div>
-                       <div class="flex justify-between items-center mb-2 font-sans">
-                         <span class="bg-black text-white text-xs px-2 py-0.5">{log.frontmatter.category || "LOG"}</span>
-                         <span class="text-slate-500 text-xs">{log.frontmatter.date || "未知"}</span>
-                       </div>
-                       <h3 class="text-xl font-bold text-slate-900 group-hover:text-blue-600 line-clamp-2 font-sans">{log.frontmatter.title || "无标题"}</h3>
-                    </a>
-                  );
-                } else {
-                  return (
-                    <div class="w-72 bg-[#f8f9fa] border-4 border-dashed border-slate-300 p-4 flex flex-col items-center justify-center min-h-[350px]">
-                       <span class="text-2xl font-bold text-slate-300 font-sans">暂无内容</span>
-                    </div>
-                  );
-                }
-              })}
-           </div>
-
-           <a 
-             href="/notes" 
-             class="mt-16 bg-yellow-400 border-4 border-black text-black px-8 py-3 text-2xl font-bold hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none"
-           >
-             查看全部日志
-           </a>
+            </div>
+          </div>
         </section>
+
+        <section class="max-w-[1200px] mx-auto w-full px-4 sm:px-10 mt-10 pb-20">
+           <LitterPlayground />
+        </section>
+      
       </main>
 
-      <footer class="p-10 text-center text-slate-400 text-xl border-t-4 border-black bg-white">
+      <footer class="p-8 sm:p-10 text-center text-slate-400 text-lg sm:text-xl border-t-4 border-black bg-white">
         © 2026 DYSTATE. 
       </footer>
 
     </div>
   </body>
-</html>
+</html> 

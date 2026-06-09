@@ -1,0 +1,190 @@
+---
+// src/components/LitterPlayground.astro
+
+// 【核心修复】：使用相对路径，并改用更安全的 import.meta.glob 防崩溃
+let litters = [];
+try {
+  const matches = import.meta.glob('../litter/*.md', { eager: true });
+  litters = Object.values(matches);
+} catch (e) {
+  console.warn("未找到纸团文件");
+}
+---
+
+<div class="my-16">
+  <h2 class="text-3xl font-bold bg-black text-white px-6 py-2 inline-block mb-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] font-mono tracking-widest">
+    TRASH_BIN.EXE
+  </h2>
+
+  <div id="playground" class="relative w-full h-[500px] border-4 border-black bg-[#fdfdfd] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden cursor-crosshair touch-none select-none">
+    
+    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 30px 30px;"></div>
+
+    <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none font-bold text-4xl sm:text-6xl font-sans tracking-widest">
+        DRAG ME AROUND
+    </div>
+
+    <div id="paper-balls-layer" class="absolute inset-0 z-10 pointer-events-none"></div>
+
+    <div id="trash-can" class="absolute w-20 h-28 z-50 cursor-grab active:cursor-grabbing transform -translate-x-1/2 -translate-y-1/2" style="left: 50%; top: 50%;">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-[4px_4px_0px_rgba(0,0,0,0.3)]" style="image-rendering: pixelated;">
+        <rect x="8" y="10" width="16" height="18" fill="#d1d5db" stroke="black" stroke-width="2"/>
+        <rect x="6" y="6" width="20" height="4" fill="#9ca3af" stroke="black" stroke-width="2"/>
+        <rect x="12" y="2" width="8" height="4" fill="#9ca3af" stroke="black" stroke-width="2"/>
+        <line x1="12" y1="14" x2="12" y2="24" stroke="black" stroke-width="2"/>
+        <line x1="16" y1="14" x2="16" y2="24" stroke="black" stroke-width="2"/>
+        <line x1="20" y1="14" x2="20" y2="24" stroke="black" stroke-width="2"/>
+      </svg>
+    </div>
+  </div>
+
+  <div id="litter-templates" class="hidden">
+    {litters.map((litter, index) => {
+      // 兼容 import.meta.glob 的组件读取方式
+      const Content = litter.default || litter.Content;
+      return (
+        <template id={`litter-tpl-${index}`}>
+          <div class="mb-4 border-b-4 border-black pb-4">
+              <h3 class="text-3xl font-bold font-['Zhi_Mang_Xing']">{litter.frontmatter?.title || "未命名的纸团"}</h3>
+          </div>
+          <div class="prose prose-slate prose-lg max-w-none font-['Caveat'] leading-relaxed">
+              {Content && <Content />}
+          </div>
+        </template>
+      );
+    })}
+  </div>
+
+  <div id="litter-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+    <div id="modal-bg" class="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"></div>
+    <div class="relative w-full max-w-2xl bg-[#fdfdfd] border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col max-h-[80vh] transform scale-95 opacity-0 transition-all duration-200 ease-out" id="modal-panel">
+      <div class="bg-black text-white px-4 py-2 flex justify-between items-center shrink-0">
+        <span class="font-bold tracking-widest font-mono">PAPER_LITTER.TXT</span>
+        <button id="close-modal" class="w-6 h-6 bg-white border-2 border-black text-black flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors font-bold shrink-0">
+            X
+        </button>
+      </div>
+      <div id="modal-content" class="p-6 sm:p-10 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/paper.png')]">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const trashCan = document.getElementById('trash-can');
+    const playground = document.getElementById('playground');
+    const layer = document.getElementById('paper-balls-layer');
+    const templates = document.querySelectorAll('#litter-templates template');
+    
+    const modal = document.getElementById('litter-modal');
+    const modalBg = document.getElementById('modal-bg');
+    const closeModalBtn = document.getElementById('close-modal');
+    const modalContent = document.getElementById('modal-content');
+    const modalPanel = document.getElementById('modal-panel');
+
+    let isDragging = false;
+    let lastSpawnX = 0;
+    let lastSpawnY = 0;
+    const spawnThreshold = 100; 
+
+    if (templates.length === 0) return;
+
+    trashCan.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      trashCan.setPointerCapture(e.pointerId);
+      lastSpawnX = e.clientX;
+      lastSpawnY = e.clientY;
+    });
+
+    playground.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+
+      const rect = playground.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
+
+      x = Math.max(20, Math.min(x, rect.width - 20));
+      y = Math.max(30, Math.min(y, rect.height - 30));
+
+      trashCan.style.left = `${x}px`;
+      trashCan.style.top = `${y}px`;
+
+      const distance = Math.hypot(e.clientX - lastSpawnX, e.clientY - lastSpawnY);
+      
+      if (distance > spawnThreshold) {
+        spawnPaperBall(x, y);
+        lastSpawnX = e.clientX;
+        lastSpawnY = e.clientY;
+      }
+    });
+
+    playground.addEventListener('pointerup', () => isDragging = false);
+    playground.addEventListener('pointercancel', () => isDragging = false);
+
+    function spawnPaperBall(x, y) {
+      const randomIndex = Math.floor(Math.random() * templates.length);
+      const ball = document.createElement('div');
+      ball.className = `absolute w-8 h-8 cursor-pointer drop-shadow-md animate-pop-out pointer-events-auto hover:scale-110 transition-transform`;
+      
+      const offsetX = (Math.random() - 0.5) * 60;
+      const offsetY = (Math.random() - 0.5) * 60;
+      const rotate = Math.random() * 360;
+
+      ball.style.left = `${x + offsetX}px`;
+      ball.style.top = `${y + offsetY}px`;
+      ball.style.transform = `translate(-50%, -50%) rotate(${rotate}deg)`;
+
+      ball.innerHTML = `
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated;" class="w-full h-full">
+          <path d="M6 2 H10 V4 H14 V10 H12 V14 H6 V12 H2 V6 H4 V2 Z" fill="#f8f9fa" stroke="black" stroke-width="1.5"/>
+          <path d="M6 6 H10 M4 8 H8 M8 10 H12" stroke="#d1d5db" stroke-width="1.5"/>
+        </svg>
+      `;
+
+      ball.addEventListener('click', () => openModal(randomIndex));
+      layer.appendChild(ball);
+
+      if (layer.children.length > 15) {
+        layer.removeChild(layer.firstElementChild);
+      }
+    }
+
+    function openModal(index) {
+      const template = document.getElementById(`litter-tpl-${index}`);
+      if (!template) return;
+
+      modalContent.innerHTML = '';
+      modalContent.appendChild(template.content.cloneNode(true));
+      
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modalPanel.classList.remove('scale-95', 'opacity-0');
+        modalPanel.classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function closeModal() {
+      modalPanel.classList.remove('scale-100', 'opacity-100');
+      modalPanel.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        modalContent.innerHTML = '';
+      }, 200);
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    modalBg.addEventListener('click', closeModal);
+  });
+</script>
+
+<style>
+  @keyframes pop-out {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.2) rotate(180deg); }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(var(--rotate, 45deg)); opacity: 1; }
+  }
+  .animate-pop-out {
+    animation: pop-out 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+</style>
