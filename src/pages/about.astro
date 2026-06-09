@@ -1,5 +1,5 @@
 ---
-// src/pages/about.astro (响应式完美适配版)
+// src/pages/about.astro (指针绝对锁定 + 移动端自适应终极版)
 import "@/styles/global.css";
 
 const pageData = [
@@ -40,6 +40,7 @@ const pageData = [
   }
 ];
 
+// 40°完美等分数据
 const dialItems = [
   { angle: -160, target: "photo", label: "Photo" },
   { angle: -120, target: "home", label: "Home" },
@@ -83,14 +84,14 @@ const dialItems = [
       <a href="#" class="hover:text-black transition-colors">Obsidian</a>
     </div>
 
-    <div id="stage-container" class="w-full h-full relative z-10 px-6 lg:px-12 pt-24 lg:pt-32 pb-[180px] lg:pb-[160px]">
+    <div id="stage-container" class="w-full h-full relative z-10 px-6 lg:px-12 pt-24 lg:pt-32 pb-[160px]">
       {pageData.map((page) => (
         <main 
           id={"page-" + page.id} 
-          class={"absolute inset-0 px-6 lg:px-12 pt-24 lg:pt-32 pb-[180px] lg:pb-[160px] flex flex-col lg:flex-row justify-start lg:justify-between items-center lg:items-stretch transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.3,1)] overflow-y-auto lg:overflow-visible " + (page.id === 'about' ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-[0.98]')}
+          class={"absolute inset-0 px-6 lg:px-12 pt-24 lg:pt-32 pb-[160px] flex flex-col lg:flex-row justify-start lg:justify-between items-center lg:items-stretch transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.3,1)] " + (page.id === 'about' ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-[0.98]')}
         >
           
-          <div class="w-[60%] sm:w-[45%] lg:w-[35%] h-[35vh] lg:h-[65vh] mt-4 lg:mt-4 shadow-2xl overflow-hidden order-1 lg:order-2 shrink-0">
+          <div class="w-[50%] sm:w-[40%] lg:w-[35%] h-[32vh] lg:h-[65vh] mt-2 lg:mt-4 shadow-2xl overflow-hidden order-1 lg:order-2 shrink-0">
             <img 
               src={page.img} 
               alt="Editorial" 
@@ -98,14 +99,14 @@ const dialItems = [
             />
           </div>
 
-          <div class="w-full lg:w-[55%] h-auto lg:h-full flex flex-col justify-start lg:justify-between relative order-2 lg:order-1 mt-6 lg:mt-0">
+          <div class="w-full lg:w-[55%] h-auto lg:h-full flex flex-col justify-start lg:justify-between relative order-2 lg:order-1 mt-4 lg:mt-0 min-h-0 overflow-y-auto lg:overflow-visible">
             
-            <div class="max-w-full lg:max-w-[40rem] mt-2 lg:mt-6 text-center lg:text-left">
-              <h1 class="font-['Playfair_Display'] text-[1.8rem] lg:text-[3rem] xl:text-[3.6rem] leading-[1.1] text-[#111] tracking-tight font-normal" set:html={page.title}>
+            <div class="max-w-full lg:max-w-[40rem] mt-1 lg:mt-6 text-center lg:text-left">
+              <h1 class="font-['Playfair_Display'] text-[1.6rem] sm:text-[2rem] lg:text-[3rem] xl:text-[3.6rem] leading-[1.15] text-[#111] tracking-tight font-normal" set:html={page.title}>
               </h1>
             </div>
 
-            <div class="flex flex-col lg:flex-row items-center lg:items-end gap-2 lg:gap-6 mt-4 lg:mb-4">
+            <div class="flex flex-col lg:flex-row items-center lg:items-end gap-2 lg:gap-6 mt-3 lg:mb-4">
               <div class="hidden lg:flex w-[90px] h-[120px] bg-white shrink-0 shadow-md border border-black/10 items-center justify-center p-2 relative overflow-hidden">
                  <img src="/avatar.svg" alt="Portrait" class="w-full h-full object-cover grayscale brightness-90 border-2 border-black/10 shadow-inner" />
               </div>
@@ -131,7 +132,7 @@ const dialItems = [
     </div>
 
 
-    <div class="absolute bottom-[10px] left-1/2 -translate-x-1/2 w-[300px] h-[120px] pointer-events-none z-[110]">
+    <div class="absolute bottom-[10px] left-1/2 -translate-x-1/2 w-[300px] h-[120px] pointer-events-none z-[120]">
         <svg viewBox="0 0 300 120" class="w-full h-full overflow-visible">
             <circle cx="150" cy="100" r="4" fill="#111" />
             <line x1="150" y1="100" x2="150" y2="45" stroke="#111" stroke-width="2.4" />
@@ -139,6 +140,7 @@ const dialItems = [
             <line x1="150" y1="100" x2="175" y2="75" stroke="#111" stroke-width="1.2" opacity="0.3" />
         </svg>
     </div>
+
 
     <div class="absolute bottom-[-320px] left-1/2 -translate-x-1/2 w-[440px] h-[440px] z-100 pointer-events-none">
         <div id="dial-wheel" class="relative w-full h-full transition-transform duration-[1000ms] cubic-bezier(0.22, 1, 0.36, 1)">
@@ -161,17 +163,15 @@ const dialItems = [
 </html>
 
 <style is:global>
-  /* 隐藏在手机端滑动产生的滚动条，但保留滚动功能 */
-  ::-webkit-scrollbar {
-    display: none;
-  }
-  
+  /* 隐藏多余滚动条 */
+  ::-webkit-scrollbar { display: none; }
+
   .dial-word {
     position: absolute;
     left: 50%;
     top: 20px; 
-    transform-origin: 50% 200px; 
-    font-size: 13px; 
+    transform-origin: 50% 200px; /* 完美 200px 旋转半径 */
+    font-size: 12px; 
     text-transform: uppercase;
     letter-spacing: 0.25em;
     font-weight: 600;
