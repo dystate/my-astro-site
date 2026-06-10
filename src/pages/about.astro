@@ -1,5 +1,9 @@
 ---
+<<<<<<< HEAD
 // src/pages/about.astro
+=======
+// src/pages/about.astro (35° 紧凑齿轮 + 移动端自适应版)
+>>>>>>> 383b72f8455725ba5c63ea1c8d0e11ff2e7756eb
 import "@/styles/global.css";
 
 const pageData = [
@@ -40,6 +44,7 @@ const pageData = [
   }
 ];
 
+<<<<<<< HEAD
 // 菜单项按角度排列在弧线上（角度从圆心出发，单位：度）
 // 圆心藏在页面底边以下，菜单项沿上半圆弧展开
 // -180°=最左端, -90°=正上方, 0°=最右端
@@ -49,6 +54,21 @@ const pointerItems = [
   { id: "home",    label: "Home",    angleDeg: -68  },
   { id: "books",   label: "Books",   angleDeg: -30  },
   { id: "archive", label: "Archive", angleDeg: -8   },
+=======
+// 【核心修改】：35° 完美等分阵列。覆盖更密集的圆周，保证视野内紧凑无留白。
+const dialItems = [
+  { angle: -150, target: "about", label: "About" },
+  { angle: -120, target: "photo", label: "Photo" },
+  { angle: -90, target: "home", label: "Home" },
+  { angle: -60, target: "books", label: "Books" },
+  { angle: -30, target: "archive", label: "Archive" },
+  { angle: 0, target: "about", label: "About" },
+  { angle: 30, target: "photo", label: "Photo" },
+  { angle: 60, target: "home", label: "Home" },
+  { angle: 90, target: "books", label: "Books" },
+  { angle: 120, target: "archive", label: "Archive" },
+  { angle: 150, target: "about", label: "About" }
+>>>>>>> 383b72f8455725ba5c63ea1c8d0e11ff2e7756eb
 ];
 ---
 
@@ -103,6 +123,8 @@ const pointerItems = [
               <h1 class="font-['Playfair_Display'] text-[1.6rem] sm:text-[2rem] lg:text-[3rem] xl:text-[3.6rem] leading-[1.15] text-[#111] tracking-tight font-normal" set:html={page.title}>
               </h1>
             </div>
+<<<<<<< HEAD
+=======
 
             <div class="flex flex-col lg:flex-row items-center lg:items-end gap-2 lg:gap-6 mt-3 lg:mb-4">
               <div class="hidden lg:flex w-[90px] h-[120px] bg-white shrink-0 shadow-md border border-black/10 items-center justify-center p-2 relative overflow-hidden">
@@ -129,6 +151,62 @@ const pointerItems = [
       Site by Dystate
     </div>
 
+
+    <div class="fixed bottom-0 left-0 w-full h-[140px] lg:h-[250px] overflow-hidden pointer-events-none z-[100]">
+        
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] z-10">
+            <svg viewBox="0 0 200 100" class="w-full h-full overflow-visible">
+                <circle cx="100" cy="100" r="4" fill="#111" />
+                <line x1="100" y1="100" x2="100" y2="40" stroke="#111" stroke-width="2.4" />
+                <line x1="100" y1="100" x2="75" y2="70" stroke="#111" stroke-width="1.2" opacity="0.3" />
+                <line x1="100" y1="100" x2="125" y2="70" stroke="#111" stroke-width="1.2" opacity="0.3" />
+            </svg>
+        </div>
+
+        <div class="absolute left-1/2 -translate-x-1/2 translate-y-1/2 w-[700px] h-[700px] bottom-[-230px] lg:w-[440px] lg:h-[440px] lg:bottom-0">
+            <div id="dial-wheel" class="relative w-full h-full transition-transform duration-[1000ms] cubic-bezier(0.22, 1, 0.36, 1)">
+                
+                {dialItems.map((item) => (
+                    <div 
+                      class={"dial-word " + (item.target === 'about' && item.angle === 0 ? 'active' : '')} 
+                      style={"transform: rotate(" + item.angle + "deg);"} 
+                      data-angle={item.angle} 
+                      data-target={item.target}
+                    >
+                        <div class="cursor-pointer"><span>{item.label}</span></div>
+                    </div>
+                ))}
+
+            </div>
+        </div>
+>>>>>>> 383b72f8455725ba5c63ea1c8d0e11ff2e7756eb
+
+            <div class="flex flex-col lg:flex-row items-center lg:items-end gap-2 lg:gap-6 mt-3 lg:mb-4">
+              <div class="hidden lg:flex w-[90px] h-[120px] bg-white shrink-0 shadow-md border border-black/10 items-center justify-center p-2 relative overflow-hidden">
+                 <img src="/avatar.svg" alt="Portrait" class="w-full h-full object-cover grayscale brightness-90 border-2 border-black/10 shadow-inner" />
+              </div>
+              <div class="pb-1 text-center lg:text-left">
+                <p class="hidden lg:block text-[10px] uppercase tracking-[0.2em] text-black/40 font-bold mb-1">{page.subtitle}</p>
+                <p class="w-full max-w-[90%] lg:max-w-[260px] mx-auto lg:mx-0 text-[11px] lg:text-[12px] leading-[1.6] text-black/70 font-medium">
+                  {page.desc}
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+        </main>
+      ))}
+    </div>
+
+<<<<<<< HEAD
+    <div class="absolute bottom-4 lg:bottom-8 left-4 lg:left-10 text-[7px] lg:text-[9px] tracking-[0.2em] uppercase text-black/40 z-20 font-semibold">
+      © All rights reserved. 2026
+    </div>
+    <div class="absolute bottom-4 lg:bottom-8 right-4 lg:right-10 text-[7px] lg:text-[9px] tracking-[0.2em] uppercase text-black/40 z-20 font-semibold">
+      Site by Dystate
+    </div>
+
     <!-- 指针转盘导航：完全复刻 meech213 样式 -->
     <!-- 圆心藏在页面底边下方，菜单项沿弧线散布，指针跟随鼠标，点击才切换页面 -->
     <div id="pointer-nav" class="fixed bottom-0 left-0 w-full z-[100]" style="height: 220px;">
@@ -146,12 +224,15 @@ const pointerItems = [
       ))}
     </div>
 
+=======
+>>>>>>> 383b72f8455725ba5c63ea1c8d0e11ff2e7756eb
   </body>
 </html>
 
 <style is:global>
   ::-webkit-scrollbar { display: none; }
 
+<<<<<<< HEAD
   .dial-item {
     position: absolute;
     font-family: 'Inter', sans-serif;
@@ -182,10 +263,61 @@ const pointerItems = [
   @media (min-width: 1024px) {
     .dial-item        { font-size: 11px; }
     .dial-item.active { font-size: 16px; }
+=======
+  /* ---------------------------------
+     手机端: 巨型平盘 + 更密集的 35°
+     --------------------------------- */
+  .dial-word {
+    position: absolute;
+    left: 50%;
+    top: 20px; 
+    transform-origin: 50% 330px; /* 330px 超大半径维持黄线平缓感 */
+    font-size: 11px; 
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-weight: 600;
+    width: 120px;
+    text-align: center;
+    margin-left: -60px;
+    user-select: none;
+    pointer-events: auto;
+  }
+
+  .dial-word span {
+    display: inline-block;
+    transition: transform 1000ms cubic-bezier(0.22, 1, 0.36, 1), font-size 0.4s, color 0.4s;
+    color: rgba(0,0,0,0.25);
+  }
+
+  .dial-word:hover span {
+    color: rgba(0,0,0,0.8);
+  }
+
+  .dial-word.active span {
+    font-size: 16px; 
+    font-weight: 800;
+    color: #111;
+  }
+
+  /* ---------------------------------
+     电脑端: 200px 半径标准盘
+     --------------------------------- */
+  @media (min-width: 1024px) {
+    .dial-word {
+      transform-origin: 50% 200px;
+      font-size: 13px;
+      width: 140px;
+      margin-left: -70px;
+    }
+    .dial-word.active span {
+      font-size: 20px;
+    }
+>>>>>>> 383b72f8455725ba5c63ea1c8d0e11ff2e7756eb
   }
 </style>
 
 <script>
+<<<<<<< HEAD
 document.addEventListener('DOMContentLoaded', () => {
   const navEl    = document.getElementById('pointer-nav');
   const canvas   = document.getElementById('pointer-canvas');
@@ -356,3 +488,49 @@ document.addEventListener('DOMContentLoaded', () => {
   tick();
 });
 </script>
+=======
+  document.addEventListener('DOMContentLoaded', () => {
+    const wheel = document.getElementById('dial-wheel');
+    const items = document.querySelectorAll('.dial-word');
+    const spans = document.querySelectorAll('.dial-word span');
+    const allPages = document.querySelectorAll('main[id^="page-"]');
+
+    function initTypography() {
+        items.forEach(item => {
+            const angle = parseFloat(item.getAttribute('data-angle'));
+            const span = item.querySelector('span');
+            span.style.transform = `rotate(${-angle}deg)`;
+        });
+    }
+
+    initTypography();
+
+    items.forEach(item => {
+        item.addEventListener('click', () => {
+            const targetAngle = parseFloat(item.getAttribute('data-angle'));
+            const targetPageId = item.getAttribute('data-target');
+
+            wheel.style.transform = `rotate(${-targetAngle}deg)`;
+
+            spans.forEach((span, index) => {
+                const originalWordAngle = parseFloat(items[index].getAttribute('data-angle'));
+                span.style.transform = `rotate(${targetAngle - originalWordAngle}deg)`;
+            });
+
+            items.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            allPages.forEach(page => {
+                if(page.id === `page-${targetPageId}`) {
+                    page.classList.remove('opacity-0', 'pointer-events-none', 'scale-[0.98]');
+                    page.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
+                } else {
+                    page.classList.remove('opacity-100', 'pointer-events-auto', 'scale-100');
+                    page.classList.add('opacity-0', 'pointer-events-none', 'scale-[0.98]');
+                }
+            });
+        });
+    });
+  });
+</script>
+>>>>>>> 383b72f8455725ba5c63ea1c8d0e11ff2e7756eb
