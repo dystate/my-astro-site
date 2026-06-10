@@ -1,0 +1,62 @@
+---
+// GazeGallery.astro —— 用 CSS Grid 布局,避免卡片塌缩
+import GazeCard from "./GazeCard.astro";
+
+const cards = [
+  {
+    href: "/works/01",
+    image: "/images/art-01.jpg",
+    // hoverImage: "/images/hover-01.png",
+    eyebrow: "Three Gazes",  titleJa: "三位の視線",  subtitle: "想像力の飛翔",  coords: "36.2048° N / 138.2529° E",
+  },
+  {
+    href: "/works/02",
+    image: "/images/art-02.jpg",
+    // hoverImage: "/images/hover-02.png",
+    eyebrow: "Second Gaze",  titleJa: "夢のまなざし",  subtitle: "自然のまなざし",  coords: "35.0116° N / 135.7681° E",
+  },
+  {
+    href: "/works/03",
+    image: "/images/art-03.jpg",
+    // hoverImage: "/images/hover-03.png",
+    eyebrow: "Third Gaze",  titleJa: "光と影",  subtitle: "京都が生んだ巨匠",  coords: "34.6937° N / 135.5023° E",
+  },
+  {
+    href: "/works/04",
+    image: "/images/art-04.jpg",
+    // hoverImage: "/images/hover-04.png",
+    eyebrow: "Fourth Gaze",  titleJa: "色の記憶",  subtitle: "須田国太郎へのオマージュ",  coords: "35.6762° N / 139.6503° E",
+  },
+  {
+    href: "/works/05",
+    image: "/images/art-05.jpg",
+    // hoverImage: "/images/hover-05.png",
+    eyebrow: "Fifth Gaze",  titleJa: "静かな炎",  subtitle: "閉館日を除く",  coords: "43.0618° N / 141.3545° E",
+  },
+];
+---
+
+<section class="gaze-gallery" aria-label="作品一覧">
+  {cards.map((c, i) => <GazeCard {...c} index={i + 1} />)}
+</section>
+
+<style>
+  .gaze-gallery {
+    display: grid;
+    /* 电脑:5 列等宽。minmax(0,1fr) 防止内容把列撑爆 */
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* 手机:单列竖排 */
+  @media (max-width: 768px) {
+    .gaze-gallery {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      max-width: 420px;
+    }
+  }
+</style>

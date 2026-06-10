@@ -1,0 +1,66 @@
+---
+// src/pages/index.astro — 使用示例
+// 布局:页面顶部正中放 logo,5 张卡片整体垂直居中。背景灰白色。
+import GazeGallery from "../components/GazeGallery.astro";
+import "@/styles/global.css";
+---
+
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dystate</title>
+    <style is:global>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #e7e4de;              /* 灰白色背景 */
+        font-family: "Helvetica Neue", Arial, sans-serif;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .site-logo {
+        margin: 40px 0 0;                 /* 顶部留白 */
+        display: block;
+      }
+      .site-logo img {
+        height: 56px;                     /* logo 大小,按需调 */
+        width: auto;
+        display: block;
+      }
+      .stage {
+        flex: 1;                          /* 占满剩余高度 */
+        width: 100%;
+        display: flex;
+        align-items: center;              /* 卡片垂直居中 */
+        justify-content: center;
+        padding: 24px;
+      }
+      @media (max-width: 768px) {
+        .site-logo { margin-top: 28px; }
+        .site-logo img { height: 44px; }
+        .stage { padding: 16px; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <header class="fixed top-8 left-1/2 -translate-x-1/2 z-50">
+        <a
+        href="/"
+        class="text-3xl font-bold no-underline tracking-[0.15em]"
+    >
+        <span class="text-blue-600">D</span>y<span class="text-green-500">st</span>ate<span class="text-yellow-500">_</span>
+    </a>
+    </header>
+
+    <!-- 卡片整体垂直居中 -->
+    <main class="stage">
+      <GazeGallery />
+    </main>
+  </body>
+</html>

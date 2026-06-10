@@ -1,0 +1,219 @@
+---
+// GazeCard.astro
+// 图层:网格底 + 画作 + 常驻测量标记 + 悬停显影层
+// 悬停层有两种:① 传入 hoverImage(你自己画的 PNG)→ 显示该图;② 不传 → 用内置文字海报层
+// 点击整张卡片跳转 href
+
+export interface Props {
+  href: string;
+  image: string;                 // 画作底图
+  imageAlt?: string;
+  hoverImage?: string;           // 悬停时显影的 PNG(建议 3:4,透明背景)
+  hoverAlt?: string;
+  eyebrow?: string;
+  titleJa?: string;
+  subtitle?: string;
+  coords?: string;
+  index?: number;
+  newTab?: boolean;
+}
+
+const {
+  href,
+  image,
+  imageAlt = "",
+  hoverImage,
+  hoverAlt = "",
+  eyebrow = "Three Gazes",
+  titleJa = "三位の視線",
+  subtitle = "想像力の飛翔",
+  coords = "36.2048° N / 138.2529° E",
+  index = 1,
+  newTab = false,
+} = Astro.props;
+
+const target = newTab ? "_blank" : undefined;
+const rel = newTab ? "noopener noreferrer" : undefined;
+const hasHoverImg = Boolean(hoverImage);
+---
+
+<a
+  class:list={["gaze-card", { "has-hover-img": hasHoverImg }]}
+  href={href}
+  target={target}
+  rel={rel}
+  data-index={index}
+  aria-label={`${eyebrow} — ${titleJa}`}
+>
+  <!-- 1. 底层:网格 -->
+  <div class="layer layer--grid" aria-hidden="true"></div>
+
+  <!-- 2. 画作图层(默认略斜,悬停归位) -->
+  <div class="layer layer--art">
+    <img src={image} alt={imageAlt} loading="lazy" decoding="async" />
+    <div class="art-maze" aria-hidden="true"></div>
+  </div>
+
+  <!-- 3. 常驻装饰:测量标记层 -->
+  <svg class="layer layer--marks" viewBox="0 0 300 400" aria-hidden="true">
+    <g class="mk" stroke="currentColor" stroke-width="1" fill="none">
+      <path d="M14 30 v-16 h16" /><path d="M286 30 v-16 h-16" />
+      <path d="M14 370 v16 h16" /><path d="M286 370 v16 h-16" />
+    </g>
+    <g class="mk" fill="currentColor">
+      <rect x="14" y="14" width="34" height="2.5" /><rect x="14" y="19" width="48" height="2.5" />
+      <rect x="14" y="24" width="26" height="2.5" /><rect x="14" y="29" width="40" height="2.5" />
+    </g>
+    <g class="mk" stroke="currentColor" stroke-width="1">
+      <line x1="22" y1="150" x2="22" y2="250" />
+      <line x1="18" y1="160" x2="26" y2="160" /><text x="30" y="163">40</text>
+      <line x1="18" y1="180" x2="26" y2="180" /><text x="30" y="183">30</text>
+      <line x1="18" y1="200" x2="26" y2="200" /><text x="30" y="203">20</text>
+      <line x1="18" y1="220" x2="26" y2="220" /><text x="30" y="223">10</text>
+      <line x1="18" y1="240" x2="26" y2="240" /><text x="30" y="243">0</text>
+    </g>
+    <text class="mk-letter" x="60" y="62">h</text>
+    <text class="mk-letter" x="248" y="62">a</text>
+    <text class="mk-letter" x="60" y="356">l</text>
+    <text class="mk-coord" x="286" y="356" text-anchor="end">{coords}</text>
+    <text class="mk-coord" x="14" y="356">№ {String(index).padStart(2, "0")}</text>
+    <g class="mk" transform="translate(258 18)">
+      <text class="mk-seal" x="0" y="12">羊</text><text class="mk-seal" x="14" y="12">八</text>
+    </g>
+    <g class="mk" stroke="currentColor" stroke-width="0.6" transform="translate(250 372)">
+      <g class="firework">
+        <line x1="0" y1="0" x2="0" y2="-12" /><line x1="0" y1="0" x2="9" y2="-9" />
+        <line x1="0" y1="0" x2="12" y2="0" /><line x1="0" y1="0" x2="9" y2="9" />
+        <line x1="0" y1="0" x2="0" y2="12" /><line x1="0" y1="0" x2="-9" y2="9" />
+        <line x1="0" y1="0" x2="-12" y2="0" /><line x1="0" y1="0" x2="-9" y2="-9" />
+      </g>
+    </g>
+  </svg>
+
+  <!-- 4a. 悬停显影:你自己画的 PNG(传了 hoverImage 才渲染) -->
+  {hasHoverImg && (
+    <div class="layer layer--hover-img">
+      <img src={hoverImage} alt={hoverAlt} loading="lazy" decoding="async" />
+    </div>
+  )}
+
+  <!-- 4b. 悬停显影:内置文字海报层(没传 hoverImage 时用) -->
+  {!hasHoverImg && (
+    <div class="layer layer--poster">
+      <span class="poster-eyebrow">{eyebrow}</span>
+      <h3 class="poster-title">{titleJa}</h3>
+      <p class="poster-sub" lang="ja">{subtitle}</p>
+      <div class="poster-rules" aria-hidden="true"></div>
+      <slot />
+      <span class="poster-cue">View →</span>
+    </div>
+  )}
+</a>
+
+<style>
+  .gaze-card {
+    --ink: #0e0b08;
+    --paper: #efe9dd;
+    --line: rgba(225, 215, 195, 0.16);
+    --line-strong: rgba(225, 215, 195, 0.34);
+    --bg: #1b1712;
+
+    position: relative;
+    display: block;
+    width: 100%;           /* 保险:任何容器里都先占满宽度,配合 aspect-ratio 得到高度,绝不塌成 0 */
+    aspect-ratio: 3 / 4;
+    background: var(--bg);
+    color: var(--paper);
+    overflow: hidden;
+    text-decoration: none;
+    isolation: isolate;
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .layer { position: absolute; inset: 0; }
+
+  .layer--grid {
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px),
+      linear-gradient(var(--line-strong) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-strong) 1px, transparent 1px);
+    background-size: 14px 14px, 14px 14px, 70px 70px, 70px 70px;
+    background-position: center;
+  }
+
+  .layer--art {
+    inset: 7% 8%;
+    transform: rotate(-1.6deg) scale(0.98);
+    transform-origin: center;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.5s ease;
+    overflow: hidden;
+  }
+  .layer--art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .art-maze {
+    position: absolute; inset: 0; opacity: 0; mix-blend-mode: screen;
+    transition: opacity 0.5s ease;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'><g fill='none' stroke='white' stroke-width='3'><path d='M6 6h32v32M6 6v26h26v-20H16v10h10'/></g></svg>");
+    background-size: 44px 44px;
+  }
+
+  .layer--marks { color: rgba(231, 222, 204, 0.62); pointer-events: none; }
+  .layer--marks text { font: 8px/1 ui-monospace, Menlo, monospace; fill: currentColor; }
+  .mk-letter { font-size: 9px; opacity: 0.7; }
+  .mk-coord { font-size: 7px; letter-spacing: 0.04em; }
+  .mk-seal { font: 11px/1 "Noto Serif JP", serif; fill: currentColor; }
+
+  /* 4a. 悬停 PNG 层 */
+  .layer--hover-img { opacity: 0; transition: opacity 0.45s ease; pointer-events: none; }
+  .layer--hover-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* 4b. 文字海报层 */
+  .layer--poster {
+    display: flex; flex-direction: column; padding: 14% 9% 9%;
+    color: var(--paper); opacity: 0; transform: translateY(8px);
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+  }
+  .poster-eyebrow {
+    font: 600 11px/1 "Helvetica Neue", Arial, sans-serif; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink); background: var(--paper);
+    padding: 3px 7px; align-self: flex-start;
+  }
+  .poster-title {
+    margin: 0.35em 0 0; font: 800 clamp(30px, 7vw, 56px)/0.92 "Noto Serif JP", "Yu Mincho", serif;
+    letter-spacing: 0.02em; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  }
+  .poster-sub {
+    margin: 0.5em 0 0; font: 500 12px/1.5 "Noto Sans JP", system-ui, sans-serif;
+    max-width: 9em; background: rgba(14, 11, 8, 0.55); padding: 4px 8px; align-self: flex-start;
+  }
+  .poster-rules {
+    margin-top: auto; height: 26px;
+    background-image:
+      linear-gradient(var(--paper), var(--paper)),
+      linear-gradient(var(--paper), var(--paper)),
+      linear-gradient(var(--paper), var(--paper));
+    background-size: 100% 1px, 70% 1px, 40% 1px;
+    background-position: 0 6px, 0 14px, 0 22px; background-repeat: no-repeat; opacity: 0.75;
+  }
+  .poster-cue { margin-top: 12px; font: 600 12px/1 "Helvetica Neue", Arial, sans-serif; letter-spacing: 0.1em; color: var(--paper); }
+
+  .gaze-card:hover, .gaze-card:focus-visible { transform: translateY(-4px); outline: none; }
+  .gaze-card:hover .layer--art, .gaze-card:focus-visible .layer--art { transform: rotate(0deg) scale(1); filter: brightness(0.62) saturate(0.85); }
+  .gaze-card:hover .art-maze, .gaze-card:focus-visible .art-maze { opacity: 0.55; }
+  .gaze-card:hover .layer--poster, .gaze-card:focus-visible .layer--poster { opacity: 1; transform: translateY(0); }
+  .gaze-card:hover .layer--hover-img, .gaze-card:focus-visible .layer--hover-img { opacity: 1; }
+  .gaze-card:hover .layer--marks, .gaze-card:focus-visible .layer--marks { color: rgba(231, 222, 204, 0.9); }
+  .gaze-card:focus-visible { box-shadow: 0 0 0 2px var(--paper); }
+
+  /* 用了自定义 PNG 时,关掉迷宫纹理避免冲突 */
+  .has-hover-img .art-maze { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gaze-card, .layer--art, .layer--poster, .layer--hover-img, .art-maze { transition: opacity 0.2s ease; }
+    .gaze-card:hover { transform: none; }
+    .gaze-card:hover .layer--art { transform: rotate(0deg) scale(1); }
+  }
+</style>
