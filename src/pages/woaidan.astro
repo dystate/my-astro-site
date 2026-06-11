@@ -85,7 +85,7 @@ const shelves = [booksData];
     .bookcase {
       height: 100vh; height: 100dvh; width: 100vw;
       overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
-      display: flex; flex-direction: column; justify-content: left; gap: clamp(10px, 3.2vh, 26px);
+      display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 3.2vh, 26px);
       padding: max(28px, env(safe-area-inset-top)) 0 max(28px, env(safe-area-inset-bottom)); box-sizing: border-box;
       background-color:#ffffff;
       background-image:
@@ -177,7 +177,7 @@ const shelves = [booksData];
     .bv-stage { perspective: 2200px; width:min(86vw, 920px); height:100%; display:flex; align-items:center; justify-content:center; }
     .bv-book { position:relative; display:flex; width:100%; max-width:880px; aspect-ratio: 3/2; max-height:100%;
       transform-style:preserve-3d; filter: drop-shadow(0 26px 40px rgba(0,0,0,.32)); }
-    .bv-page { width:50%; height:100%; background:#fdfbf6; overflow:auto; -webkit-overflow-scrolling:touch; box-sizing:border-box; padding: clamp(14px,2.4vw,30px); }
+    .bv-page { width:50%; height:100%; background:#fdfbf6; overflow:hidden; box-sizing:border-box; padding: clamp(14px,2.4vw,30px); }
     .bv-page-left  { border-radius:4px 0 0 4px; box-shadow: inset -22px 0 26px -22px rgba(0,0,0,.45); }
     .bv-page-right { border-radius:0 4px 4px 0; box-shadow: inset  22px 0 26px -22px rgba(0,0,0,.45); }
     .bv-spine { position:absolute; left:50%; top:0; width:2px; height:100%; transform:translateX(-50%); background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.1)); }
@@ -187,11 +187,52 @@ const shelves = [booksData];
     .bv-flipper.show { display:block; }
     .bv-flip-face { position:absolute; inset:0; overflow:hidden; backface-visibility:hidden; box-sizing:border-box; padding: clamp(14px,2.4vw,30px); }
 
-    /* md 内容排版 */
-    .bv-page img, .bv-flip-face img { max-width:100%; height:auto; display:block; margin:0 auto 10px; }
+    /* 隐藏滚动条（任何情况都不出现滚动条） */
+    .bv-page, .bv-flip-face { scrollbar-width:none; }
+    .bv-page::-webkit-scrollbar, .bv-flip-face::-webkit-scrollbar { display:none; }
+
+    /* —— 类型一：整页图片（完整展示、居中、不溢出书页边缘）—— */
+    .bv-page.type-image, .bv-flip-face.type-image { padding:0; display:flex; align-items:center; justify-content:center; }
+    .bv-page.type-image img, .bv-flip-face.type-image img { width:100%; height:100%; object-fit:contain; display:block; margin:0; }
+
+    /* —— 类型二：视频 / 音频，居中 —— */
+    .bv-page.type-media, .bv-flip-face.type-media { display:flex; align-items:center; justify-content:center; padding: clamp(10px,2vw,22px); }
+    .bv-page.type-media video, .bv-page.type-media audio, .bv-page.type-media iframe,
+    .bv-flip-face.type-media video, .bv-flip-face.type-media audio, .bv-flip-face.type-media iframe {
+      max-width:100%; max-height:100%; display:block; border-radius:6px; }
+
+    /* —— 类型三：文字 + 图片（图片内嵌、居中、不撑破页面）—— */
+    .bv-page.type-text img, .bv-flip-face.type-text img { display:block; margin:10px auto; max-width:100%; max-height:55%; height:auto; object-fit:contain; border-radius:4px; }
     .bv-page h1, .bv-page h2 { font-family:"Noto Serif SC",serif; line-height:1.3; margin:.2em 0 .5em; }
     .bv-page p { line-height:1.7; margin:0 0 .8em; font-size:15px; }
     .bv-leaf-title { font:700 14px/1.4 "Noto Serif SC",serif; color:#3a342a; margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid #e6e0d4; }
+
+    /* ===== 自定义音乐播放器（白色胶囊，核心功能） ===== */
+    .aplayer { display:flex; align-items:center; gap:14px; width:min(94%,460px); padding:11px 18px; background:#fff; border-radius:999px; box-shadow:0 12px 30px -10px rgba(0,0,0,.28); }
+    .aplayer audio { display:none; }
+    .ap-btn { flex:0 0 auto; width:24px; height:24px; padding:0; border:none; background:transparent; color:#1c2026; cursor:pointer; }
+    .ap-btn svg { width:100%; height:100%; display:block; }
+    .ap-time { flex:0 0 auto; font:600 13px/1 ui-monospace,"SFMono-Regular",monospace; color:#3a3f49; white-space:nowrap; }
+    .ap-seek, .vp-seek { -webkit-appearance:none; appearance:none; height:4px; border-radius:99px; cursor:pointer; outline:none; }
+    .ap-seek { flex:1; background:#e2e0da; }
+    .ap-seek::-webkit-slider-thumb, .vp-seek::-webkit-slider-thumb { -webkit-appearance:none; width:13px; height:13px; border-radius:50%; background:#1c2026; cursor:pointer; }
+    .ap-seek::-moz-range-thumb { width:13px; height:13px; border-radius:50%; background:#1c2026; border:none; cursor:pointer; }
+
+    /* ===== 自定义视频播放器（核心功能） ===== */
+    .vplayer { position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#000; border-radius:6px; overflow:hidden; }
+    .vplayer video { width:100%; height:100%; object-fit:contain; display:block; background:#000; }
+    .vp-center { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .vp-bigplay { width:60px; height:60px; border-radius:50%; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; transition:opacity .2s, transform .2s; }
+    .vp-bigplay svg { width:30px; height:30px; }
+    .vplayer.playing .vp-bigplay { opacity:0; }
+    .vplayer.playing:hover .vp-bigplay { opacity:1; }
+    .vp-bar { position:absolute; left:0; right:0; bottom:0; display:flex; align-items:center; gap:10px; padding:18px 12px 9px; background:linear-gradient(0deg, rgba(0,0,0,.65), transparent); }
+    .vp-btn { flex:0 0 auto; width:22px; height:22px; padding:0; border:none; background:transparent; color:#fff; cursor:pointer; }
+    .vp-btn svg { width:100%; height:100%; display:block; }
+    .vp-time { flex:0 0 auto; color:#fff; font:600 12px/1 ui-monospace,monospace; white-space:nowrap; }
+    .vp-seek { flex:1; background:rgba(255,255,255,.3); }
+    .vp-seek::-webkit-slider-thumb { background:#fff; }
+    .vp-seek::-moz-range-thumb { width:13px; height:13px; border-radius:50%; background:#fff; border:none; }
 
     /* 底栏 */
     .bv-bottom { text-align:center; padding: 8px 16px max(16px, env(safe-area-inset-bottom)); }
@@ -363,13 +404,104 @@ const shelves = [booksData];
       const step = () => (isMobile() ? 1 : 2);
 
       function cache(i) { return document.getElementById('md-' + activeId + '-' + i); }
-      function pageHTML(i) {
-        const c = cache(i); if (!c) return '';
-        const t = c.getAttribute('data-title');
-        const head = t ? '<p class="bv-leaf-title">' + t + '</p>' : '';
-        return head + c.innerHTML;
+      // 判断页面类型：media(视频/音频) / image(纯图) / text(文字或图文)
+      function pageType(html) {
+        const d = document.createElement('div'); d.innerHTML = html;
+        if (d.querySelector('video, audio, iframe')) return 'media';
+        const imgs = d.querySelectorAll('img');
+        const text = d.textContent.replace(/\s+/g, '');
+        if (imgs.length >= 1 && text === '') return 'image';
+        return 'text';
+      }
+      // 把第 i 页渲染进元素 el，并打上类型 class
+      function setPage(el, i) {
+        el.classList.remove('type-image', 'type-media', 'type-text');
+        const c = cache(i);
+        if (!c) { el.innerHTML = ''; return; }
+        const raw = c.innerHTML;
+        const t = pageType(raw);
+        if (t === 'image') { el.innerHTML = raw; el.classList.add('type-image'); }
+        else if (t === 'media') { el.innerHTML = raw; el.classList.add('type-media'); }
+        else {
+          const title = c.getAttribute('data-title');
+          el.innerHTML = (title ? '<p class="bv-leaf-title">' + title + '</p>' : '') + raw;
+          el.classList.add('type-text');
+        }
+        el.scrollTop = 0;
       }
       function pageTitle(i) { const c = cache(i); return c ? (c.getAttribute('data-title') || '') : ''; }
+
+      /* ===== 自定义播放器 ===== */
+      const I_PLAY  = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+      const I_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';
+      const I_VOL   = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9z"/><path d="M15.5 8.5a5 5 0 010 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+      const I_MUTE  = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9z"/><path d="M16 9.5l4.5 5M20.5 9.5l-4.5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+      const I_FULL  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+      const fmt = (t) => { if (!isFinite(t) || t < 0) t = 0; t = Math.floor(t); const m = Math.floor(t / 60), s = t % 60; return m + ':' + String(s).padStart(2, '0'); };
+
+      function buildAudioPlayer(el, audio) {
+        audio.dataset.enhanced = '1'; audio.removeAttribute('controls');
+        const wrap = document.createElement('div'); wrap.className = 'aplayer';
+        wrap.innerHTML =
+          '<button class="ap-btn ap-play" aria-label="播放/暂停">' + I_PLAY + '</button>' +
+          '<span class="ap-time">0:00 / 0:00</span>' +
+          '<input class="ap-seek" type="range" min="0" max="1000" value="0">' +
+          '<button class="ap-btn ap-vol" aria-label="静音">' + I_VOL + '</button>';
+        el.appendChild(wrap); wrap.insertBefore(audio, wrap.firstChild);
+        const play = wrap.querySelector('.ap-play'), time = wrap.querySelector('.ap-time'),
+              seek = wrap.querySelector('.ap-seek'), vol = wrap.querySelector('.ap-vol');
+        const fill = () => { const p = seek.value / 10; seek.style.background = 'linear-gradient(90deg, var(--teal) ' + p + '%, #e2e0da ' + p + '%)'; };
+        play.onclick = () => audio.paused ? audio.play() : audio.pause();
+        audio.onplay = () => play.innerHTML = I_PAUSE;
+        audio.onpause = () => play.innerHTML = I_PLAY;
+        audio.onloadedmetadata = () => time.textContent = '0:00 / ' + fmt(audio.duration);
+        audio.ontimeupdate = () => { if (audio.duration) { seek.value = (audio.currentTime / audio.duration) * 1000; fill(); } time.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration); };
+        seek.oninput = () => { if (audio.duration) { audio.currentTime = (seek.value / 1000) * audio.duration; fill(); } };
+        vol.onclick = () => { audio.muted = !audio.muted; vol.innerHTML = audio.muted ? I_MUTE : I_VOL; };
+        fill();
+      }
+
+      function buildVideoPlayer(el, video) {
+        video.dataset.enhanced = '1'; video.removeAttribute('controls'); video.setAttribute('playsinline', ''); video.setAttribute('webkit-playsinline', '');
+        const wrap = document.createElement('div'); wrap.className = 'vplayer paused';
+        el.appendChild(wrap); wrap.appendChild(video);
+        const center = document.createElement('div'); center.className = 'vp-center';
+        center.innerHTML = '<div class="vp-bigplay">' + I_PLAY + '</div>';
+        const bar = document.createElement('div'); bar.className = 'vp-bar';
+        bar.innerHTML =
+          '<button class="vp-btn vp-play" aria-label="播放/暂停">' + I_PLAY + '</button>' +
+          '<span class="vp-time">0:00 / 0:00</span>' +
+          '<input class="vp-seek" type="range" min="0" max="1000" value="0">' +
+          '<button class="vp-btn vp-mute" aria-label="静音">' + I_VOL + '</button>' +
+          '<button class="vp-btn vp-full" aria-label="全屏">' + I_FULL + '</button>';
+        wrap.appendChild(center); wrap.appendChild(bar);
+        const big = center.querySelector('.vp-bigplay'),
+              play = bar.querySelector('.vp-play'), time = bar.querySelector('.vp-time'),
+              seek = bar.querySelector('.vp-seek'), mute = bar.querySelector('.vp-mute'), full = bar.querySelector('.vp-full');
+        const fill = () => { const p = seek.value / 10; seek.style.background = 'linear-gradient(90deg,#fff ' + p + '%, rgba(255,255,255,.3) ' + p + '%)'; };
+        const toggle = () => video.paused ? video.play() : video.pause();
+        center.onclick = toggle; play.onclick = toggle;
+        video.onplay = () => { wrap.classList.remove('paused'); wrap.classList.add('playing'); play.innerHTML = I_PAUSE; big.innerHTML = I_PAUSE; };
+        video.onpause = () => { wrap.classList.add('paused'); wrap.classList.remove('playing'); play.innerHTML = I_PLAY; big.innerHTML = I_PLAY; };
+        video.onloadedmetadata = () => time.textContent = '0:00 / ' + fmt(video.duration);
+        video.ontimeupdate = () => { if (video.duration) { seek.value = (video.currentTime / video.duration) * 1000; fill(); } time.textContent = fmt(video.currentTime) + ' / ' + fmt(video.duration); };
+        seek.oninput = () => { if (video.duration) { video.currentTime = (seek.value / 1000) * video.duration; fill(); } };
+        mute.onclick = () => { video.muted = !video.muted; mute.innerHTML = video.muted ? I_MUTE : I_VOL; };
+        full.onclick = () => {
+          if (document.fullscreenElement) { document.exitFullscreen(); }
+          else if (wrap.requestFullscreen) { wrap.requestFullscreen(); }
+          else if (video.webkitEnterFullscreen) { video.webkitEnterFullscreen(); }
+        };
+        fill();
+      }
+
+      function enhanceMedia(el) {
+        if (!el || !el.classList.contains('type-media')) return;
+        const audio = el.querySelector('audio:not([data-enhanced])');
+        const video = el.querySelector('video:not([data-enhanced])');
+        if (audio) buildAudioPlayer(el, audio);
+        if (video) buildVideoPlayer(el, video);
+      }
 
       /* 点书脊 → 封面 */
       books.forEach((b) => b.addEventListener('click', () => {
@@ -410,15 +542,16 @@ const shelves = [booksData];
       /* 渲染当前跨页/单页 */
       function paint() {
         if (isMobile()) {
-          elRight.innerHTML = pageHTML(idx);
-          elRight.scrollTop = 0;
+          setPage(elRight, idx);
+          enhanceMedia(elRight);
           curEl.textContent = idx + 1;
           numL.textContent = pad(idx + 1); numR.textContent = '';
           capL.textContent = pageTitle(idx); capR.textContent = '';
         } else {
-          elLeft.innerHTML = pageHTML(idx);
-          elRight.innerHTML = (idx + 1 < total) ? pageHTML(idx + 1) : '';
-          elLeft.scrollTop = 0; elRight.scrollTop = 0;
+          setPage(elLeft, idx);
+          if (idx + 1 < total) setPage(elRight, idx + 1);
+          else { elRight.innerHTML = ''; elRight.classList.remove('type-image','type-media','type-text'); }
+          enhanceMedia(elLeft); enhanceMedia(elRight);
           const hi = (idx + 1 < total) ? idx + 2 : idx + 1;
           curEl.textContent = (idx + 1) + (hi > idx + 1 ? '-' + hi : '');
           numL.textContent = pad(idx + 1); numR.textContent = (idx + 1 < total) ? pad(idx + 2) : '';
@@ -438,7 +571,7 @@ const shelves = [booksData];
       function next() {
         if (animating || idx + step() >= total) return;
         animating = true;
-        flipFace.innerHTML = isMobile() ? pageHTML(idx) : pageHTML(idx + 1);
+        setPage(flipFace, isMobile() ? idx : idx + 1);
         flipper.style.transition = 'none';
         flipper.classList.add('show');
         flipper.style.transform = 'rotateY(0deg)';
@@ -451,7 +584,7 @@ const shelves = [booksData];
         if (animating || idx <= 0) return;
         animating = true;
         const ni = Math.max(0, idx - step());
-        flipFace.innerHTML = isMobile() ? pageHTML(ni) : pageHTML(ni + 1);
+        setPage(flipFace, isMobile() ? ni : ni + 1);
         flipper.style.transition = 'none';
         flipper.classList.add('show');
         flipper.style.transform = 'rotateY(-180deg)';
