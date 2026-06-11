@@ -1,0 +1,490 @@
+---
+// src/pages/woaidan.astro
+import "../styles/global.css";
+import SignInBlock from "../components/ui/sign-in-block";
+import { getCollection, render } from 'astro:content';
+
+/* ========== 1. 身份验证 ========== */
+const session = Astro.cookies.get("user_session")?.value;
+const isLoggedIn = !!session;
+
+/* ========== 2. 读取所有 md，并按「书」分组 ========== */
+let booksData = [];
+if (isLoggedIn) {
+  const entries = await getCollection('woaidan');
+
+  const rendered = await Promise.all(
+    entries.map(async (entry) => {
+      const { Content } = await render(entry);
+      const parts = entry.id.split('/');
+      const folder = parts.length > 1 ? parts.slice(0, -1).join('/') : null;
+      return {
+        bookName: entry.data.book ?? folder ?? '未分组',
+        bookOrder: entry.data.bookOrder ?? null,
+        pageNumber: entry.data.pageNumber ?? null,
+        cover: entry.data.cover ?? null,
+        sortKey: entry.id,
+        title: entry.data.title ?? '',
+        Content,
+      };
+    })
+  );
+
+  const map = new Map();
+  for (const r of rendered) {
+    if (!map.has(r.bookName)) map.set(r.bookName, { name: r.bookName, order: null, cover: null, pages: [] });
+    const b = map.get(r.bookName);
+    if (r.bookOrder != null && b.order == null) b.order = r.bookOrder;
+    if (r.cover && !b.cover) b.cover = r.cover;
+    b.pages.push(r);
+  }
+  booksData = Array.from(map.values());
+  booksData.forEach((b) =>
+    b.pages.sort((x, y) => {
+      if (x.pageNumber != null && y.pageNumber != null) return x.pageNumber - y.pageNumber;
+      return x.sortKey.localeCompare(y.sortKey);
+    })
+  );
+  booksData.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || a.name.localeCompare(b.name));
+  booksData.forEach((b, i) => (b.id = i));
+}
+
+/* ========== 3. 书架配色与分层 ========== */
+const spineColors = [
+  "#6b4f3a", "#2f4858", "#7c3a3a", "#3a5a40", "#b08968",
+  "#2c3e50", "#8d6346", "#1f4e5f", "#9c4f4f", "#4a5d4e",
+  "#c9a227", "#3d4a6b", "#5c3a4d", "#46695f", "#a8763e",
+];
+const widthSet  = [20, 24, 28, 22, 30, 18, 26];
+const heightSet = [88, 96, 80, 92, 84, 98, 78];
+function bookVisual(idx, name) {
+  const seed = idx * 7 + (name?.length || 0);
+  return {
+    color: spineColors[seed % spineColors.length],
+    w: widthSet[(idx * 3) % widthSet.length],
+    h: heightSet[(idx * 5) % heightSet.length],
+  };
+}
+const total = booksData.length;
+// 全部书放在同一层（一层书架）
+const shelves = [booksData];
+---
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>woaidan · 魔法书架</title>
+
+  <style is:global>
+    :root { --bg: #11141a; --shelf-wood: #15110c; --shelf-edge: #2a2118; --teal:#6fb6c9; --orange:#e0552b; }
+    html, body { margin: 0; padding: 0; }
+    body { background: #ffffff; color: #1c2026; overflow: hidden; }
+
+    /* ---------- 书柜 ---------- */
+    .bookcase {
+      height: 100vh; height: 100dvh; width: 100vw;
+      overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+      display: flex; flex-direction: column; justify-content: left; gap: clamp(10px, 3.2vh, 26px);
+      padding: max(28px, env(safe-area-inset-top)) 0 max(28px, env(safe-area-inset-bottom)); box-sizing: border-box;
+      background-color:#ffffff;
+      background-image:
+        radial-gradient(circle, rgba(0,0,0,.05) 1px, transparent 1.4px);
+      background-size: 16px 16px;
+      background-attachment: fixed;
+    }
+    .shelf { width: min(94vw, 760px); margin: 0 auto; display: flex; flex-direction: column; }
+    .books { display: flex; align-items: flex-end; justify-content: center; gap: 3px; min-height: clamp(120px, 22vh, 190px); padding: 0 6px; overflow-x: auto; overflow-y: visible; scrollbar-width: none; }
+    .books::-webkit-scrollbar { display: none; }
+    .board { height: 10px; border-radius: 2px; background: linear-gradient(180deg, #e0d8c8 0%, #c3b69c 70%); box-shadow: 0 -1px 0 rgba(255,255,255,.6) inset, 0 14px 22px -12px rgba(0,0,0,0.25); }
+    .book {
+      flex: 0 0 auto; width: var(--w); height: var(--h); max-height: clamp(120px, 22vh, 190px);
+      border: none; padding: 8px 0; cursor: pointer; color: rgba(255,255,255,0.86); border-radius: 2px 2px 1px 1px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.35) 0%, rgba(255,255,255,0.10) 14%, rgba(255,255,255,0.04) 50%, rgba(0,0,0,0.28) 100%), var(--c);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.25) inset, 2px 8px 14px -6px rgba(0,0,0,0.7);
+      transition: transform .28s cubic-bezier(.2,.8,.25,1), box-shadow .28s; display: flex; justify-content: center; transform-origin: bottom center;
+    }
+    .book:hover { transform: translateY(-8px); }
+    .book.pulling { transform: translateY(-22px) scale(1.04); box-shadow: 0 18px 30px -10px rgba(0,0,0,0.85); z-index: 3; }
+    .spine-title { writing-mode: vertical-rl; text-orientation: mixed; font: 600 11px/1.15 "Noto Serif SC","Songti SC",serif; letter-spacing: 1px; white-space: nowrap; overflow: hidden; max-height: 100%; text-shadow: 0 1px 1px rgba(0,0,0,.4); pointer-events: none; }
+    .hint { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); font: 700 11px/1 system-ui, sans-serif; letter-spacing: 3px; text-transform: uppercase; color: #8a8f98; pointer-events: none; z-index: 4; }
+
+    /* 四角线框装饰（海报感） */
+    .poster-corners { position: fixed; inset: 16px; pointer-events: none; z-index: 6; }
+    .poster-corners.in-stage { position: absolute; inset: 16px; }
+    .poster-corners i { position: absolute; width: 26px; height: 26px; border: 1.5px solid rgba(0,0,0,.18); }
+    .poster-corners i.tl { top:0; left:0; border-right:0; border-bottom:0; }
+    .poster-corners i.tr { top:0; right:0; border-left:0; border-bottom:0; }
+    .poster-corners i.bl { bottom:0; left:0; border-right:0; border-top:0; }
+    .poster-corners i.br { bottom:0; right:0; border-left:0; border-top:0; }
+
+    /* ---------- 悬浮封面 ---------- */
+    .cover-stage { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; opacity: 0; pointer-events: none; transition: opacity .45s ease; perspective: 1400px;
+      background-color:#ffffff;
+      background-image:
+        radial-gradient(circle, rgba(0,0,0,.05) 1px, transparent 1.4px);
+      background-size: 16px 16px;
+    }
+    .cover-stage.show { opacity: 1; pointer-events: auto; }
+    .cover-book { position:relative; z-index:2; width: min(70vw, 300px); aspect-ratio: 3/4; cursor: pointer; transform: rotateY(18deg) rotateX(6deg) translateY(20px) scale(.85); opacity: 0; transition: transform .55s cubic-bezier(.2,.85,.25,1), opacity .45s ease; transform-style: preserve-3d; }
+    .cover-stage.show .cover-book { transform: rotateY(-13deg) rotateX(5deg) scale(1); opacity: 1; animation: floaty 5s ease-in-out .6s infinite; }
+    @keyframes floaty { 0%,100%{ transform: rotateY(-13deg) rotateX(5deg) translateY(0);} 50%{ transform: rotateY(-13deg) rotateX(5deg) translateY(-12px);} }
+    .cover-art { width:100%; height:100%; border-radius:8px; background: linear-gradient(140deg, rgba(255,255,255,.16), rgba(255,255,255,0) 42%), linear-gradient(0deg, rgba(0,0,0,.45), rgba(0,0,0,0) 40%), var(--cover-c,#2f4858); box-shadow: 0 2px 0 rgba(255,255,255,.18) inset, 0 40px 60px -20px rgba(0,0,0,.45), 0 10px 24px -10px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; position:relative; }
+    .cover-art::after { content:""; position:absolute; inset:12px; border-radius:4px; border:1px solid rgba(111,182,201,.5); }
+    .cover-art::before { content:""; position:absolute; top:14px; right:14px; width:14px; height:14px; background:var(--orange); border-radius:2px; z-index:2; }
+    /* 用了自己的封面图时：只显示图片，隐藏占位装饰 */
+    .cover-art.has-image { background-size: cover; background-position: center; padding:0; }
+    .cover-art.has-image::after, .cover-art.has-image::before { display:none; }
+    .cover-art.has-image .cover-title { display:none; }
+    .cover-title { font: 700 clamp(16px,5vw,24px)/1.3 "Noto Serif SC","Songti SC",serif; color: rgba(255,255,255,.94); text-align:center; text-shadow:0 2px 6px rgba(0,0,0,.5); z-index:1; word-break:break-word; }
+    .cover-hint { font: 700 12px/1 system-ui, sans-serif; letter-spacing: 3px; text-transform:uppercase; color: #8a8f98; z-index:2; }
+    /* 顶部描边大书名 */
+    .cover-mast { position:absolute; top:max(36px,6vh); left:0; right:0; padding:0 18px; text-align:center; pointer-events:none; z-index:2;
+      font:800 clamp(26px,7vw,66px)/.92 "Arial Black","Noto Sans SC",sans-serif; letter-spacing:-1px; text-transform:uppercase;
+      color:transparent; -webkit-text-stroke:1.5px rgba(28,32,38,.5); }
+    /* 左右下角描边装饰大字 */
+    .cover-deco { position:absolute; bottom:max(20px,4vh); pointer-events:none; z-index:1;
+      font:800 clamp(40px,11vw,120px)/.8 "Arial Black",sans-serif;
+      color:transparent; -webkit-text-stroke:1.5px rgba(28,32,38,.12); }
+    .cover-deco-l { left:max(18px,4vw); }
+    .cover-deco-r { right:max(18px,4vw); }
+    .stage-close { position:absolute; top:max(14px, env(safe-area-inset-top)); right:16px; width:40px; height:40px; border-radius:999px; border:none; background:rgba(0,0,0,.06); color:#1c2026; font-size:22px; cursor:pointer; }
+
+    /* ========== 翻开的书本阅读器（仿 TEN YEARS AWAY 版式） ========== */
+    .bookview {
+      position: fixed; inset: 0; z-index: 50; opacity: 0; pointer-events: none; transition: opacity .4s ease;
+      color: #20242c; background-color: #ffffff;
+      background-image: radial-gradient(circle, rgba(0,0,0,.05) 1px, transparent 1.4px);
+      background-size: 16px 16px;
+      display: grid; grid-template-rows: auto 1fr auto;
+    }
+    .bookview.show { opacity: 1; pointer-events: auto; }
+
+    /* 顶栏 */
+    .bv-top { display:flex; align-items:center; justify-content:space-between; padding: max(14px, env(safe-area-inset-top)) 18px 8px; }
+    .bv-close { border:none; background:transparent; font:600 14px/1 system-ui,sans-serif; letter-spacing:1px; color:#3a3f49; cursor:pointer; }
+    .bv-masthead { font:800 clamp(18px,3.2vw,30px)/1 "Arial Black","Noto Sans SC",sans-serif; letter-spacing:-.5px; text-transform:uppercase; text-align:center; color:#1c2026; }
+    .bv-counter { font:600 13px/1 system-ui,sans-serif; color:#6b7079; min-width:54px; text-align:right; }
+
+    /* 中部：舞台 + 两侧标签 */
+    .bv-mid { position:relative; display:flex; align-items:center; justify-content:center; min-height:0; padding: 6px 10px; }
+    .bv-side { position:absolute; top:50%; transform:translateY(-50%); font:800 clamp(34px,7vw,90px)/.8 "Arial Black",sans-serif; letter-spacing:-2px; pointer-events:none; user-select:none; }
+    .bv-side .cap { display:block; font:700 11px/1.3 system-ui,sans-serif; letter-spacing:1px; color:#6b7079; margin-top:8px; }
+    .bv-side-left  { left:max(10px, 2vw); color:var(--teal); writing-mode:vertical-rl; text-orientation:mixed; }
+    .bv-side-right { right:max(10px, 2vw); color:var(--orange); writing-mode:vertical-rl; text-orientation:mixed; }
+
+    /* 书本舞台 */
+    .bv-stage { perspective: 2200px; width:min(86vw, 920px); height:100%; display:flex; align-items:center; justify-content:center; }
+    .bv-book { position:relative; display:flex; width:100%; max-width:880px; aspect-ratio: 3/2; max-height:100%;
+      transform-style:preserve-3d; filter: drop-shadow(0 26px 40px rgba(0,0,0,.32)); }
+    .bv-page { width:50%; height:100%; background:#fdfbf6; overflow:auto; -webkit-overflow-scrolling:touch; box-sizing:border-box; padding: clamp(14px,2.4vw,30px); }
+    .bv-page-left  { border-radius:4px 0 0 4px; box-shadow: inset -22px 0 26px -22px rgba(0,0,0,.45); }
+    .bv-page-right { border-radius:0 4px 4px 0; box-shadow: inset  22px 0 26px -22px rgba(0,0,0,.45); }
+    .bv-spine { position:absolute; left:50%; top:0; width:2px; height:100%; transform:translateX(-50%); background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.1)); }
+
+    /* 翻动的那一页（覆盖在右半边，绕书脊旋转） */
+    .bv-flipper { position:absolute; top:0; right:0; width:50%; height:100%; transform-origin:left center; transform:rotateY(0deg); transform-style:preserve-3d; display:none; z-index:6; background:#fdfbf6; border-radius:0 4px 4px 0; box-shadow:0 0 30px rgba(0,0,0,.25); }
+    .bv-flipper.show { display:block; }
+    .bv-flip-face { position:absolute; inset:0; overflow:hidden; backface-visibility:hidden; box-sizing:border-box; padding: clamp(14px,2.4vw,30px); }
+
+    /* md 内容排版 */
+    .bv-page img, .bv-flip-face img { max-width:100%; height:auto; display:block; margin:0 auto 10px; }
+    .bv-page h1, .bv-page h2 { font-family:"Noto Serif SC",serif; line-height:1.3; margin:.2em 0 .5em; }
+    .bv-page p { line-height:1.7; margin:0 0 .8em; font-size:15px; }
+    .bv-leaf-title { font:700 14px/1.4 "Noto Serif SC",serif; color:#3a342a; margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid #e6e0d4; }
+
+    /* 底栏 */
+    .bv-bottom { text-align:center; padding: 8px 16px max(16px, env(safe-area-inset-bottom)); }
+    .bv-arrow-row { display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:4px; }
+    .bv-arrow { width:38px; height:38px; border-radius:999px; border:1px solid #cfc7b8; background:#fbf9f3; color:#3a3f49; font-size:18px; cursor:pointer; }
+    .bv-arrow:disabled { opacity:.35; cursor:default; }
+    .bv-tap-hint { font:600 13px/1 system-ui,sans-serif; letter-spacing:2px; color:#3a3f49; }
+    .bv-tag { font:400 12px/1.4 system-ui,sans-serif; color:#8a8f98; margin:6px 0 0; }
+
+    /* 点击翻页热区（盖在书上，左半 prev / 右半 next） */
+    .bv-hit { position:absolute; top:0; height:100%; width:50%; z-index:4; background:transparent; border:none; cursor:pointer; }
+    .bv-hit-left  { left:0; }
+    .bv-hit-right { right:0; }
+
+    /* ---------- 手机端：单页 ---------- */
+    @media (max-width: 760px) {
+      .bv-book { aspect-ratio: 3/4; max-width:420px; }
+      .bv-page-left { display:none; }
+      .bv-page-right { width:100%; border-radius:4px; box-shadow:none; }
+      .bv-spine { display:none; }
+      .bv-flipper { width:100%; border-radius:4px; }
+      .bv-side { font-size:30px; opacity:.5; }
+      .bv-side .cap { display:none; }
+      .bv-hit-left { width:38%; }
+      .bv-hit-right { width:38%; }
+
+      /* 书架：层间距、书脊更紧凑 */
+      .bookcase { gap: clamp(8px, 2.4vh, 18px); }
+      .shelf { width: 96vw; }
+      .books { gap: 2px; min-height: clamp(110px, 20vh, 160px); }
+      .book { max-height: clamp(110px, 20vh, 160px); }
+
+      /* 封面页：缩小大字、避免与封面重叠 */
+      .cover-mast { font-size: clamp(20px, 8vw, 34px); top: max(18px, 3vh); }
+      .cover-deco { font-size: clamp(30px, 14vw, 56px); bottom: max(10px, 2vh); }
+      .cover-book { width: min(72vw, 280px); }
+      .cover-hint { font-size: 11px; letter-spacing: 2px; }
+      .poster-corners, .poster-corners.in-stage { inset: 10px; }
+      .poster-corners i { width: 18px; height: 18px; }
+    }
+
+    /* 超窄屏：装饰大字进一步弱化，避免挡住封面 */
+    @media (max-width: 420px) {
+      .cover-deco { opacity:.5; font-size: clamp(26px, 13vw, 44px); }
+    }
+  </style>
+</head>
+
+<body class="select-none">
+
+  {isLoggedIn ? (
+    <main>
+      {/* 书柜 */}
+      <div class="bookcase">
+        {shelves.map((shelf) => (
+          <div class="shelf">
+            <div class="books">
+              {shelf.map((book) => {
+                const v = bookVisual(book.id, book.name);
+                return (
+                  <button class="book" data-book-id={book.id} data-name={book.name} data-color={v.color} data-pages={book.pages.length} data-cover={book.cover || ''} style={`--c:${v.color}; --w:${v.w}px; --h:${v.h}%;`} aria-label={`打开 ${book.name}`}>
+                    <span class="spine-title">{book.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div class="board"></div>
+          </div>
+        ))}
+      </div>
+      <div class="hint">轻触书脊抽出</div>
+      <div class="poster-corners"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+
+      {/* 悬浮封面 */}
+      <div id="cover-stage" class="cover-stage">
+        <button id="stage-close" class="stage-close" aria-label="放回书架">&times;</button>
+        <div id="cover-mast" class="cover-mast"></div>
+        <span class="cover-deco cover-deco-l">01</span>
+        <span id="cover-deco-r" class="cover-deco cover-deco-r">01</span>
+        <div id="cover-book" class="cover-book">
+          <div id="cover-art" class="cover-art"><span id="cover-title" class="cover-title"></span></div>
+        </div>
+        <p class="cover-hint">轻触封面 · 翻开</p>
+        <div class="poster-corners in-stage"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+      </div>
+
+      {/* 翻开的书本阅读器 */}
+      <div id="reader-overlay" class="bookview">
+        <div class="bv-top">
+          <button id="close-reader" class="bv-close">‹ 合上</button>
+          <div id="bv-masthead" class="bv-masthead">书名</div>
+          <div class="bv-counter"><span id="bv-cur">1</span> / <span id="bv-total">1</span></div>
+        </div>
+
+        <div class="bv-mid">
+          <div class="bv-side bv-side-left"><span id="bv-num-left">01</span><span id="bv-cap-left" class="cap"></span></div>
+          <div class="bv-side bv-side-right"><span id="bv-num-right">02</span><span id="bv-cap-right" class="cap"></span></div>
+
+          <div class="bv-stage">
+            <div id="bv-book" class="bv-book">
+              <div id="bv-left"  class="bv-page bv-page-left"></div>
+              <div id="bv-right" class="bv-page bv-page-right"></div>
+              <div id="bv-flipper" class="bv-flipper"><div id="bv-flip-face" class="bv-flip-face"></div></div>
+              <div class="bv-spine"></div>
+              <button id="bv-hit-left"  class="bv-hit bv-hit-left"  aria-label="上一页"></button>
+              <button id="bv-hit-right" class="bv-hit bv-hit-right" aria-label="下一页"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bv-bottom">
+          <div class="bv-arrow-row">
+            <button id="bv-prev" class="bv-arrow" aria-label="上一页">&larr;</button>
+            <span class="bv-tap-hint">轻扫翻页 · swipe to turn pages</span>
+            <button id="bv-next" class="bv-arrow" aria-label="下一页">&rarr;</button>
+          </div>
+          <p id="bv-tag" class="bv-tag"></p>
+        </div>
+      </div>
+
+      {/* 服务端预渲染缓存 */}
+      <div id="markdown-server-cache" style="display:none">
+        {booksData.map((book) =>
+          book.pages.map((pg, pi) => {
+            const C = pg.Content;
+            return (<div id={`md-${book.id}-${pi}`} data-title={pg.title}><C /></div>);
+          })
+        )}
+      </div>
+    </main>
+  ) : (
+    <div class="min-h-screen flex flex-col items-center justify-center bg-[#0d0f13] p-4">
+      <div class="mb-8 text-center">
+        <h1 class="text-4xl font-extralight tracking-[0.3em] text-amber-200/90 mb-3 font-serif">WOAIDAN</h1>
+        <p class="text-gray-500 text-xs tracking-wider">🔒 本地记忆核心库 · 请先验证您的主理人身份</p>
+      </div>
+      <div class="w-full max-w-sm"><SignInBlock client:only="react" /></div>
+    </div>
+  )}
+
+  {isLoggedIn && (
+    <script>
+      const books = Array.from(document.querySelectorAll('.book'));
+      const stage = document.getElementById('cover-stage');
+      const coverBook = document.getElementById('cover-book');
+      const coverArt = document.getElementById('cover-art');
+      const coverTitle = document.getElementById('cover-title');
+      const overlay = document.getElementById('reader-overlay');
+
+      const elLeft = document.getElementById('bv-left');
+      const elRight = document.getElementById('bv-right');
+      const flipper = document.getElementById('bv-flipper');
+      const flipFace = document.getElementById('bv-flip-face');
+      const mast = document.getElementById('bv-masthead');
+      const tag = document.getElementById('bv-tag');
+      const curEl = document.getElementById('bv-cur');
+      const totEl = document.getElementById('bv-total');
+      const numL = document.getElementById('bv-num-left');
+      const numR = document.getElementById('bv-num-right');
+      const capL = document.getElementById('bv-cap-left');
+      const capR = document.getElementById('bv-cap-right');
+      const btnPrev = document.getElementById('bv-prev');
+      const btnNext = document.getElementById('bv-next');
+
+      let activeBook = null, activeId = 0, total = 1, idx = 0, animating = false;
+      const FLIP_MS = 520;
+      const isMobile = () => window.matchMedia('(max-width: 760px)').matches;
+      const pad = (n) => String(n).padStart(2, '0');
+      const step = () => (isMobile() ? 1 : 2);
+
+      function cache(i) { return document.getElementById('md-' + activeId + '-' + i); }
+      function pageHTML(i) {
+        const c = cache(i); if (!c) return '';
+        const t = c.getAttribute('data-title');
+        const head = t ? '<p class="bv-leaf-title">' + t + '</p>' : '';
+        return head + c.innerHTML;
+      }
+      function pageTitle(i) { const c = cache(i); return c ? (c.getAttribute('data-title') || '') : ''; }
+
+      /* 点书脊 → 封面 */
+      books.forEach((b) => b.addEventListener('click', () => {
+        activeBook = b; b.classList.add('pulling');
+        coverBook.dataset.bookId = b.dataset.bookId;
+        coverBook.dataset.pages = b.dataset.pages;
+        coverBook.dataset.name = b.dataset.name;
+        coverArt.style.setProperty('--cover-c', b.dataset.color);
+        coverTitle.textContent = b.dataset.name;
+        const cov = b.dataset.cover;
+        if (cov) {
+          coverArt.classList.add('has-image');
+          coverArt.style.backgroundImage = 'url("' + cov + '")';
+        } else {
+          coverArt.classList.remove('has-image');
+          coverArt.style.backgroundImage = '';
+        }
+        document.getElementById('cover-mast').textContent = b.dataset.name;
+        document.getElementById('cover-deco-r').textContent = String(b.dataset.pages).padStart(2, '0');
+        setTimeout(() => stage.classList.add('show'), 240);
+      }));
+      function closeStage() { stage.classList.remove('show'); if (activeBook) { activeBook.classList.remove('pulling'); activeBook = null; } }
+      document.getElementById('stage-close').addEventListener('click', closeStage);
+      stage.addEventListener('click', (e) => { if (e.target === stage) closeStage(); });
+
+      /* 点封面 → 翻开书本 */
+      coverBook.addEventListener('click', () => {
+        activeId = parseInt(coverBook.dataset.bookId, 10);
+        total = parseInt(coverBook.dataset.pages, 10) || 1;
+        idx = 0;
+        mast.textContent = coverBook.dataset.name || '';
+        tag.textContent = coverBook.dataset.name || '';
+        totEl.textContent = total;
+        paint();
+        overlay.classList.add('show');
+      });
+
+      /* 渲染当前跨页/单页 */
+      function paint() {
+        if (isMobile()) {
+          elRight.innerHTML = pageHTML(idx);
+          elRight.scrollTop = 0;
+          curEl.textContent = idx + 1;
+          numL.textContent = pad(idx + 1); numR.textContent = '';
+          capL.textContent = pageTitle(idx); capR.textContent = '';
+        } else {
+          elLeft.innerHTML = pageHTML(idx);
+          elRight.innerHTML = (idx + 1 < total) ? pageHTML(idx + 1) : '';
+          elLeft.scrollTop = 0; elRight.scrollTop = 0;
+          const hi = (idx + 1 < total) ? idx + 2 : idx + 1;
+          curEl.textContent = (idx + 1) + (hi > idx + 1 ? '-' + hi : '');
+          numL.textContent = pad(idx + 1); numR.textContent = (idx + 1 < total) ? pad(idx + 2) : '';
+          capL.textContent = pageTitle(idx); capR.textContent = (idx + 1 < total) ? pageTitle(idx + 1) : '';
+        }
+        btnPrev.disabled = (idx <= 0);
+        btnNext.disabled = (idx + step() >= total);
+      }
+
+      function endFlip(cb) {
+        let done = false;
+        const fn = () => { if (done) return; done = true; flipper.removeEventListener('transitionend', fn); cb(); };
+        flipper.addEventListener('transitionend', fn);
+        setTimeout(fn, FLIP_MS + 120);
+      }
+
+      function next() {
+        if (animating || idx + step() >= total) return;
+        animating = true;
+        flipFace.innerHTML = isMobile() ? pageHTML(idx) : pageHTML(idx + 1);
+        flipper.style.transition = 'none';
+        flipper.classList.add('show');
+        flipper.style.transform = 'rotateY(0deg)';
+        void flipper.offsetWidth;
+        flipper.style.transition = 'transform ' + FLIP_MS + 'ms ease';
+        flipper.style.transform = 'rotateY(-180deg)';
+        endFlip(() => { idx += step(); paint(); flipper.classList.remove('show'); animating = false; });
+      }
+      function prev() {
+        if (animating || idx <= 0) return;
+        animating = true;
+        const ni = Math.max(0, idx - step());
+        flipFace.innerHTML = isMobile() ? pageHTML(ni) : pageHTML(ni + 1);
+        flipper.style.transition = 'none';
+        flipper.classList.add('show');
+        flipper.style.transform = 'rotateY(-180deg)';
+        void flipper.offsetWidth;
+        flipper.style.transition = 'transform ' + FLIP_MS + 'ms ease';
+        flipper.style.transform = 'rotateY(0deg)';
+        endFlip(() => { idx = ni; paint(); flipper.classList.remove('show'); animating = false; });
+      }
+
+      btnNext.addEventListener('click', next);
+      btnPrev.addEventListener('click', prev);
+      document.getElementById('bv-hit-right').addEventListener('click', next);
+      document.getElementById('bv-hit-left').addEventListener('click', prev);
+
+      /* 滑动翻页 */
+      let tsx = 0, tsy = 0;
+      overlay.addEventListener('touchstart', (e) => { tsx = e.changedTouches[0].clientX; tsy = e.changedTouches[0].clientY; }, { passive: true });
+      overlay.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - tsx, dy = e.changedTouches[0].clientY - tsy;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? next() : prev(); }
+      }, { passive: true });
+
+      /* 键盘 */
+      document.addEventListener('keydown', (e) => {
+        if (!overlay.classList.contains('show')) return;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev();
+        else if (e.key === 'Escape') overlay.classList.remove('show');
+      });
+
+      document.getElementById('close-reader').addEventListener('click', () => overlay.classList.remove('show'));
+      window.addEventListener('resize', () => { if (overlay.classList.contains('show')) paint(); });
+    </script>
+  )}
+</body>
+</html>
