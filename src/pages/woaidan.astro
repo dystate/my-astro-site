@@ -74,7 +74,7 @@ const shelves = [booksData];
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>woaidan · 魔法书架</title>
+  <title>Dystate</title>
 
   <style is:global>
     :root { --bg: #11141a; --shelf-wood: #15110c; --shelf-edge: #2a2118; --teal:#6fb6c9; --orange:#e0552b; }
@@ -117,6 +117,24 @@ const shelves = [booksData];
     .poster-corners i.tr { top:0; right:0; border-left:0; border-bottom:0; }
     .poster-corners i.bl { bottom:0; left:0; border-right:0; border-top:0; }
     .poster-corners i.br { bottom:0; right:0; border-left:0; border-top:0; }
+
+    /* 顶部居中三格 toolbar */
+    .shelf-toolbar {
+      position: fixed; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+      z-index: 7; display: flex; background: #fff; border-radius: 14px; overflow: hidden;
+      border: 1px solid rgba(0,0,0,.06); box-shadow: 0 6px 18px -6px rgba(0,0,0,.28);
+    }
+    .shelf-toolbar a, .shelf-toolbar .tb-cell {
+      width: 56px; height: 48px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #2d3748; text-decoration: none; transition: background .15s;
+    }
+    .shelf-toolbar a:hover { background: rgba(0,0,0,.05); }
+    .shelf-toolbar > * + * { border-left: 1px solid rgba(0,0,0,.08); }
+    .shelf-toolbar svg { width: 24px; height: 24px; display: block; }
+    .shelf-toolbar .tb-dot { width: 6px; height: 6px; border-radius: 50%; background: #cfd3da; }
+    @media (max-width: 760px) {
+      .shelf-toolbar a, .shelf-toolbar .tb-cell { width: 50px; height: 44px; }
+    }
 
     /* ---------- 悬浮封面 ---------- */
     .cover-stage { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; opacity: 0; pointer-events: none; transition: opacity .45s ease; perspective: 1400px;
@@ -304,6 +322,11 @@ const shelves = [booksData];
         ))}
       </div>
       <div class="hint">轻触书脊抽出</div>
+      <nav class="shelf-toolbar" aria-label="导航">
+        <span class="tb-cell" aria-hidden="true"><i class="tb-dot"></i></span>
+        <a href="/xzds" aria-label="待办清单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5l1.4 1.4 2.6-2.6"/><path d="M3.5 12.5l1.4 1.4 2.6-2.6"/><path d="M3.5 18.5l1.4 1.4 2.6-2.6"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="20" y2="12"/><line x1="11" y1="18" x2="20" y2="18"/></svg></a>
+        <span class="tb-cell" aria-hidden="true"><i class="tb-dot"></i></span>
+      </nav>
       <div class="poster-corners"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
 
       {/* 悬浮封面 */}
@@ -366,8 +389,8 @@ const shelves = [booksData];
   ) : (
     <div class="min-h-screen flex flex-col items-center justify-center bg-[#0d0f13] p-4">
       <div class="mb-8 text-center">
-        <h1 class="text-4xl font-extralight tracking-[0.3em] text-amber-200/90 mb-3 font-serif">私密入口</h1>
-        <p class="text-gray-500 text-xs tracking-wider">请勿入内。
+        <h1 class="text-4xl font-extralight tracking-[0.3em] text-amber-200/90 mb-3 font-serif">WOAIDAN</h1>
+        <p class="text-gray-500 text-xs tracking-wider">🔒 本地记忆核心库 · 请先验证您的主理人身份</p>
       </div>
       <div class="w-full max-w-sm"><SignInBlock client:only="react" /></div>
     </div>

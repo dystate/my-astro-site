@@ -9,7 +9,7 @@ import { photos,  meta as photosMeta }  from "../data/person/photos";
 import { diary,   meta as diaryMeta }   from "../data/person/diary";
 import { cooking, meta as cookingMeta } from "../data/person/cooking";
 
-const author = { name: "G.", initial: "G" };
+const author = { name: "宇宙无敌dddst", initial: "D" };
 
 // 导航顺序
 const sections = [musicMeta, videoMeta, photosMeta, diaryMeta, cookingMeta];
@@ -26,7 +26,7 @@ const defaultId = "music";
     <title>person</title>
   </head>
   <body>
-    <div class="stage" data-active={defaultId} data-open="false">
+    <div class="stage" data-active={defaultId} data-open="false" data-menu="false">
       <button class="switch" id="switch" aria-label="开关 / 切换板块" aria-expanded="false">
         <span class="switch__lever"></span>
         <span class="switch__label">PERSON</span>
@@ -168,6 +168,18 @@ const defaultId = "music";
       html { scrollbar-width: none; -ms-overflow-style: none; }
       html::-webkit-scrollbar { display: none; }
 
+      /* Frutiger 是商业授权字体，仓库里不含字体文件。取得授权后把 woff2 放到
+         public/fonts/ 下，取消下面注释即可启用；未启用时回退到 Segoe UI 等近似无衬线。
+      @font-face {
+        font-family: "Frutiger"; font-weight: 400; font-display: swap;
+        src: url("/fonts/Frutiger-Roman.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Frutiger"; font-weight: 700; font-display: swap;
+        src: url("/fonts/Frutiger-Bold.woff2") format("woff2");
+      }
+      */
+
       :root {
         --bg-on: #e7e4de; --fg-on: #1a1a1a; --bg-off: #121212; --fg-off: #8a8a8a;
         --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -176,7 +188,7 @@ const defaultId = "music";
       .stage {
         position: relative; height: 100vh; overflow: hidden;
         background: var(--bg-off); color: var(--fg-off);
-        font-family: ui-sans-serif, system-ui, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        font-family: "Frutiger", "Frutiger Neue LT", "Segoe UI", "Helvetica Neue", "PingFang SC", system-ui, sans-serif;
         transition: background .5s var(--ease), color .5s var(--ease);
       }
       .stage[data-open="true"] { background: var(--bg-on); color: var(--fg-on); }
@@ -260,9 +272,25 @@ const defaultId = "music";
       .post__text p { margin: 6px 0 0; line-height: 1.75; font-size: 15px; color: #2c2c2c; }
 
       @media (max-width: 600px) {
-        .switch { top: 16px; left: 16px; }
-        .nav { top: 78px; left: 16px; }
-        .content { padding-top: 132px; }
+        .switch { top: 16px; left: 16px; z-index: 30; }
+        .content { padding-top: 84px; }
+
+        /* 目录改成整屏覆盖菜单：点开关弹出，选板块自动收起，不再压住内容 */
+        .nav {
+          position: fixed; inset: 0; left: 0; right: 0; top: 0; bottom: 0;
+          padding: 96px 28px 32px; display: flex; flex-direction: column; justify-content: center;
+          background: var(--bg-on);
+          opacity: 0; transform: none; pointer-events: none;
+          transition: opacity .3s var(--ease); z-index: 25;
+        }
+        .stage[data-open="true"] .nav { opacity: 0; pointer-events: none; }
+        .stage[data-menu="true"] .nav { opacity: 1; pointer-events: auto; }
+        .nav ul { width: 100%; }
+        .nav li { margin: 14px 0; }
+        .nav__item { gap: 16px; opacity: .5; }
+        .nav__item.is-current { opacity: 1; }
+        .nav__cn { font-size: 32px; }
+        .nav__en { font-size: 12px; letter-spacing: .14em; }
       }
     </style>
 
@@ -277,12 +305,26 @@ const defaultId = "music";
         panels.forEach((p) => p.classList.toggle("is-active", p.dataset.panel === id));
         navItems.forEach((n) => n.classList.toggle("is-current", n.dataset.target === id));
       }
+      const mq = window.matchMedia("(max-width: 600px)");
+      function setMenu(open) { stage.dataset.menu = String(open); }
       function setOpen(open) {
         stage.dataset.open = String(open);
         switchBtn.setAttribute("aria-expanded", String(open));
+        if (!open) setMenu(false);
       }
-      switchBtn.addEventListener("click", () => setOpen(stage.dataset.open !== "true"));
-      navItems.forEach((item) => item.addEventListener("click", () => setActive(item.dataset.target)));
+      switchBtn.addEventListener("click", () => {
+        const open = stage.dataset.open === "true";
+        if (mq.matches) {
+          if (!open) { setOpen(true); setMenu(true); }       // 开灯并弹出目录
+          else { setMenu(stage.dataset.menu !== "true"); }   // 之后开关切换目录显隐
+        } else {
+          setOpen(!open);                                    // 桌面端：开 / 关
+        }
+      });
+      navItems.forEach((item) => item.addEventListener("click", () => {
+        setActive(item.dataset.target);
+        if (mq.matches) setMenu(false);                      // 手机端选完收起目录
+      }));
       setActive(stage.dataset.active);
 
       // —— 播放：音乐 + 视频共用一个“同时只播一个”的开关 ——
