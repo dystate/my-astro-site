@@ -9,8 +9,8 @@ export interface Photo {
 
 export const photos: Photo[] = [
   {
-    src: "/board/handaccount.jpg",
-    alt: "手账内页",
-    caption: "本周手账",
+    src: "/images/graduate.jpg",
+    alt: "",
+    caption: "近期",
   },
 ];

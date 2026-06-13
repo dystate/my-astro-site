@@ -31,7 +31,7 @@ export const lifeEntries: LifeEntry[] = [
     src: "/images/graduate.jpg",
     alt: "1",
     date: "2026.5.31 中南民族大学",
-    diary: "离开",
+    diary: "和ann，wxz一起拍照。就是没洗头兴致不高。",
     rot: -2.5,
     pin: "yellow",
   },

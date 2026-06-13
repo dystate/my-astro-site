@@ -17,7 +17,7 @@ const woaidan = defineCollection({
 
 // 告示栏「更新 / News」
 const updates = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/data/updates' }),
+  loader: glob({ pattern: '**/*.md', base: './src/data/board/updates' }),
   schema: z.object({
     title: z.string(),
     date: z.coerce.date(),             // frontmatter 写 2026-06-10 即可
