@@ -1,0 +1,87 @@
+---
+import { photos } from "../../data/photos";
+const photo = photos[0];
+---
+
+<figure class="frame" style="--rot:1.5deg">
+  <span class="tape tape-tl" aria-hidden="true"></span>
+  <span class="tape tape-br" aria-hidden="true"></span>
+  <div class="mat">
+    {
+      photo ? (
+        <img class="photo" src={photo.src} alt={photo.alt} loading="lazy" />
+      ) : (
+        <div class="placeholder">
+          <span>PHOTO</span>
+          <small>放进 public/board/</small>
+        </div>
+      )
+    }
+  </div>
+  {photo?.caption && <figcaption class="cap">{photo.caption}</figcaption>}
+</figure>
+
+<style>
+  .frame {
+    --rot: 0deg;
+    position: relative;
+    margin: 0;
+    transform: rotate(var(--rot));
+    border: 3px solid #000;
+    background: #fff;
+    box-shadow: 6px 6px 0 0 #000;
+    padding: 0.6rem 0.6rem 0.8rem;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .frame:hover {
+    transform: rotate(var(--rot)) translate(3px, 3px);
+    box-shadow: 3px 3px 0 0 #000;
+  }
+
+  .mat { border: 3px solid #000; background: #fff; }
+  .photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+  .placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    aspect-ratio: 4 / 5;
+    font-family: var(--mono, monospace);
+    background: repeating-linear-gradient(45deg, #fff 0 10px, #ececec 10px 20px);
+  }
+  .placeholder span { font-weight: 700; letter-spacing: 0.12em; }
+  .placeholder small { font-size: 0.7rem; color: #555; }
+
+  .cap {
+    margin-top: 0.55rem;
+    text-align: center;
+    font-family: var(--mono, monospace);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.78rem;
+    color: #000;
+  }
+
+  .tape {
+    position: absolute;
+    width: 60px;
+    height: 22px;
+    border: 3px solid #000;
+    box-shadow: 2px 2px 0 0 #000;
+    z-index: 3;
+  }
+  .tape-tl { top: -10px; left: -10px; transform: rotate(-30deg); background: #ffe14d; }
+  .tape-br { bottom: 18px; right: -12px; transform: rotate(-30deg); background: #2563eb; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame { transition: none; }
+  }
+</style>

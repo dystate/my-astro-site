@@ -2,7 +2,7 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
-// ⚠️ 用 glob loader 的集合不能放在 src/content/ 里，所以内容在 src/data/woaidan/
+// ⚠️ 用 glob loader 的集合统一放在 src/data/ 下，避免和保留目录冲突
 const woaidan = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/data/woaidan' }),
   schema: z.object({
@@ -15,4 +15,20 @@ const woaidan = defineCollection({
   }),
 });
 
-export const collections = { woaidan };
+// 告示栏「更新 / News」
+const updates = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/data/updates' }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),             // frontmatter 写 2026-06-10 即可
+    link: z
+      .object({
+        label: z.string(),
+        href: z.string(),
+      })
+      .optional(),
+    draft: z.boolean().default(false), // 设 true 可暂时不显示
+  }),
+});
+
+export const collections = { woaidan, updates };

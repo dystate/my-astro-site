@@ -1,5 +1,6 @@
 ---
 import "@/styles/global.css";
+import BulletinBoard from "@/components/board/BulletinBoard.astro";
 ---
 
 <html lang="zh-CN">
@@ -58,6 +59,13 @@ import "@/styles/global.css";
               </div>
             </div>
 
+          </div>
+        </section>
+
+        <!-- 告示栏 -->
+        <section class="px-5 sm:px-10 py-16 sm:py-24 border-b-4 border-black">
+          <div class="max-w-5xl mx-auto">
+            <BulletinBoard />
           </div>
         </section>
       
