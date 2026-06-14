@@ -1,7 +1,7 @@
 ---
-// src/pages/index.astro — 使用示例
-// 布局:页面顶部正中放 logo,5 张卡片整体垂直居中。背景灰白色。
-import GazeGallery from "../components/GazeGallery.astro";
+// src/pages/menu.astro
+// 顶部固定 Dystate logo(下滑隐藏)+ GazeStack(React 岛,滚动弹入叠卡)
+import GazeStack from "../components/GazeStack.tsx";
 import "@/styles/global.css";
 ---
 
@@ -18,49 +18,42 @@ import "@/styles/global.css";
         min-height: 100vh;
         background: #e7e4de;              /* 灰白色背景 */
         font-family: "Helvetica Neue", Arial, sans-serif;
-
-        display: flex;
-        flex-direction: column;
-        align-items: center;
       }
-      .site-logo {
-        margin: 40px 0 0;                 /* 顶部留白 */
-        display: block;
-      }
-      .site-logo img {
-        height: 56px;                     /* logo 大小,按需调 */
-        width: auto;
-        display: block;
-      }
-      .stage {
-        flex: 1;                          /* 占满剩余高度 */
-        width: 100%;
-        display: flex;
-        align-items: center;              /* 卡片垂直居中 */
-        justify-content: center;
-        padding: 24px;
-      }
-      @media (max-width: 768px) {
-        .site-logo { margin-top: 28px; }
-        .site-logo img { height: 44px; }
-        .stage { padding: 16px; align-items: flex-start; }
-      }
+      /* 下滑隐藏 logo 的过渡 */
+      #site-logo { transition: opacity .3s ease, transform .3s ease; }
+      #site-logo.hide { opacity: 0; pointer-events: none; }
     </style>
   </head>
   <body>
 
-    <header class="fixed top-8 left-1/2 -translate-x-1/2 z-50">
-        <a
+    <!-- 顶部固定 logo(点击回首页;下滑时隐藏) -->
+    <header id="site-logo" class="fixed top-8 left-1/2 -translate-x-1/2 z-50">
+      <a
         href="/"
         class="text-3xl font-bold no-underline tracking-[0.15em]"
-    >
+      >
         <span class="text-blue-600">D</span>y<span class="text-green-500">st</span>ate<span class="text-yellow-500">_</span>
-    </a>
+      </a>
     </header>
 
-    <!-- 卡片整体垂直居中 -->
-    <main class="stage">
-      <GazeGallery />
-    </main>
+    <!-- GazeStack 岛:必须带 client:visible -->
+    <GazeStack client:visible />
+
+    <script>
+      // 下滑隐藏 logo,上滑或回到顶部时显示
+      const logo = document.getElementById("site-logo");
+      let last = window.scrollY;
+      window.addEventListener(
+        "scroll",
+        () => {
+          const y = window.scrollY;
+          if (y > 60 && y > last) logo?.classList.add("hide");   // 向下滚且离顶部一段
+          else logo?.classList.remove("hide");                    // 向上滚或接近顶部
+          last = y;
+        },
+        { passive: true }
+      );
+    </script>
+
   </body>
 </html>

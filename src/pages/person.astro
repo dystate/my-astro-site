@@ -26,6 +26,13 @@ const defaultId = "music";
     <title>person</title>
   </head>
   <body>
+    <!-- 返回菜单 Logo -->
+    <a href="/menu" aria-label="返回菜单" title="返回菜单"
+       style="position:fixed;top:28px;left:50%;transform:translateX(-50%);z-index:1000;
+              font:700 28px/1 'Helvetica Neue',Arial,sans-serif;letter-spacing:0.15em;
+              text-decoration:none;color:#111;">
+      <span style="color:#2563eb">D</span>y<span style="color:#22c55e">st</span>ate<span style="color:#eab308">_</span>
+    </a>
     <div class="stage" data-active={defaultId} data-open="false" data-menu="false">
       <button class="switch" id="switch" aria-label="开关 / 切换板块" aria-expanded="false">
         <span class="switch__lever"></span>

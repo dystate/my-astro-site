@@ -1,0 +1,145 @@
+---
+// 点阵波浪背景（Three.js）。从给定的 React 组件改写为 Astro 原生版本。
+// 依赖：npm i three  （TS 类型可选：npm i -D @types/three）
+interface Props {
+  dots?: "dark" | "light"; // 点的颜色：浅色背景用 dark（黑点），深色背景用 light（灰点）
+  class?: string;
+}
+const { dots = "dark", class: className = "" } = Astro.props;
+---
+
+<div
+  class:list={["dotted-surface", className]}
+  data-dotted-surface
+  data-dots={dots}
+  aria-hidden="true"
+></div>
+
+<style>
+  .dotted-surface {
+    /* 默认贴在父容器里（hero 用）。想做成整页固定背景，把 absolute 改成 fixed */
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .dotted-surface > canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+</style>
+
+<script>
+  import * as THREE from "three";
+
+  function initDottedSurface(container: HTMLElement) {
+    const SEPARATION = 150;
+    const AMOUNTX = 40;
+    const AMOUNTY = 60;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0xffffff, 2000, 10000);
+
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      1,
+      10000
+    );
+    camera.position.set(0, 355, 1220);
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0); // 透明，让页面底色透出来
+    container.appendChild(renderer.domElement);
+
+    const geometry = new THREE.BufferGeometry();
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const shade = container.dataset.dots === "light" ? 200 : 0;
+
+    for (let ix = 0; ix < AMOUNTX; ix++) {
+      for (let iy = 0; iy < AMOUNTY; iy++) {
+        positions.push(
+          ix * SEPARATION - (AMOUNTX * SEPARATION) / 2,
+          0,
+          iy * SEPARATION - (AMOUNTY * SEPARATION) / 2
+        );
+        colors.push(shade, shade, shade);
+      }
+    }
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(positions, 3)
+    );
+    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 8,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8,
+      sizeAttenuation: true,
+    });
+
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
+
+    let count = 0;
+    let animationId = 0;
+
+    const animate = () => {
+      animationId = requestAnimationFrame(animate);
+      const pos = geometry.attributes.position.array as Float32Array;
+      let i = 0;
+      for (let ix = 0; ix < AMOUNTX; ix++) {
+        for (let iy = 0; iy < AMOUNTY; iy++) {
+          pos[i * 3 + 1] =
+            Math.sin((ix + count) * 0.3) * 50 +
+            Math.sin((iy + count) * 0.5) * 50;
+          i++;
+        }
+      }
+      geometry.attributes.position.needsUpdate = true;
+      renderer.render(scene, camera);
+      count += 0.1;
+    };
+
+    const onResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener("resize", onResize);
+
+    // 尊重「减少动态效果」偏好：渲染一帧静态画面
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      renderer.render(scene, camera);
+    } else {
+      animate();
+    }
+
+    // 视图切换时清理（用了 view transitions 的话）
+    const cleanup = () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", onResize);
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+      renderer.domElement.remove();
+      document.removeEventListener("astro:before-swap", cleanup);
+    };
+    document.addEventListener("astro:before-swap", cleanup);
+  }
+
+  document
+    .querySelectorAll<HTMLElement>("[data-dotted-surface]")
+    .forEach((el) => {
+      if (el.dataset.inited) return; // 防止重复初始化
+      el.dataset.inited = "1";
+      initDottedSurface(el);
+    });
+</script>

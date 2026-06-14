@@ -1,6 +1,7 @@
 ---
 import "@/styles/global.css";
 import BulletinBoard from "@/components/board/BulletinBoard.astro";
+import DottedSurface from "@/components/DottedSurface.astro";
 ---
 
 <html lang="zh-CN">
@@ -34,14 +35,8 @@ import BulletinBoard from "@/components/board/BulletinBoard.astro";
         
         <section class="relative h-screen flex flex-col items-center justify-center p-10 overflow-hidden border-b-4 border-black">
           
-          <div class="absolute inset-0 z-0 bg-black/20">
-            <video autoplay loop muted playsinline class="hidden sm:block w-full h-full object-cover">
-              <source src="/videos/backgroundH.mp4" type="video/mp4" />
-            </video>
-            <video autoplay loop muted playsinline class="block sm:hidden w-full h-full object-cover">
-              <source src="/videos/backgroundS.mp4" type="video/mp4" />
-            </video>
-          </div>
+          <!-- 背景：点阵波浪（替代原来的视频） -->
+          <DottedSurface dots="dark" />
 
           <div class="relative z-10 flex flex-col items-center text-center space-y-4">
             
