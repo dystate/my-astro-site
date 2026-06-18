@@ -1,13 +1,11 @@
 ---
 import UpdatesNote from "./UpdatesNote.astro";
-import LearningNote from "./LearningNote.astro";
 import StickyNote from "./StickyNote.astro";
 import PhotoFrame from "./PhotoFrame.astro";
 ---
 
 <section class="board" aria-label="告示栏">
   <div class="slot slot-updates"><UpdatesNote /></div>
-  <div class="slot slot-learning"><LearningNote /></div>
   <div class="slot slot-note"><StickyNote /></div>
   <div class="slot slot-photo"><PhotoFrame /></div>
 </section>
@@ -37,20 +35,18 @@ import PhotoFrame from "./PhotoFrame.astro";
     gap: clamp(24px, 3vw, 44px);
     grid-template-columns: 1.7fr 1fr;
     grid-template-areas:
-      "updates learning"
       "updates photo"
       "note    photo";
     align-items: start;
   }
   .slot-updates { grid-area: updates; }
-  .slot-learning { grid-area: learning; }
   .slot-note { grid-area: note; }
   .slot-photo { grid-area: photo; }
 
   @media (max-width: 860px) {
     .board {
       grid-template-columns: 1fr;
-      grid-template-areas: "updates" "learning" "note" "photo";
+      grid-template-areas: "updates" "note" "photo";
       box-shadow: 7px 7px 0 0 var(--ink);
     }
   }

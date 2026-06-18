@@ -1,0 +1,339 @@
+---
+/**
+ * FlipBook.astro — StPageFlip 翻书组件（复刻 ten.375.studio 效果）
+ *
+ * 安装依赖：  npm i page-flip
+ *
+ * 用法：
+ *   <FlipBook pages={pages} dragHint="trascina per girare le pagine" credit="375.studio" />
+ *
+ * pages 数组里每一项就是一“页”（leaf）。第一页通常是封面、最后一页是封底，
+ * 它们会被设成硬壳（hard），中间内页是软页（soft），翻起来才有真实的弯曲感。
+ */
+
+export interface FlipPage {
+  /** 'cover' = 硬壳封面/封底（单页居中显示）；'page' = 普通内页 */
+  type?: "cover" | "page";
+  /** 该页图片地址（漫画扫描图）。不填则用下方的占位内容 */
+  image?: string;
+  /** 底部大标签，如 "YEAR 0" */
+  year?: string;
+  /** 标签副标题，如 "L'INIZIO" / "NEW ENTRIES" */
+  subtitle?: string;
+  /** 标签年份数字，如 "2015" */
+  date?: string;
+  /** 占位页上的标题文字（没有 image 时用） */
+  label?: string;
+}
+
+interface Props {
+  pages: FlipPage[];
+  /** 书页宽高比例（高/宽），杂志一般 1.4 左右 */
+  ratio?: number;
+  /** 单页基准宽度（px），用于 stretch 的 max 限制 */
+  pageWidth?: number;
+  dragHint?: string;
+  credit?: string;
+}
+
+const {
+  pages,
+  ratio = 1.41,
+  pageWidth = 460,
+  dragHint = "拖动翻页",
+  credit = "375.studio",
+} = Astro.props;
+
+const pageHeight = Math.round(pageWidth * ratio);
+---
+
+<section class="flipbook-stage">
+  <!-- 翻书容器 -->
+  <div
+    class="flipbook"
+    id="flipbook"
+    data-page-width={pageWidth}
+    data-page-height={pageHeight}
+  >
+    {
+      pages.map((p, i) => {
+        const isCover = p.type === "cover" || i === 0 || i === pages.length - 1;
+        return (
+          <div
+            class="page"
+            data-density={isCover ? "hard" : "soft"}
+            data-year={p.year ?? ""}
+            data-subtitle={p.subtitle ?? ""}
+            data-date={p.date ?? ""}
+          >
+            <div class={`page-content ${isCover ? "is-cover" : ""}`}>
+              {p.image ? (
+                <img src={p.image} alt={p.label ?? `page ${i}`} draggable="false" />
+              ) : (
+                <div class="placeholder">
+                  <span class="placeholder-kicker">STUDIO 375</span>
+                  <span class="placeholder-title">{p.label ?? p.year ?? `Page ${i}`}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })
+    }
+  </div>
+
+  <!-- 底部随页切换的 YEAR 大标签 -->
+  <div class="meta-row" id="metaRow">
+    <div class="meta-cell" data-slot="left"></div>
+    <div class="meta-cell meta-right" data-slot="right"></div>
+  </div>
+
+  <!-- 底部固定文案 -->
+  <div class="hint-row">
+    <span class="drag-hint">{dragHint}</span>
+    <span class="credit">{credit}</span>
+  </div>
+</section>
+
+<style>
+  /* ---- StPageFlip 必需的基础样式（内联，省去单独 import css）---- */
+  :global(.stf__parent) {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    transform: translateZ(0);
+    -ms-touch-action: pan-y;
+    touch-action: pan-y;
+    margin: 0 auto;
+  }
+  :global(.stf__parent canvas) {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+  }
+  :global(.stf__block) {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    perspective: 2000px;
+  }
+  :global(.stf__item) {
+    display: none;
+    position: absolute;
+    transform-style: preserve-3d;
+  }
+  :global(.stf__outerShadow),
+  :global(.stf__innerShadow),
+  :global(.stf__hardShadow),
+  :global(.stf__hardInnerShadow) {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  /* ---- 舞台 ---- */
+  .flipbook-stage {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(20px, 4vw, 40px);
+    padding: clamp(24px, 6vw, 64px) 16px;
+    box-sizing: border-box;
+  }
+
+  /* 给整本书加柔和落影，复刻封面悬浮的感觉 */
+  .flipbook {
+    filter: drop-shadow(0 26px 36px rgba(0, 0, 0, 0.32));
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: pan-y;
+  }
+
+  /* 单页 */
+  .page {
+    background: #fff;
+    overflow: hidden;
+  }
+  .page-content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #f4f4f2;
+  }
+  .page-content img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+
+  /* 硬壳封面/封底（无图时的占位外观） */
+  .page-content.is-cover {
+    background: radial-gradient(120% 120% at 30% 20%, #2b3a4a 0%, #161b22 60%, #0c0f14 100%);
+  }
+
+  /* 占位内容（没传 image 时）*/
+  .placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    color: #e9ecef;
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 9px),
+      radial-gradient(140% 120% at 50% 0%, #3a4a5c 0%, #1b222b 70%);
+  }
+  .placeholder-kicker {
+    font: 600 12px/1 ui-monospace, monospace;
+    letter-spacing: 0.28em;
+    color: #ff5a3c;
+  }
+  .placeholder-title {
+    font: 800 clamp(20px, 5vw, 34px)/1.05 system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    padding: 0 18px;
+  }
+
+  /* ---- 底部 YEAR 标签 ---- */
+  .meta-row {
+    width: min(92vw, 920px);
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 96px;
+  }
+  .meta-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .meta-right {
+    align-items: flex-end;
+    text-align: right;
+  }
+  .meta-cell :global(.m-year) {
+    font: 800 clamp(30px, 7vw, 52px)/0.95 system-ui, sans-serif;
+    letter-spacing: 0.02em;
+    color: #bfe3e8;
+    -webkit-text-stroke: 1.5px #2a3b46;
+    paint-order: stroke fill;
+  }
+  .meta-cell :global(.m-sub) {
+    font: 700 clamp(13px, 2.4vw, 17px)/1 system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    color: #111;
+  }
+  .meta-cell :global(.m-date) {
+    font: 800 clamp(15px, 2.6vw, 19px)/1 system-ui, sans-serif;
+    color: #111;
+  }
+  .meta-cell:empty,
+  .meta-cell :global(.m-empty) {
+    visibility: hidden;
+  }
+
+  /* ---- 底部固定文案 ---- */
+  .hint-row {
+    width: min(92vw, 920px);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    padding-top: 10px;
+  }
+  .drag-hint {
+    font: italic 600 clamp(16px, 3.4vw, 26px)/1 Georgia, serif;
+    color: #111;
+  }
+  .credit {
+    font: 800 clamp(15px, 2.8vw, 20px)/1 system-ui, sans-serif;
+    color: #111;
+  }
+</style>
+
+<script>
+  import { PageFlip } from "page-flip";
+
+  function initFlipBook() {
+    const el = document.getElementById("flipbook") as HTMLElement | null;
+    if (!el || el.dataset.inited === "1") return;
+    el.dataset.inited = "1";
+
+    const baseW = Number(el.dataset.pageWidth) || 460;
+    const baseH = Number(el.dataset.pageHeight) || 650;
+
+    const pageFlip = new PageFlip(el, {
+      width: baseW,
+      height: baseH,
+      size: "stretch",          // 自适应容器
+      minWidth: 280,
+      maxWidth: baseW,
+      minHeight: Math.round(280 * (baseH / baseW)),
+      maxHeight: baseH,
+      maxShadowOpacity: 0.5,
+      showCover: true,          // 封面/封底单独成页居中
+      usePortrait: true,        // 窄屏自动单页，宽屏自动双页对开
+      drawShadow: true,
+      flippingTime: 800,
+      autoSize: true,
+      mobileScrollSupport: false,
+    });
+
+    const pageEls = el.querySelectorAll<HTMLElement>(".page");
+    pageFlip.loadFromHTML(pageEls);
+
+    // —— 底部 YEAR 标签更新 ——
+    const slotLeft = document.querySelector<HTMLElement>('[data-slot="left"]')!;
+    const slotRight = document.querySelector<HTMLElement>('[data-slot="right"]')!;
+
+    function metaHTML(p?: HTMLElement) {
+      if (!p) return '<span class="m-empty">&nbsp;</span>';
+      const year = p.dataset.year || "";
+      const sub = p.dataset.subtitle || "";
+      const date = p.dataset.date || "";
+      if (!year && !sub && !date) return '<span class="m-empty">&nbsp;</span>';
+      return `
+        ${year ? `<span class="m-year">${year}</span>` : ""}
+        ${sub ? `<span class="m-sub">${sub}</span>` : ""}
+        ${date ? `<span class="m-date">${date}</span>` : ""}`;
+    }
+
+    function updateMeta(index: number) {
+      const isPortrait = pageFlip.getOrientation() === "portrait";
+      if (isPortrait) {
+        // 单页：只显示当前页标签（放左槽）
+        slotLeft.innerHTML = metaHTML(pageEls[index]);
+        slotRight.innerHTML = metaHTML(undefined);
+      } else {
+        // 双页对开：当前 index 为左页，index+1 为右页
+        slotLeft.innerHTML = metaHTML(pageEls[index]);
+        slotRight.innerHTML = metaHTML(pageEls[index + 1]);
+      }
+    }
+
+    pageFlip.on("flip", (e: any) => updateMeta(e.data as number));
+    pageFlip.on("changeOrientation", () =>
+      updateMeta(pageFlip.getCurrentPageIndex())
+    );
+    updateMeta(0);
+
+    // 键盘左右翻页（可选）
+    window.addEventListener("keydown", (ev) => {
+      if (ev.key === "ArrowRight") pageFlip.flipNext();
+      if (ev.key === "ArrowLeft") pageFlip.flipPrev();
+    });
+  }
+
+  // 普通加载 + 支持 Astro View Transitions
+  document.addEventListener("DOMContentLoaded", initFlipBook);
+  document.addEventListener("astro:page-load", initFlipBook);
+</script>
