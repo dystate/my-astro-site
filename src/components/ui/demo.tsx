@@ -1,4 +1,4 @@
-import { LoginModal } from "@/components/login-modal";
+import { LoginModal } from "@/components/auth/login-modal";
 
 export default function DemoOne() {
   return (

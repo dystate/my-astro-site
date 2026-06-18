@@ -1,0 +1,28 @@
+---
+import MarkdownLayout from "@/layouts/MarkdownLayout.astro";
+
+const { slug } = Astro.params;
+
+// In SSR mode, look up the markdown file at request time
+const modules = import.meta.glob('/src/data/study/**/*.md');
+let Content: any = null;
+let frontmatter: any = {};
+
+for (const [path, loader] of Object.entries(modules)) {
+  const filename = path.split('/').pop()!.replace('.md', '');
+  if (filename === slug) {
+    const post = await loader();
+    Content = post.default;
+    frontmatter = post.frontmatter;
+    break;
+  }
+}
+
+if (!Content) {
+  return Astro.redirect('/study');
+}
+---
+
+<MarkdownLayout frontmatter={frontmatter}>
+  <Content />
+</MarkdownLayout>

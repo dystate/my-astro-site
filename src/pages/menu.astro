@@ -1,7 +1,7 @@
 ---
 // src/pages/menu.astro
-// 顶部固定 Dystate logo(下滑隐藏)+ GazeStack(React 岛,滚动弹入叠卡)
-import GazeStack from "../components/GazeStack.tsx";
+// 堆叠卡片 — 新粗野主义风格
+import StackingCard from "@/components/ui/stacking-card";
 import "@/styles/global.css";
 ---
 
@@ -9,51 +9,51 @@ import "@/styles/global.css";
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dystate</title>
+    <title>Dystate — Menu</title>
     <style is:global>
-      :root { color-scheme: light; }
+      :root { color-scheme: dark; }
       * { box-sizing: border-box; }
       body {
         margin: 0;
         min-height: 100vh;
-        background: #e7e4de;              /* 灰白色背景 */
+        background: #e5e5e5;              /* brutalist light gray */
         font-family: "Helvetica Neue", Arial, sans-serif;
       }
-      /* 下滑隐藏 logo 的过渡 */
-      #site-logo { transition: opacity .3s ease, transform .3s ease; }
-      #site-logo.hide { opacity: 0; pointer-events: none; }
     </style>
   </head>
   <body>
 
-    <!-- 顶部固定 logo(点击回首页;下滑时隐藏) -->
-    <header id="site-logo" class="fixed top-8 left-1/2 -translate-x-1/2 z-50">
-      <a
-        href="/"
-        class="text-3xl font-bold no-underline tracking-[0.15em]"
-      >
-        <span class="text-blue-600">D</span>y<span class="text-green-500">st</span>ate<span class="text-yellow-500">_</span>
-      </a>
-    </header>
-
-    <!-- GazeStack 岛:必须带 client:visible -->
-    <GazeStack client:visible />
-
-    <script>
-      // 下滑隐藏 logo,上滑或回到顶部时显示
-      const logo = document.getElementById("site-logo");
-      let last = window.scrollY;
-      window.addEventListener(
-        "scroll",
-        () => {
-          const y = window.scrollY;
-          if (y > 60 && y > last) logo?.classList.add("hide");   // 向下滚且离顶部一段
-          else logo?.classList.remove("hide");                    // 向上滚或接近顶部
-          last = y;
-        },
-        { passive: true }
-      );
-    </script>
+    <!-- 堆叠卡片 -->
+    <StackingCard client:load projects={[
+      {
+        title: '我',
+        description: '',
+        link: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=500&auto=format&fit=crop',
+        color: '#5451f2',
+        href: '/me',
+      },
+      {
+        title: '生活',
+        description: '',
+        link: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=500&auto=format&fit=crop',
+        color: '#f9ab12',
+        href: '/life',
+      },
+      {
+        title: '日志',
+        description: '',
+        link: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&auto=format&fit=crop',
+        color: '#9be014',
+        href: '/study',
+      },
+      {
+        title: '永久的春天',
+        description: '',
+        link: 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=500&auto=format&fit=crop',
+        color: '#f29fc6',
+        href: '/woaidan',
+      },
+    ]} />
 
   </body>
 </html>

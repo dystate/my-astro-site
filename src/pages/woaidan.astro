@@ -4,7 +4,7 @@
 
 import "../styles/global.css";
 
-import AnimatedLogin from "../components/ui/animated-login";
+import AnimatedLogin from "../components/auth/animated-login";
 
 import { books as booksData } from "../data/books";
 
@@ -198,7 +198,21 @@ const shelves = [booksData];
 
     .spine-tag { font: 600 8px/1 ui-monospace,"SFMono-Regular",monospace; letter-spacing: .3px; opacity: .72; color: inherit; pointer-events: none; }
 
-    .hint { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); font: 700 11px/1 system-ui, sans-serif; letter-spacing: 3px; text-transform: uppercase; color: #8a8f98; pointer-events: none; z-index: 4; }
+    .hint { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 4; }
+
+    .hint a {
+      font: 800 clamp(18px, 3.5vw, 24px)/1 system-ui, sans-serif;
+      letter-spacing: 0.15em;
+      text-decoration: none;
+      color: #1c2026;
+      opacity: 0.55;
+      transition: opacity .2s;
+    }
+    .hint a:hover { opacity: 1; }
+
+    .hint .d { color: #2563eb; }      /* blue-600 */
+    .hint .st { color: #22c55e; }     /* green-500 */
+    .hint .u { color: #eab308; }      /* yellow-500 */
 
 
 
@@ -570,7 +584,11 @@ const shelves = [booksData];
 
       </div>
 
-      <div class="hint">轻触书脊抽出</div>
+      <div class="hint">
+        <a href="/menu" aria-label="返回菜单">
+          <span class="d">D</span>y<span class="st">st</span>ate<span class="u">_</span>
+        </a>
+      </div>
 
       <nav class="shelf-toolbar" aria-label="导航">
 

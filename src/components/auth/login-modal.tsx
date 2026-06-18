@@ -6,7 +6,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import SignInBlock from "@/components/ui/sign-in-block";
+import SignInBlock from "@/components/auth/sign-in-block";
 
 export function LoginModal() {
   return (

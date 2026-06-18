@@ -1,9 +1,9 @@
 ---
-layout: ../../layouts/MarkdownLayout.astro
+layout: ../../../layouts/MarkdownLayout.astro
 title: UI/UX
-subtitle: 一起美化页面吧
-category: 资源
+subtitle: 资源
 date: 2026-06-09
+category: 资源
 ---
 
 #### MotionSites
@@ -16,7 +16,7 @@ date: 2026-06-09
 >适合找组件，比如按钮、卡片、导航栏、项目展示模块。
 
 #### coverr.co
->这个网站专为网页背景视频而生！里面的视频不仅质量极高、极具电影感，而且构图通常会特意为“居中放置文字”留出呼吸空间。
+>这个网站专为网页背景视频而生！里面的视频不仅质量极高、极具电影感，而且构图通常会特意为"居中放置文字"留出呼吸空间。
 
 #### Pexels Video (pexels.com/videos)
 >审美非常在线，视频风格现代、冷峻、艺术感强。很多独立设计师和开发者都从这里找素材。
