@@ -6,7 +6,7 @@ import "../styles/global.css";
 
 import AnimatedLogin from "../components/ui/animated-login";
 
-import { getCollection, render } from 'astro:content';
+import { books as booksData } from "../data/books";
 
 
 
@@ -18,89 +18,39 @@ const isLoggedIn = !!session;
 
 
 
-/* ========== 2. 读取所有 md，并按「书」分组 ========== */
-
-let booksData = [];
+/* ========== 2. 给每本书补上 id ========== */
 
 if (isLoggedIn) {
 
-  const entries = await getCollection('woaidan');
-
-
-
-  const rendered = await Promise.all(
-
-    entries.map(async (entry) => {
-
-      const { Content } = await render(entry);
-
-      const parts = entry.id.split('/');
-
-      const folder = parts.length > 1 ? parts.slice(0, -1).join('/') : null;
-
-      return {
-
-        bookName: entry.data.book ?? folder ?? '未分组',
-
-        bookOrder: entry.data.bookOrder ?? null,
-
-        pageNumber: entry.data.pageNumber ?? null,
-
-        cover: entry.data.cover ?? null,
-
-        sortKey: entry.id,
-
-        title: entry.data.title ?? '',
-
-        Content,
-
-      };
-
-    })
-
-  );
-
-
-
-  const map = new Map();
-
-  for (const r of rendered) {
-
-    if (!map.has(r.bookName)) map.set(r.bookName, { name: r.bookName, order: null, cover: null, pages: [] });
-
-    const b = map.get(r.bookName);
-
-    if (r.bookOrder != null && b.order == null) b.order = r.bookOrder;
-
-    if (r.cover && !b.cover) b.cover = r.cover;
-
-    b.pages.push(r);
-
-  }
-
-  booksData = Array.from(map.values());
-
-  booksData.forEach((b) =>
-
-    b.pages.sort((x, y) => {
-
-      if (x.pageNumber != null && y.pageNumber != null) return x.pageNumber - y.pageNumber;
-
-      return x.sortKey.localeCompare(y.sortKey);
-
-    })
-
-  );
+  booksData.forEach((b, i) => (b.id = i));
 
   booksData.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || a.name.localeCompare(b.name));
-
-  booksData.forEach((b, i) => (b.id = i));
 
 }
 
 
 
-/* ========== 3. 书架配色与分层（VHS 磁带风 / 暗色） ========== */
+/* ========== 3. 预序列化书本数据（避免模板 script 内复杂表达式） ========== */
+
+const booksJson = isLoggedIn
+  ? JSON.stringify(
+      booksData.map((b) => ({
+        id: b.id,
+        name: b.name,
+        cover: b.cover,
+        order: b.order,
+        pages: b.pages.map((p) => ({
+          image: p.image ?? null,
+          text: p.text ?? null,
+          title: p.title ?? null,
+        })),
+      }))
+    )
+  : '[]';
+
+
+
+/* ========== 4. 书架配色与分层（VHS 磁带风 / 暗色） ========== */
 
 const spineColors = [
 
@@ -670,23 +620,9 @@ const shelves = [booksData];
 
 
 
-      {/* 服务端预渲染缓存 */}
+      {/* 书本数据（JSON 嵌入，供客户端翻页使用） */}
 
-      <div id="markdown-server-cache" style="display:none">
-
-        {booksData.map((book) =>
-
-          book.pages.map((pg, pi) => {
-
-            const C = pg.Content;
-
-            return (<div id={`md-${book.id}-${pi}`} data-title={pg.title}><C /></div>);
-
-          })
-
-        )}
-
-      </div>
+      <div id="books-data" style="display:none">{booksJson}</div>
 
     </main>
 
@@ -726,59 +662,35 @@ const shelves = [booksData];
 
 
 
-      function cache(i) { return document.getElementById('md-' + activeId + '-' + i); }
+      // 从嵌入的 JSON 中读取书本数据
+      let booksStore = [];
+      try {
+        const el = document.getElementById('books-data');
+        if (el) booksStore = JSON.parse((el.textContent || '[]').trim());
+      } catch (e) { console.error('[woaidan] 解析书本数据失败：', e); booksStore = []; }
 
-      // 判断页面类型：media(视频/音频) / image(纯图) / text(文字或图文)
+      function getBook(id) { return booksStore.find(b => b.id === id); }
+      function getPage(book, i) { return book && book.pages[i] ? book.pages[i] : null; }
 
-      function pageType(html) {
-
-        const d = document.createElement('div'); d.innerHTML = html;
-
-        if (d.querySelector('video, audio, iframe')) return 'media';
-
-        const imgs = d.querySelectorAll('img');
-
-        const text = d.textContent.replace(/\s+/g, '');
-
-        if (imgs.length >= 1 && text === '') return 'image';
-
-        return 'text';
-
-      }
-
-      // 把第 i 页渲染进元素 el，并打上类型 class
-
+      // 把第 i 页渲染进元素 el，并打上类型 class（数据来自 booksStore）
       function setPage(el, i) {
-
         el.classList.remove('type-image', 'type-media', 'type-text');
+        const book = getBook(activeId);
+        const pg = getPage(book, i);
+        if (!pg) { el.innerHTML = ''; return; }
 
-        const c = cache(i);
-
-        if (!c) { el.innerHTML = ''; return; }
-
-        const raw = c.innerHTML;
-
-        const t = pageType(raw);
-
-        if (t === 'image') { el.innerHTML = raw; el.classList.add('type-image'); }
-
-        else if (t === 'media') { el.innerHTML = raw; el.classList.add('type-media'); }
-
-        else {
-
-          const title = c.getAttribute('data-title');
-
-          el.innerHTML = (title ? '<p class="bv-leaf-title">' + title + '</p>' : '') + raw;
-
+        if (pg.image) {
+          // 整页图片（同 ten 页面效果：空白页直接变为图片）
+          el.innerHTML = '<img src="' + pg.image + '" alt="" draggable="false" />';
+          el.classList.add('type-image');
+        } else if (pg.text) {
+          const title = pg.title || '';
+          const html = pg.text.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+          el.innerHTML = (title ? '<p class="bv-leaf-title">' + title + '</p>' : '') + '<p>' + html + '</p>';
           el.classList.add('type-text');
-
         }
-
         el.scrollTop = 0;
-
       }
-
-      function pageTitle(i) { const c = cache(i); return c ? (c.getAttribute('data-title') || '') : ''; }
 
 
 
@@ -926,7 +838,7 @@ const shelves = [booksData];
 
 
 
-      /* 把第 i 页（markdown 缓存）构建成 StPageFlip 的一张软内容页 */
+      /* 把第 i 页（来自 booksStore 数据）构建成 StPageFlip 的一张软内容页 */
 
       function buildContentPage(i) {
 
@@ -1104,7 +1016,9 @@ const shelves = [booksData];
 
         if (pageW > PAGE_W) { pageW = PAGE_W; pageH = PAGE_H; }
 
-        pageW = Math.round(pageW); pageH = Math.round(pageH);
+        // 整体缩小 20%，避免书本占比过大
+        pageW = Math.round(pageW * 0.8);
+        pageH = Math.round(pageH * 0.8);
 
         bookW = landscape ? pageW * 2 : pageW;
 
@@ -1200,18 +1114,24 @@ const shelves = [booksData];
 
         reader.setAttribute('aria-hidden', 'false');
 
-        // 等 reader 显示后再量取舞台尺寸；若此帧尺寸为 0 再延一帧
 
-        requestAnimationFrame(() => {
 
-          const stage = flipRoot.closest('.flip-stage');
+        // 预加载所有图片（StPageFlip canvas 渲染前必须先加载完，否则裂图）
+        const book = getBook(activeId);
+        const imgUrls = (book?.pages || []).filter(p => p.image).map(p => p.image);
+        const preload = imgUrls.map(url => new Promise(resolve => {
+          const img = new Image();
+          img.onload = img.onerror = resolve;
+          img.src = url;
+        }));
 
-          const ready = stage && stage.clientHeight > 0 && stage.clientWidth > 0;
-
-          const go = () => { try { buildPages(b); mountFlip(); } catch (err) { console.error('[woaidan] 打开失败：', b.dataset.name, err); } };
-
-          ready ? go() : requestAnimationFrame(go);
-
+        Promise.all(preload).then(() => {
+          requestAnimationFrame(() => {
+            const stage = flipRoot.closest('.flip-stage');
+            const ready = stage && stage.clientHeight > 0 && stage.clientWidth > 0;
+            const go = () => { try { buildPages(b); mountFlip(); } catch (err) { console.error('[woaidan] 打开失败：', b.dataset.name, err); } };
+            ready ? go() : requestAnimationFrame(go);
+          });
         });
 
       }
