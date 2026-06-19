@@ -74,8 +74,8 @@ export default function MobileMenu() {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-[70] flex flex-col bg-black text-white"
           >
-            {/* 顶部：Logo + CLOSE */}
-            <div className="flex items-center justify-between p-4">
+            {/* 顶部：Logo + CLOSE，位置与主页 Dystate / MENU 按钮完全对齐 */}
+            <div className="absolute top-0 inset-x-0 flex justify-between p-4">
               <span
                 className="text-[28px] leading-none tracking-[-0.02em]"
                 style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}

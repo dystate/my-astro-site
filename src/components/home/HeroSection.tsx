@@ -39,7 +39,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-          className="font-instrument text-[18px] sm:text-[38px] md:text-[46px] leading-[0.95] tracking-tight text-[#1a1a1a] mb-2 sm:mb-3"
+          className="font-instrument text-[28px] sm:text-[38px] md:text-[46px] leading-[0.95] tracking-tight text-[#1a1a1a] mb-2 sm:mb-3"
         >
           Weekly update. <br /> Daily Progress.
         </motion.div>
@@ -47,7 +47,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="font-sans text-[11px] sm:text-[14px] md:text-[15px] font-normal leading-relaxed text-[#1a1a1a]/60"
+          className="font-sans text-[28px] sm:text-[22px] md:text-[22px] font-normal leading-relaxed text-[#1a1a1a]/60"
         >
           Hi, this is Dystate.
           Welcome to my channel!
