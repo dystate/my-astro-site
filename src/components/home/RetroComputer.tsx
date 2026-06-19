@@ -118,6 +118,12 @@ export default function RetroComputer({
   const rotY = useSpring(rotYTarget, { stiffness: 90, damping: 18, mass: 0.6 });
   const transform = useMotionTemplate`rotateX(${rotX}deg) rotateY(${rotY}deg)`;
 
+  // shadow reacts to rotation — light from top
+  const shadowX = useTransform(rotY, [-30, 30], [60, -60]);
+  const shadowY = useTransform(rotX, [-30, 30], [-20, 40]);
+  const shadowScaleX = useTransform(rotX, [-30, 30], [1, 1.25]);
+  const shadowOpacity = useTransform(rotX, [-30, 30], [1, 0.7]);
+
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
@@ -554,7 +560,7 @@ export default function RetroComputer({
             </motion.div>
           </motion.div>
 
-          {/* ground contact shadow */}
+          {/* ground contact shadow — follows rotation */}
           <motion.div
             style={{
               position: "absolute",
@@ -562,13 +568,14 @@ export default function RetroComputer({
               bottom: -80,
               width: 340,
               height: 54,
-              x: "-50%",
+              x: shadowX,
+              y: shadowY,
+              scaleX: shadowScaleX,
+              opacity: shadowOpacity,
               background:
                 "radial-gradient(ellipse 50% 50% at 50% 50%,rgba(60,50,28,.32),transparent 72%)",
               filter: "blur(2px)",
             }}
-            animate={reduce ? {} : { scale: [0.94, 1.04, 0.94], opacity: [0.85, 1, 0.85] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
       </div>
