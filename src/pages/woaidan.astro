@@ -109,534 +109,385 @@ const shelves = [booksData];
 ---
 
 
-
 <html lang="zh-CN">
 
 <head>
 
   <meta charset="UTF-8" />
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Dystate · 书架</title>
 
-  <title>Dystate</title>
-
-
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;800&family=Instrument+Serif:ital@0;1&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
 
   <style is:global>
+    /* ============================================================
+       Dystate · woaidan —— 深色 CRT 主题（遵循 design.md）
+       视觉层重做；翻页器/播放器结构类名保持不变以兼容原脚本。
+       ============================================================ */
+    :root{
+      --bg:#000; --ink:#fff;
+      --phosphor:#73F59A; --phosphor-dim:#3FA968;
+      --accent:#5451f2; --teal:#6fb6c9; --orange:#e0552b;
+      --ease: cubic-bezier(.16,1,.3,1);
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; }
+    body{
+      background:#000; color:#fff; overflow:hidden;
+      font-family:'Open Sans',sans-serif;
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    }
 
-    :root { --bg: #11141a; --shelf-wood: #15110c; --shelf-edge: #2a2118; --teal:#6fb6c9; --orange:#e0552b; }
+    /* ---------- 全局点阵质感 ---------- */
+    .crt-scan{ position:fixed; inset:0; z-index:8; pointer-events:none;
+      background-image:radial-gradient(circle, rgba(0,0,0,.08) 0.5px, transparent 1px);
+      background-size:12px 12px; }
+    .crt-vignette{ position:fixed; inset:0; z-index:8; pointer-events:none;
+      background:radial-gradient(120% 120% at 50% 40%, transparent 58%, rgba(0,0,0,.6)); }
 
-    html, body { margin: 0; padding: 0; }
+    /* ---------- Header（design.md §5.3 Album 模式） ---------- */
+    .site-header{ position:fixed; top:0; inset-inline:0; z-index:50;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px clamp(16px,4vw,24px); pointer-events:none;
+      background:linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
+    .site-header > *{ pointer-events:auto; }
+    .site-logo{ font:800 clamp(24px,6vw,40px)/1 'Open Sans',sans-serif; letter-spacing:-.02em; color:#fff; text-decoration:none; }
+    .site-nav{ display:none; align-items:center; gap:32px; }
+    .site-nav a{ font:800 18px/1 'Open Sans',sans-serif; letter-spacing:.04em; color:#fff; text-decoration:none; transition:opacity .2s; }
+    .site-nav a:hover{ opacity:.6; }
+    .menu-btn{ display:flex; align-items:center; gap:8px; background:none; border:none; cursor:pointer;
+      color:#fff; font:800 22px/1 'Open Sans',sans-serif; letter-spacing:.04em; z-index:80; }
+    .menu-btn .px, .m-menu-x .px{ display:inline-flex; }
+    @media (min-width:640px){
+      .site-nav{ display:flex; }
+      .menu-btn{ display:none; }
+    }
 
-    body { background: #ffffff; color: #1c2026; overflow: hidden; }
-
-
+    /* ---------- 移动端全屏菜单（design.md §5.2） ---------- */
+    .m-menu{ position:fixed; inset:0; z-index:70; display:flex; flex-direction:column;
+      background:#000; color:#fff; opacity:0; pointer-events:none; transition:opacity .3s var(--ease); }
+    .m-menu.open{ opacity:1; pointer-events:auto; }
+    .m-menu-top{ display:flex; align-items:center; justify-content:space-between; padding:16px; }
+    .m-menu-x{ display:flex; align-items:center; gap:8px; background:none; border:none; cursor:pointer;
+      color:#fff; font:800 22px/1 'Open Sans',sans-serif; letter-spacing:.04em; }
+    .m-menu-x .px{ transition:transform .3s var(--ease); }
+    .m-menu.open .m-menu-x .px{ transform:rotate(45deg); }
+    .m-menu nav{ flex:1; display:flex; flex-direction:column; align-items:flex-end; justify-content:center; padding:0 16px; }
+    .m-menu nav a{ font:800 64px/.95 'Open Sans',sans-serif; letter-spacing:-.02em; color:#fff; text-decoration:none;
+      opacity:0; transform:translateY(24px); transition:opacity .5s var(--ease), transform .5s var(--ease); }
+    .m-menu.open nav a{ opacity:1; transform:none; }
+    .m-menu.open nav a:nth-child(1){ transition-delay:.10s; }
+    .m-menu.open nav a:nth-child(2){ transition-delay:.18s; }
+    .m-menu.open nav a:nth-child(3){ transition-delay:.26s; }
+    .m-menu .socials{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; padding:16px 16px 32px; }
+    .m-menu .socials a{ font:800 16px/1.2 'Open Sans',sans-serif; letter-spacing:.04em; color:#fff; text-decoration:none;
+      opacity:0; transition:opacity .4s ease; }
+    .m-menu.open .socials a{ opacity:1; }
+    .m-menu.open .socials a:nth-child(1){ transition-delay:.34s; }
+    .m-menu.open .socials a:nth-child(2){ transition-delay:.40s; }
 
     /* ---------- 书柜 ---------- */
-
-    .bookcase {
-
-      height: 100vh; height: 100dvh; width: 100vw; position: relative;
-
-      overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
-
-      display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 3.2vh, 26px);
-
-      padding: max(28px, env(safe-area-inset-top)) 0 max(28px, env(safe-area-inset-bottom)); box-sizing: border-box;
-
-      background-color:#ffffff;
-
-      background-image:
-
-        radial-gradient(circle, rgba(0,0,0,.05) 1px, transparent 1.4px);
-
-      background-size: 16px 16px;
-
-      background-attachment: fixed;
-
+    .bookcase{
+      height:100vh; height:100dvh; width:100vw; position:relative;
+      overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
+      display:flex; flex-direction:column; justify-content:center; gap:clamp(10px,3.2vh,26px);
+      padding: max(96px, env(safe-area-inset-top)) 0 max(104px, env(safe-area-inset-bottom)); box-sizing:border-box;
+      background:radial-gradient(120% 120% at 50% 38%, #0c1410 0%, #060a08 55%, #000 100%);
     }
+    /* 背景水印 */
+    .bg-mark{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      z-index:0; pointer-events:none; user-select:none; white-space:nowrap;
+      font:italic 400 clamp(72px,20vw,240px)/1 'Instrument Serif',serif;
+      letter-spacing:-2px; color:rgba(255,255,255,.05); }
 
-    /* 背景正中央水印 */
+    .shelf{ width:min(94vw,760px); margin:0 auto; display:flex; flex-direction:column; position:relative; z-index:1; }
+    .books{ display:flex; align-items:flex-end; justify-content:center; gap:5px;
+      min-height:clamp(120px,22vh,190px); padding:0 6px; overflow-x:auto; overflow-y:visible; scrollbar-width:none; }
+    .books::-webkit-scrollbar{ display:none; }
 
-    .bg-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 0; pointer-events: none; user-select: none; white-space: nowrap; font: 800 clamp(56px, 17vw, 190px)/1 "Arial Black","Noto Sans SC",sans-serif; letter-spacing: -2px; color: rgba(28,32,38,.07); }
+    /* 书架横板：硬边 neo-brutalist + 一丝磷光 */
+    .board{ height:12px; background:#0a0a0a; border-top:1px solid rgba(115,245,154,.22);
+      box-shadow:0 -4px 0 rgba(255,255,255,.04) inset, 0 14px 26px -10px rgba(0,0,0,.95); }
 
-    .shelf { width: min(94vw, 760px); margin: 0 auto; display: flex; flex-direction: column; position: relative; z-index: 1; }
-
-    .books { display: flex; align-items: flex-end; justify-content: center; gap: 5px; min-height: clamp(120px, 22vh, 190px); padding: 0 6px; overflow-x: auto; overflow-y: visible; scrollbar-width: none; }
-
-    .books::-webkit-scrollbar { display: none; }
-
-    .board { height: 14px; border-radius: 0 0 3px 3px; background: #3a2c1d; border-top: 1.5px solid #5a452d; box-shadow: 0 -5px 0 rgba(255,255,255,.05) inset, 0 12px 22px -8px rgba(0,0,0,0.7); }
-
-    .book {
-
-      flex: 0 0 auto; width: var(--w); height: var(--h); max-height: clamp(120px, 22vh, 190px);
-
-      position: relative; border: none; padding: 9px 0 7px; cursor: pointer; color: var(--ink); border-radius: 2px 2px 0 0;
-
-      background: var(--c);
-
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.3) inset, 2px 8px 14px -6px rgba(0,0,0,0.8);
-
-      -webkit-box-reflect: below 1px linear-gradient(transparent, transparent 76%, rgba(0,0,0,0.25));
-
-      transition: transform .28s cubic-bezier(.2,.8,.25,1), box-shadow .28s;
-
-      display: flex; flex-direction: column; align-items: center; justify-content: space-between; transform-origin: bottom center;
-
+    .book{
+      flex:0 0 auto; width:var(--w); height:var(--h); max-height:clamp(120px,22vh,190px);
+      position:relative; border:none; padding:9px 0 7px; cursor:pointer; color:var(--ink); border-radius:2px 2px 0 0;
+      background:var(--c);
+      box-shadow:0 0 0 1px rgba(0,0,0,.45) inset, 2px 10px 16px -6px rgba(0,0,0,.9);
+      -webkit-box-reflect:below 1px linear-gradient(transparent, transparent 78%, rgba(0,0,0,.18));
+      transition:transform .28s var(--ease), box-shadow .28s, filter .28s;
+      display:flex; flex-direction:column; align-items:center; justify-content:space-between; transform-origin:bottom center;
     }
+    .book::after{ content:""; position:absolute; top:0; bottom:0; left:0; width:3px; background:rgba(255,255,255,.14); }
+    .book::before{ content:""; position:absolute; top:0; bottom:0; right:0; width:5px; background:rgba(0,0,0,.35); }
+    .book:hover{ transform:translateY(-10px);
+      box-shadow:0 0 0 1px rgba(115,245,154,.45) inset, 2px 16px 24px -6px rgba(0,0,0,.95), 0 0 20px -2px rgba(115,245,154,.22); }
+    .book.pulling{ z-index:3; transform:translateY(-14px); }
+    .spine-num{ font:700 10px/1 'Nokia Cellphone FC Small',ui-monospace,"SFMono-Regular",monospace; letter-spacing:.5px;
+      padding:1px 4px; border-radius:2px; border:1px solid currentColor; opacity:.82; color:inherit; pointer-events:none; }
+    .spine-title{ writing-mode:vertical-rl; text-orientation:mixed; font:500 13px/1.1 "Noto Serif SC","Songti SC",serif;
+      letter-spacing:3px; white-space:nowrap; overflow:hidden; flex:1; display:flex; align-items:center; margin:6px 0;
+      color:inherit; text-shadow:0 1px 1px rgba(0,0,0,.4); pointer-events:none; }
+    .spine-tag{ font:600 8px/1 'Nokia Cellphone FC Small',ui-monospace,"SFMono-Regular",monospace; letter-spacing:.3px; opacity:.72; color:inherit; pointer-events:none; }
 
-    .book::after { content:""; position:absolute; top:0; bottom:0; left:0; width:3px; background:rgba(255,255,255,0.14); }
+    /* 四角线框装饰（白线，design 海报感） */
+    .poster-corners{ position:fixed; inset:16px; pointer-events:none; z-index:6; }
+    .poster-corners i{ position:absolute; width:26px; height:26px; border:1.5px solid rgba(255,255,255,.22); }
+    .poster-corners i.tl{ top:0; left:0; border-right:0; border-bottom:0; }
+    .poster-corners i.tr{ top:0; right:0; border-left:0; border-bottom:0; }
+    .poster-corners i.bl{ bottom:0; left:0; border-right:0; border-top:0; }
+    .poster-corners i.br{ bottom:0; right:0; border-left:0; border-top:0; }
 
-    .book::before { content:""; position:absolute; top:0; bottom:0; right:0; width:5px; background:rgba(0,0,0,0.3); }
+    /* ---------- 阅读器（深色 CRT 舞台，纸张内页保持原样） ---------- */
+    .reader{ position:fixed; inset:0; z-index:60; opacity:0; pointer-events:none; transition:opacity .4s ease;
+      display:flex; flex-direction:column;
+      background:radial-gradient(120% 120% at 50% 38%, #0c1410 0%, #060a08 55%, #000 100%); }
+    .reader.show{ opacity:1; pointer-events:auto; }
+    .reader-scan{ position:absolute; inset:0; pointer-events:none; z-index:30;
+      background-image:radial-gradient(circle, rgba(0,0,0,.08) 0.5px, transparent 1px);
+      background-size:12px 12px; }
 
-    .book.pulling { z-index: 3; }
-
-    .spine-num { font: 700 10px/1 ui-monospace,"SFMono-Regular",monospace; letter-spacing: .5px; padding: 1px 4px; border-radius: 2px; border: 1px solid currentColor; opacity: .82; color: inherit; pointer-events: none; }
-
-    .spine-title { writing-mode: vertical-rl; text-orientation: mixed; font: 500 13px/1.1 "Noto Serif SC","Songti SC",serif; letter-spacing: 3px; white-space: nowrap; overflow: hidden; flex: 1; display: flex; align-items: center; margin: 6px 0; color: inherit; text-shadow: 0 1px 1px rgba(0,0,0,.35); pointer-events: none; }
-
-    .spine-tag { font: 600 8px/1 ui-monospace,"SFMono-Regular",monospace; letter-spacing: .3px; opacity: .72; color: inherit; pointer-events: none; }
-
-    .hint { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 4; }
-
-    .hint a {
-      font: 800 clamp(18px, 3.5vw, 24px)/1 system-ui, sans-serif;
-      letter-spacing: 0.15em;
-      text-decoration: none;
-      color: #1c2026;
-      opacity: 0.55;
-      transition: opacity .2s, color .2s;
-    }
-    .hint a:hover { opacity: 1; color: #5451f2; }
-
-
-
-    /* 四角线框装饰（海报感） */
-
-    .poster-corners { position: fixed; inset: 16px; pointer-events: none; z-index: 6; }
-
-    .poster-corners.in-stage { position: absolute; inset: 16px; }
-
-    .poster-corners i { position: absolute; width: 26px; height: 26px; border: 1.5px solid rgba(0,0,0,.18); }
-
-    .poster-corners i.tl { top:0; left:0; border-right:0; border-bottom:0; }
-
-    .poster-corners i.tr { top:0; right:0; border-left:0; border-bottom:0; }
-
-    .poster-corners i.bl { bottom:0; left:0; border-right:0; border-top:0; }
-
-    .poster-corners i.br { bottom:0; right:0; border-left:0; border-top:0; }
-
-
-
-    /* 顶部居中三格 toolbar */
-
-    .shelf-toolbar {
-
-      position: fixed; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
-
-      z-index: 7; display: flex; background: #fff; border-radius: 14px; overflow: hidden;
-
-      border: 1px solid rgba(0,0,0,.06); box-shadow: 0 6px 18px -6px rgba(0,0,0,.28);
-
-    }
-
-    .shelf-toolbar a, .shelf-toolbar .tb-cell {
-
-      width: 56px; height: 48px; display: flex; align-items: center; justify-content: center;
-
-      cursor: pointer; color: #2d3748; text-decoration: none; transition: background .15s;
-
-    }
-
-    .shelf-toolbar a:hover { background: rgba(0,0,0,.05); }
-
-    .shelf-toolbar > * + * { border-left: 1px solid rgba(0,0,0,.08); }
-
-    .shelf-toolbar svg { width: 24px; height: 24px; display: block; }
-
-    .shelf-toolbar .tb-dot { width: 6px; height: 6px; border-radius: 50%; background: #cfd3da; }
-
-    @media (max-width: 760px) {
-
-      .shelf-toolbar a, .shelf-toolbar .tb-cell { width: 50px; height: 44px; }
-
-    }
-
-
-
-    /* ---------- 书本阅读器（StPageFlip，效果同 Ten 页） ---------- */
-
-    .reader { position: fixed; inset: 0; z-index: 40; opacity: 0; pointer-events: none; transition: opacity .4s ease;
-
-      display: flex; flex-direction: column;
-
-      background-color:#ffffff;
-
-      background-image: radial-gradient(circle, rgba(0,0,0,.05) 1px, transparent 1.4px);
-
-      background-size: 16px 16px; }
-
-    .reader.show { opacity: 1; pointer-events: auto; }
-
-
-
-    /* 顶栏 */
-
-    /* 悬浮叉（左上角，回到书脊界面） */
-
-    .bv-x { position:absolute; top: max(14px, env(safe-area-inset-top)); left: 14px; z-index:20;
-
+    /* 悬浮叉（左上角，深色玻璃） */
+    .bv-x{ position:absolute; top:max(14px, env(safe-area-inset-top)); left:14px; z-index:31;
       width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center;
-
-      border:none; border-radius:999px; cursor:pointer; color:#1c2026;
-
-      background:rgba(255,255,255,.78); backdrop-filter:blur(6px);
-
-      box-shadow:0 6px 18px -6px rgba(0,0,0,.3); transition:transform .15s, background .15s; }
-
-    .bv-x:hover { background:#fff; transform:scale(1.06); }
-
-    .bv-x svg { width:20px; height:20px; display:block; }
-
-    /* 悬浮页码（右上角，与叉对称） */
-
-    .bv-counter { position:absolute; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index:20;
-
-      font:600 13px/1 system-ui,sans-serif; color:#6b7079; pointer-events:none; }
-
-
+      border:1px solid rgba(255,255,255,.15); border-radius:999px; cursor:pointer; color:#fff;
+      background:rgba(255,255,255,.08); backdrop-filter:blur(6px); transition:transform .15s, background .15s; }
+    .bv-x:hover{ background:rgba(255,255,255,.16); transform:scale(1.06); }
+    .bv-x svg{ width:20px; height:20px; display:block; }
+    /* 悬浮页码（右上角，Nokia 等宽） */
+    .bv-counter{ position:absolute; top:max(16px, env(safe-area-inset-top)); right:16px; z-index:31;
+      font:400 13px/1 'Nokia Cellphone FC Small',ui-monospace,"SFMono-Regular",monospace; letter-spacing:.06em;
+      color:rgba(255,255,255,.72); pointer-events:none; }
 
     /* 舞台 */
+    .flip-stage{ position:relative; flex:1 1 auto; min-height:0; display:flex; align-items:center; justify-content:center;
+      padding: calc(env(safe-area-inset-top, 0px) + 48px) 8px 8px; }
+    .flipbook{ filter:drop-shadow(0 26px 44px rgba(0,0,0,.55)); -webkit-user-select:none; user-select:none; touch-action:pan-y; }
 
-    .flip-stage { position:relative; flex:1 1 auto; min-height:0; display:flex; align-items:center; justify-content:center; padding: calc(env(safe-area-inset-top, 0px) + 48px) 8px 8px; }
-
-    .flipbook { filter: drop-shadow(0 26px 40px rgba(0,0,0,.32)); -webkit-user-select:none; user-select:none; touch-action: pan-y; }
-
-
-
-    /* 轻微整体晃动（褶皱位移已移除），翻页时暂停让卷曲动画干净 */
-
-    .flip-wind {
-
-      --sway-rot: 0.55deg;     /* 晃动幅度 */
-
-      --sway-shift: 3px;
-
-      flex: 0 0 auto;
-
-      display: flex; align-items: center; justify-content: center;
-
-      animation: bookSway 6.5s ease-in-out infinite;
-
-      transform-origin: 50% 46%;
-
-      will-change: transform;
-
+    /* 轻微整体晃动，翻页时暂停 */
+    .flip-wind{ --sway-rot:0.55deg; --sway-shift:3px; flex:0 0 auto;
+      display:flex; align-items:center; justify-content:center;
+      animation:bookSway 6.5s ease-in-out infinite; transform-origin:50% 46%; will-change:transform; }
+    .flip-wind.is-flipping{ animation-play-state:paused; }
+    @keyframes bookSway{
+      0%{ transform:rotate(calc(var(--sway-rot) * -1)) translateY(0); }
+      50%{ transform:rotate(var(--sway-rot)) translateY(calc(var(--sway-shift) * -1)); }
+      100%{ transform:rotate(calc(var(--sway-rot) * -1)) translateY(0); }
     }
 
-    /* 翻页中：暂停晃动 */
+    /* StPageFlip 必需基础样式 */
+    .stf__parent{ position:relative; display:block; box-sizing:border-box; transform:translateZ(0); -ms-touch-action:pan-y; touch-action:pan-y; margin:0 auto; }
+    .stf__parent canvas{ position:absolute; width:100%; height:100%; left:0; top:0; }
+    .stf__block{ position:absolute; width:100%; height:100%; box-sizing:border-box; perspective:2000px; }
+    .stf__item{ display:none; position:absolute; transform-style:preserve-3d; }
+    .stf__outerShadow,.stf__innerShadow,.stf__hardShadow,.stf__hardInnerShadow{ position:absolute; left:0; top:0; }
 
-    .flip-wind.is-flipping { animation-play-state: paused; }
+    /* 单页（纸张为浅色，故内页文字强制深色） */
+    .page{ background:#EDEDED; overflow:hidden; }
+    .page-content{ width:100%; height:100%; position:relative; box-sizing:border-box; padding:0; overflow:hidden; scrollbar-width:none; color:#2a2620; }
+    .page-content::-webkit-scrollbar{ display:none; }
+    .page-content.is-cover{ padding:0; }
 
-
-
-    @keyframes bookSway {
-
-      0%   { transform: rotate(calc(var(--sway-rot) * -1)) translateY(0); }
-
-      50%  { transform: rotate(var(--sway-rot)) translateY(calc(var(--sway-shift) * -1)); }
-
-      100% { transform: rotate(calc(var(--sway-rot) * -1)) translateY(0); }
-
-    }
-
-
-
-    /* StPageFlip 必需基础样式（内联，免单独 import css） */
-
-    .stf__parent { position:relative; display:block; box-sizing:border-box; transform: translateZ(0); -ms-touch-action: pan-y; touch-action: pan-y; margin:0 auto; }
-
-    .stf__parent canvas { position:absolute; width:100%; height:100%; left:0; top:0; }
-
-    .stf__block { position:absolute; width:100%; height:100%; box-sizing:border-box; perspective:2000px; }
-
-    .stf__item { display:none; position:absolute; transform-style:preserve-3d; }
-
-    .stf__outerShadow,.stf__innerShadow,.stf__hardShadow,.stf__hardInnerShadow { position:absolute; left:0; top:0; }
-
-
-
-    /* 单页 */
-
-    .page { background:#fdfbf6; overflow:hidden; }
-
-    .page-content { width:100%; height:100%; position:relative; box-sizing:border-box; padding: 0; overflow:hidden; scrollbar-width:none; }
-
-    .page-content::-webkit-scrollbar { display:none; }
-
-    .page-content.is-cover { padding:0; }
-
-
-
-    /* 硬壳封面 / 封底 */
-
-    .cover-art { width:100%; height:100%; border-radius:6px;
-
-      background: linear-gradient(140deg, rgba(255,255,255,.14), rgba(255,255,255,0) 42%), linear-gradient(rgba(0,0,0,.32), rgba(0,0,0,.42)), var(--cover-c,#2f4858);
-
+    /* 硬壳封面 / 封底（边框与角点改用磷光绿呼应主题） */
+    .cover-art{ width:100%; height:100%; border-radius:6px;
+      background:linear-gradient(140deg, rgba(255,255,255,.14), rgba(255,255,255,0) 42%), linear-gradient(rgba(0,0,0,.32), rgba(0,0,0,.42)), var(--cover-c,#2f4858);
       display:flex; align-items:center; justify-content:center; padding:22px; box-sizing:border-box; position:relative; }
+    .cover-art::after{ content:""; position:absolute; inset:12px; border-radius:4px; border:1px solid rgba(115,245,154,.5); }
+    .cover-art::before{ content:""; position:absolute; top:14px; right:14px; width:14px; height:14px; background:var(--phosphor); border-radius:2px; z-index:2; }
+    .cover-art.has-image{ background-size:cover; background-position:center; padding:0; }
+    .cover-art.has-image::after, .cover-art.has-image::before{ display:none; }
+    .cover-art.has-image .cover-title{ display:none; }
+    .cover-title{ font:700 clamp(16px,5vw,26px)/1.3 "Noto Serif SC","Songti SC",serif; color:rgba(255,255,255,.94); text-align:center; text-shadow:0 2px 6px rgba(0,0,0,.5); z-index:1; word-break:break-word; padding:0 14px; }
+    .cover-art.cover-back{ background:linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.6)), var(--cover-c,#2f4858); }
+    .cover-art.cover-back::before{ display:none; }
+    .cover-art.cover-back .cover-title{ font-size:clamp(13px,3.4vw,18px); letter-spacing:3px; opacity:.85; }
 
-    .cover-art::after { content:""; position:absolute; inset:12px; border-radius:4px; border:1px solid rgba(111,182,201,.5); }
+    /* 页面类型 */
+    .page-content.type-image{ padding:0; display:flex; align-items:center; justify-content:center; }
+    .page-content.type-image img{ width:100%; height:100%; object-fit:contain; display:block; margin:0; }
+    .page-content.type-media{ display:flex; align-items:center; justify-content:center; padding:clamp(10px,2vw,22px); }
+    .page-content.type-media video, .page-content.type-media audio, .page-content.type-media iframe{ max-width:100%; max-height:100%; display:block; border-radius:6px; }
+    .page-content.type-text{ padding:clamp(22px,3.5vw,48px); overflow-y:auto; }
+    .page-content.type-text img{ display:block; margin:10px auto; max-width:100%; max-height:55%; height:auto; object-fit:contain; border-radius:4px; }
+    .page-content h1, .page-content h2{ font-family:"Noto Serif SC",serif; line-height:1.3; margin:.2em 0 .5em; color:#2a2620; }
+    .page-content p{ line-height:1.7; margin:0 0 .8em; font-size:15px; color:#2a2620; }
+    .bv-leaf-title{ font:700 14px/1.4 "Noto Serif SC",serif; color:#3a342a; margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid #e6e0d4; }
 
-    .cover-art::before { content:""; position:absolute; top:14px; right:14px; width:14px; height:14px; background:var(--orange); border-radius:2px; z-index:2; }
+    /* ===== 自定义音乐播放器（白色胶囊） ===== */
+    .aplayer{ display:flex; align-items:center; gap:14px; width:min(94%,460px); padding:11px 18px; background:#fff; border-radius:999px; box-shadow:0 12px 30px -10px rgba(0,0,0,.28); }
+    .aplayer audio{ display:none; }
+    .ap-btn{ flex:0 0 auto; width:24px; height:24px; padding:0; border:none; background:transparent; color:#1c2026; cursor:pointer; }
+    .ap-btn svg{ width:100%; height:100%; display:block; }
+    .ap-time{ flex:0 0 auto; font:600 13px/1 ui-monospace,"SFMono-Regular",monospace; color:#3a3f49; white-space:nowrap; }
+    .ap-seek, .vp-seek{ -webkit-appearance:none; appearance:none; height:4px; border-radius:99px; cursor:pointer; outline:none; }
+    .ap-seek{ flex:1; background:#e2e0da; }
+    .ap-seek::-webkit-slider-thumb, .vp-seek::-webkit-slider-thumb{ -webkit-appearance:none; width:13px; height:13px; border-radius:50%; background:#1c2026; cursor:pointer; }
+    .ap-seek::-moz-range-thumb{ width:13px; height:13px; border-radius:50%; background:#1c2026; border:none; cursor:pointer; }
 
-    .cover-art.has-image { background-size:cover; background-position:center; padding:0; }
+    /* ===== 自定义视频播放器 ===== */
+    .vplayer{ position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#000; border-radius:6px; overflow:hidden; }
+    .vplayer video{ width:100%; height:100%; object-fit:contain; display:block; background:#000; }
+    .vp-center{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .vp-bigplay{ width:60px; height:60px; border-radius:50%; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; transition:opacity .2s, transform .2s; }
+    .vp-bigplay svg{ width:30px; height:30px; }
+    .vplayer.playing .vp-bigplay{ opacity:0; }
+    .vplayer.playing:hover .vp-bigplay{ opacity:1; }
+    .vp-bar{ position:absolute; left:0; right:0; bottom:0; display:flex; align-items:center; gap:10px; padding:18px 12px 9px; background:linear-gradient(0deg, rgba(0,0,0,.65), transparent); }
+    .vp-btn{ flex:0 0 auto; width:22px; height:22px; padding:0; border:none; background:transparent; color:#fff; cursor:pointer; }
+    .vp-btn svg{ width:100%; height:100%; display:block; }
+    .vp-time{ flex:0 0 auto; color:#fff; font:600 12px/1 ui-monospace,monospace; white-space:nowrap; }
+    .vp-seek{ flex:1; background:rgba(255,255,255,.3); }
+    .vp-seek::-webkit-slider-thumb{ background:#fff; }
+    .vp-seek::-moz-range-thumb{ width:13px; height:13px; border-radius:50%; background:#fff; border:none; }
 
-    .cover-art.has-image::after, .cover-art.has-image::before { display:none; }
-
-    .cover-art.has-image .cover-title { display:none; }
-
-    .cover-title { font:700 clamp(16px,5vw,26px)/1.3 "Noto Serif SC","Songti SC",serif; color:rgba(255,255,255,.94); text-align:center; text-shadow:0 2px 6px rgba(0,0,0,.5); z-index:1; word-break:break-word; padding:0 14px; }
-
-    .cover-art.cover-back { background: linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.6)), var(--cover-c,#2f4858); }
-
-    .cover-art.cover-back::before { display:none; }
-
-    .cover-art.cover-back .cover-title { font-size: clamp(13px,3.4vw,18px); letter-spacing:3px; opacity:.85; }
-
-
-
-    /* 页面类型（沿用原逻辑，作用到 .page-content） */
-
-    .page-content.type-image { padding:0; display:flex; align-items:center; justify-content:center; }
-
-    .page-content.type-image img { width:100%; height:100%; object-fit:contain; display:block; margin:0; }
-
-    .page-content.type-media { display:flex; align-items:center; justify-content:center; padding: clamp(10px,2vw,22px); }
-
-    .page-content.type-media video, .page-content.type-media audio, .page-content.type-media iframe { max-width:100%; max-height:100%; display:block; border-radius:6px; }
-
-    .page-content.type-text { padding: clamp(22px,3.5vw,48px); overflow-y:auto; }
-
-    .page-content.type-text img { display:block; margin:10px auto; max-width:100%; max-height:55%; height:auto; object-fit:contain; border-radius:4px; }
-
-    .page-content h1, .page-content h2 { font-family:"Noto Serif SC",serif; line-height:1.3; margin:.2em 0 .5em; }
-
-    .page-content p { line-height:1.7; margin:0 0 .8em; font-size:15px; }
-
-    .bv-leaf-title { font:700 14px/1.4 "Noto Serif SC",serif; color:#3a342a; margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid #e6e0d4; }
-
-
-
-    /* ===== 自定义音乐播放器（白色胶囊，核心功能） ===== */
-
-    .aplayer { display:flex; align-items:center; gap:14px; width:min(94%,460px); padding:11px 18px; background:#fff; border-radius:999px; box-shadow:0 12px 30px -10px rgba(0,0,0,.28); }
-
-    .aplayer audio { display:none; }
-
-    .ap-btn { flex:0 0 auto; width:24px; height:24px; padding:0; border:none; background:transparent; color:#1c2026; cursor:pointer; }
-
-    .ap-btn svg { width:100%; height:100%; display:block; }
-
-    .ap-time { flex:0 0 auto; font:600 13px/1 ui-monospace,"SFMono-Regular",monospace; color:#3a3f49; white-space:nowrap; }
-
-    .ap-seek, .vp-seek { -webkit-appearance:none; appearance:none; height:4px; border-radius:99px; cursor:pointer; outline:none; }
-
-    .ap-seek { flex:1; background:#e2e0da; }
-
-    .ap-seek::-webkit-slider-thumb, .vp-seek::-webkit-slider-thumb { -webkit-appearance:none; width:13px; height:13px; border-radius:50%; background:#1c2026; cursor:pointer; }
-
-    .ap-seek::-moz-range-thumb { width:13px; height:13px; border-radius:50%; background:#1c2026; border:none; cursor:pointer; }
-
-
-
-    /* ===== 自定义视频播放器（核心功能） ===== */
-
-    .vplayer { position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#000; border-radius:6px; overflow:hidden; }
-
-    .vplayer video { width:100%; height:100%; object-fit:contain; display:block; background:#000; }
-
-    .vp-center { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-
-    .vp-bigplay { width:60px; height:60px; border-radius:50%; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; transition:opacity .2s, transform .2s; }
-
-    .vp-bigplay svg { width:30px; height:30px; }
-
-    .vplayer.playing .vp-bigplay { opacity:0; }
-
-    .vplayer.playing:hover .vp-bigplay { opacity:1; }
-
-    .vp-bar { position:absolute; left:0; right:0; bottom:0; display:flex; align-items:center; gap:10px; padding:18px 12px 9px; background:linear-gradient(0deg, rgba(0,0,0,.65), transparent); }
-
-    .vp-btn { flex:0 0 auto; width:22px; height:22px; padding:0; border:none; background:transparent; color:#fff; cursor:pointer; }
-
-    .vp-btn svg { width:100%; height:100%; display:block; }
-
-    .vp-time { flex:0 0 auto; color:#fff; font:600 12px/1 ui-monospace,monospace; white-space:nowrap; }
-
-    .vp-seek { flex:1; background:rgba(255,255,255,.3); }
-
-    .vp-seek::-webkit-slider-thumb { background:#fff; }
-
-    .vp-seek::-moz-range-thumb { width:13px; height:13px; border-radius:50%; background:#fff; border:none; }
-
-
-
-    /* 底栏（同 Ten：左“拖动翻页” 右署名） */
-
-    .bv-bottom { flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:14px; width:min(92vw,920px); margin:0 auto; padding: 8px 4px max(16px, env(safe-area-inset-bottom)); border-top:1px solid rgba(0,0,0,.12); }
-
-    .bv-drag-hint { font: italic 600 clamp(15px,3.2vw,22px)/1 Georgia, serif; color:#111; }
-
-    .bv-credit { font:800 clamp(14px,2.6vw,18px)/1 system-ui,sans-serif; color:#111; }
-
-
+    /* 底栏（Instrument 斜体提示 + 署名） */
+    .bv-bottom{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:14px; width:min(92vw,920px); margin:0 auto; padding:8px 4px max(16px, env(safe-area-inset-bottom)); border-top:1px solid rgba(255,255,255,.14); position:relative; z-index:31; }
+    .bv-drag-hint{ font:italic 400 clamp(16px,3.4vw,24px)/1 'Instrument Serif',Georgia,serif; color:#fff; }
+    .bv-credit{ font:800 clamp(14px,2.6vw,18px)/1 'Open Sans',system-ui,sans-serif; color:#fff; }
 
     /* ---------- 手机端 ---------- */
-
-    @media (max-width: 760px) {
-
-      /* 书架（原样保留） */
-
-      .bookcase { gap: clamp(8px, 2.4vh, 18px); }
-
-      .shelf { width: 96vw; }
-
-      .books { gap: 2px; min-height: clamp(110px, 20vh, 160px); }
-
-      .book { max-height: clamp(110px, 20vh, 160px); }
-
-      .poster-corners, .poster-corners.in-stage { inset: 10px; }
-
-      .poster-corners i { width: 18px; height: 18px; }
-
+    @media (max-width:760px){
+      .bookcase{ gap:clamp(8px,2.4vh,18px); }
+      .shelf{ width:96vw; }
+      .books{ gap:2px; min-height:clamp(110px,20vh,160px); }
+      .book{ max-height:clamp(110px,20vh,160px); }
+      .poster-corners{ inset:10px; }
+      .poster-corners i{ width:18px; height:18px; }
     }
 
-
-
-    /* 减少动画偏好 */
-
-    @media (prefers-reduced-motion: reduce) {
-
-      .book { transition: none; }
-
-      .flip-wind { animation: none; }
-
+    /* ---------- 减少动画偏好 ---------- */
+    @media (prefers-reduced-motion: reduce){
+      .book{ transition:none; }
+      .flip-wind{ animation:none; }
+      .m-menu, .m-menu nav a, .m-menu .socials a{ transition:none; transform:none; }
     }
 
   </style>
 
 </head>
 
-
-
 <body class="select-none">
 
   {isLoggedIn ? (
 
     <main>
+      {/* 全局 CRT 质感叠层 */}
+      <div class="crt-scan" aria-hidden="true"></div>
+      <div class="crt-vignette" aria-hidden="true"></div>
+
+      {/* 顶部导航（design.md §5.3 Album 模式） */}
+      <header class="site-header">
+        <a class="site-logo" href="/">Dystate</a>
+        <nav class="site-nav" aria-label="导航">
+          <a href="/album">ALBUM</a>
+          <a href="/logs">LOGS</a>
+          <a href="/woaidan">MYDAN</a>
+        </nav>
+        <button class="menu-btn" id="menu-open" aria-label="打开菜单">
+          MENU
+          <span class="px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="10" y="0" width="4" height="4" fill="currentColor"/><rect x="10" y="5" width="4" height="4" fill="currentColor"/>
+              <rect x="10" y="10" width="4" height="4" fill="currentColor"/><rect x="10" y="15" width="4" height="4" fill="currentColor"/>
+              <rect x="10" y="20" width="4" height="4" fill="currentColor"/><rect x="0" y="10" width="4" height="4" fill="currentColor"/>
+              <rect x="5" y="10" width="4" height="4" fill="currentColor"/><rect x="15" y="10" width="4" height="4" fill="currentColor"/>
+              <rect x="20" y="10" width="4" height="4" fill="currentColor"/>
+            </svg>
+          </span>
+        </button>
+      </header>
+
+      {/* 移动端全屏菜单（design.md §5.2） */}
+      <div class="m-menu" id="m-menu" aria-hidden="true">
+        <div class="m-menu-top">
+          <span class="site-logo">Dystate</span>
+          <button class="m-menu-x" id="menu-close" aria-label="关闭菜单">
+            CLOSE
+            <span class="px">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="10" y="0" width="4" height="4" fill="currentColor"/><rect x="10" y="5" width="4" height="4" fill="currentColor"/>
+                <rect x="10" y="10" width="4" height="4" fill="currentColor"/><rect x="10" y="15" width="4" height="4" fill="currentColor"/>
+                <rect x="10" y="20" width="4" height="4" fill="currentColor"/><rect x="0" y="10" width="4" height="4" fill="currentColor"/>
+                <rect x="5" y="10" width="4" height="4" fill="currentColor"/><rect x="15" y="10" width="4" height="4" fill="currentColor"/>
+                <rect x="20" y="10" width="4" height="4" fill="currentColor"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+        <nav>
+          <a href="/album">ALBUM</a>
+          <a href="/logs">LOGS</a>
+          <a href="/woaidan">MYDAN</a>
+        </nav>
+        <div class="socials">
+          <a href="https://douyin.com" target="_blank" rel="noreferrer">TIKTOK</a>
+          <a href="https://vimeo.com" target="_blank" rel="noreferrer">VIMEO</a>
+        </div>
+      </div>
 
       {/* 书柜 */}
-
       <div class="bookcase">
-
         <div class="bg-mark" aria-hidden="true">2026起</div>
-
         {shelves.map((shelf) => (
-
           <div class="shelf">
-
             <div class="books">
-
               {shelf.map((book) => {
-
                 const v = bookVisual(book.id, book.name);
-
                 return (
-
                   <button class="book" data-book-id={book.id} data-name={book.name} data-color={v.color} data-pages={book.pages.length} data-cover={book.cover || ''} style={`--c:${v.color}; --ink:${v.ink}; --w:${v.w}px; --h:${v.h}%;`} aria-label={`打开 ${book.name}`}>
-
                     <span class="spine-num">{String(book.id + 1).padStart(2, '0')}</span>
-
                     <span class="spine-title">{book.name}</span>
-
                     <span class="spine-tag">no.{book.id + 1}</span>
-
                   </button>
-
                 );
-
               })}
-
             </div>
-
             <div class="board"></div>
-
           </div>
-
         ))}
-
       </div>
 
-      <div class="hint">
-        <a href="/menu" aria-label="返回菜单">
-          Dystate_
-        </a>
-      </div>
-
-      <nav class="shelf-toolbar" aria-label="导航">
-
-        <span class="tb-cell" aria-hidden="true"><i class="tb-dot"></i></span>
-
-        <a href="/xzds" aria-label="待办清单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5l1.4 1.4 2.6-2.6"/><path d="M3.5 12.5l1.4 1.4 2.6-2.6"/><path d="M3.5 18.5l1.4 1.4 2.6-2.6"/><line x1="11" y1="6" x2="20" y2="6"/><line x1="11" y1="12" x2="20" y2="12"/><line x1="11" y1="18" x2="20" y2="18"/></svg></a>
-
-        <span class="tb-cell" aria-hidden="true"><i class="tb-dot"></i></span>
-
-      </nav>
-
+      {/* 四角线框 */}
       <div class="poster-corners"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
 
-
-
-      {/* 封面 + 翻页阅读器（StPageFlip） */}
-
+      {/* 封面 + 翻页阅读器（StPageFlip，结构保持不变） */}
       <div id="reader" class="reader" aria-hidden="true">
-
         <button id="close-reader" class="bv-x" aria-label="合上，回到书架">
-
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-
         </button>
-
         <div class="bv-counter"><span id="bv-cur">封面</span> / <span id="bv-total">1</span></div>
-
         <div class="flip-stage">
-
           <div id="flip-wind" class="flip-wind">
-
             <div id="flipbook" class="flipbook"></div>
-
           </div>
-
         </div>
-
         <div class="bv-bottom">
-
           <span class="bv-drag-hint">drag to turn</span>
-
           <span class="bv-credit">Dystate</span>
-
         </div>
-
+        <div class="reader-scan" aria-hidden="true"></div>
       </div>
 
-
-
       {/* 书本数据（JSON 嵌入，供客户端翻页使用） */}
-
       <div id="books-data" style="display:none">{booksJson}</div>
+
+      {/* 移动端菜单交互（vanilla，独立于翻页脚本） */}
+      <script is:inline>
+        (function () {
+          var openBtn = document.getElementById('menu-open');
+          var closeBtn = document.getElementById('menu-close');
+          var menu = document.getElementById('m-menu');
+          if (!openBtn || !menu) return;
+          function open() { menu.classList.add('open'); menu.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
+          function close() { menu.classList.remove('open'); menu.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
+          openBtn.addEventListener('click', open);
+          if (closeBtn) closeBtn.addEventListener('click', close);
+          document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+          menu.querySelectorAll('nav a').forEach(function (a) { a.addEventListener('click', close); });
+        })();
+      </script>
 
     </main>
 
@@ -645,8 +496,6 @@ const shelves = [booksData];
     <AnimatedLogin client:only="react" />
 
   )}
-
-
 
   {isLoggedIn && (
 

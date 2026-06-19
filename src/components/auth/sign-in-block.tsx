@@ -113,10 +113,14 @@ const SignInBlock = () => {
   };
 
   return (
-    <Card className="w-full max-w-sm mx-auto flex flex-col gap-6 shadow-lg">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-        <CardDescription>验证身份以进入专属空间</CardDescription>
+    <Card className="w-full max-w-sm mx-auto flex flex-col gap-6 shadow-lg bg-transparent border-white/10">
+      <CardHeader className="text-center pb-0">
+        <CardTitle
+          className="text-[28px] leading-none tracking-[-0.02em] text-white"
+          style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
+        >
+          WOADAN
+        </CardTitle>
       </CardHeader>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">

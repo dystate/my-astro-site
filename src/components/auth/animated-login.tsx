@@ -236,16 +236,6 @@ export default function AnimatedLogin() {
     <div className="min-h-screen grid lg:grid-cols-2 bg-[#0d0f13] text-white select-none">
       {/* 左：动画角色面板 */}
       <div className="relative hidden lg:flex flex-col justify-between overflow-hidden p-12 bg-gradient-to-br from-[#1d1736] via-[#15101f] to-[#0d0f13]">
-        {/* 品牌 */}
-        <div className="relative z-20 flex items-center gap-2 text-lg font-semibold tracking-wide">
-          <span className="grid size-8 place-items-center rounded-lg bg-white/10 backdrop-blur-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z" />
-            </svg>
-          </span>
-          <span>Dystate</span>
-        </div>
-
         {/* 角色 */}
         <div className="relative z-20 flex h-[460px] items-end justify-center">
           <div className="relative" style={{ width: 550, height: 400 }}>
@@ -381,12 +371,6 @@ export default function AnimatedLogin() {
           </div>
         </div>
 
-        {/* 底部链接 */}
-        <div className="relative z-20 flex items-center gap-8 text-sm text-white/50">
-          <a href="#" className="transition-colors hover:text-white">隐私政策</a>
-          <a href="#" className="transition-colors hover:text-white">使用条款</a>
-        </div>
-
         {/* 氛围光斑 */}
         <div className="pointer-events-none absolute right-[20%] top-[20%] size-64 rounded-full bg-[#6C3FF5]/10 blur-3xl" />
         <div className="pointer-events-none absolute bottom-[15%] left-[15%] size-96 rounded-full bg-white/5 blur-3xl" />
@@ -399,23 +383,6 @@ export default function AnimatedLogin() {
         onBlurCapture={onBlurCapture}
       >
         <div className="w-full max-w-sm">
-          {/* 移动端简化品牌 */}
-          <div className="mb-10 flex items-center justify-center gap-2 text-lg font-semibold lg:hidden">
-            <span className="grid size-8 place-items-center rounded-lg bg-white/10">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z" />
-              </svg>
-            </span>
-            <span>Dystate</span>
-          </div>
-
-          <div className="mb-10 text-center">
-            <h1 className="mb-3 font-serif text-3xl font-extralight tracking-[0.3em] text-amber-200/90">
-              私密入口
-            </h1>
-            <p className="text-xs tracking-wider text-gray-500">请先验证身份</p>
-          </div>
-
           <SignInBlock />
         </div>
       </div>
