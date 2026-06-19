@@ -1,0 +1,182 @@
+---
+/**
+ * Loader.astro —— DST-1 开机加载屏
+ *
+ * 用法：放在 Layout 的 <body> 最顶部（<slot /> 之前），或只放在首页顶部。
+ * 它是静态 HTML，先于任何 React island 水合，因此能盖住「桌面尺寸电脑
+ * 在手机上溢出倾斜」那一帧。页面 load 完成且过了最短展示时长后自动淡出移除。
+ *
+ * 注意：若你启用了 Astro View Transitions，且本组件放在「每次导航都会重渲染」
+ * 的 Layout 里，则每次跳转都会再放一次开机屏。若只想首次加载出现，
+ * 把它单独放在首页，或用 transition:persist 让它在导航间保留（移除后不再回来）。
+ */
+---
+
+<div id="dst-boot" aria-hidden="true">
+  <div class="crt">
+    <pre class="log"><span style="--i:0">DST-1 PERSONAL TERMINAL</span>
+<span style="--i:1">SN 0xAE1F&middot;9C</span>
+<span style="--i:2">&gt; POST .............. OK</span>
+<span style="--i:3">&gt; MOUNT /album /logs /life</span>
+<span style="--i:4">&gt; PHOSPHOR CRT ....... OK</span>
+<span style="--i:5" class="ready">&gt; READY<i class="cur"></i></span></pre>
+
+    <div class="bar"><span></span></div>
+    <div class="tag">BOOTING&hellip;</div>
+  </div>
+  <div class="scan" aria-hidden="true"></div>
+  <div class="flick" aria-hidden="true"></div>
+</div>
+
+<style is:global>
+  #dst-boot {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(120% 120% at 50% 38%, #12211a 0%, #0a130e 58%, #040805 100%);
+    color: #73f59a;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+    overflow: hidden;
+    /* 若你有全局 nokia 字体，可把它放到栈首：'Nokia', ... */
+    font-family: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  #dst-boot.done {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .crt {
+    width: min(420px, 78vw);
+    text-shadow: 0 0 4px rgba(115, 245, 154, 0.85), 0 0 12px rgba(60, 200, 110, 0.45);
+  }
+
+  .log {
+    margin: 0 0 18px;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre;
+  }
+  .log span {
+    display: block;
+    color: #3fa968;
+    opacity: 0;
+    transform: translateY(4px);
+    animation: line-in 0.28s ease forwards;
+    animation-delay: calc(var(--i) * 0.13s);
+  }
+  .log .ready {
+    color: #73f59a;
+  }
+  .cur {
+    display: inline-block;
+    width: 7px;
+    height: 13px;
+    margin-left: 5px;
+    vertical-align: -2px;
+    background: #73f59a;
+    box-shadow: 0 0 4px rgba(115, 245, 154, 0.85), 0 0 12px rgba(60, 200, 110, 0.45);
+    animation: blink 0.8s steps(1) infinite;
+  }
+
+  .bar {
+    height: 8px;
+    border: 1px solid rgba(115, 245, 154, 0.4);
+    background: rgba(115, 245, 154, 0.06);
+    overflow: hidden;
+  }
+  .bar span {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #3fa968, #73f59a);
+    box-shadow: 0 0 8px rgba(115, 245, 154, 0.6);
+    animation: fill 1.15s ease-out forwards;
+  }
+
+  .tag {
+    margin-top: 10px;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    color: #3fa968;
+  }
+
+  /* 扫描线 */
+  .scan {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.22) 0 1px,
+      transparent 1px 3px
+    );
+  }
+  /* 极轻的整屏闪烁 */
+  .flick {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: #73f59a;
+    opacity: 0.02;
+    animation: flick 0.18s steps(2) infinite;
+  }
+
+  @keyframes line-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+  @keyframes fill {
+    to { width: 100%; }
+  }
+  @keyframes flick {
+    50% { opacity: 0.05; }
+  }
+
+  /* 尊重「减少动态效果」：去掉动画，直接静态展示后淡出 */
+  @media (prefers-reduced-motion: reduce) {
+    .log span { opacity: 1; transform: none; animation: none; }
+    .cur, .flick { animation: none; }
+    .bar span { width: 100%; animation: none; }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var el = document.getElementById("dst-boot");
+    if (!el) return;
+
+    var MIN = 1300;          // 最短展示时长，保证开机动画看得清
+    var loaded = false, timed = false, gone = false;
+
+    function remove() {
+      if (gone || !el) return;
+      gone = true;
+      el.classList.add("done");
+      var done = function () { if (el && el.parentNode) el.remove(); };
+      el.addEventListener("transitionend", done, { once: true });
+      setTimeout(done, 800); // transitionend 兜底
+    }
+    function maybe() { if (loaded && timed) remove(); }
+
+    setTimeout(function () { timed = true; maybe(); }, MIN);
+
+    // 等 Astro island 水合完成 + framer-motion 入场动画播完再消失
+    // 避免水合前 SSR 渲染的 initial={{ opacity:0 }} 导致文字不可见
+    // CustomEvent 默认不冒泡，用 capture 阶段捕获
+    document.addEventListener("astro:hydrate", function () {
+      setTimeout(function () { loaded = true; maybe(); }, 2000);
+    }, { once: true, capture: true });
+    // 后备：load 后 3.5s（给 hydration + 动画充足时间）
+    window.addEventListener("load", function () {
+      setTimeout(function () { loaded = true; maybe(); }, 3500);
+    }, { once: true });
+
+    // 安全兜底：最长 8s 必定移除
+    setTimeout(remove, 8000);
+  })();
+</script>

@@ -1,5 +1,6 @@
 ---
 import "@/styles/global.css";
+import Loader from "../components/home/Loader.astro";
 import HeroSection from "@/components/home/HeroSection";
 ---
 
@@ -16,6 +17,7 @@ import HeroSection from "@/components/home/HeroSection";
     />
   </head>
   <body>
+    <Loader />
     <HeroSection client:load />
   </body>
 </html>

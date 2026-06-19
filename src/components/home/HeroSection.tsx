@@ -18,15 +18,25 @@ export default function HeroSection() {
       {/* 移动端右上角菜单 */}
       <MobileMenu />
 
-      {/* Logo — 左上角，与 MobileMenu overlay 内 logo 位置一致 */}
-      <div className="absolute top-0 left-0 p-4">
+      {/* Logo — 左上角，移动端28px，桌面端双倍 */}
+      <div className="absolute top-0 left-0 p-4 sm:p-6">
         <span
-          className="text-[28px] sm:text-[28px] tracking-[-0.02em] text-[#1a1a1a] leading-none"
+          className="text-[28px] sm:text-[56px] tracking-[-0.02em] text-[#1a1a1a] leading-none"
           style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
         >
           Dystate
         </span>
       </div>
+
+      {/* 桌面端右上角导航 — 移动端隐藏 */}
+      <nav
+        className="hidden sm:flex absolute top-0 right-0 p-4 sm:p-6 items-center gap-6 sm:gap-10"
+        style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
+      >
+        <a href="/album" className="text-[18px] sm:text-[18px] tracking-[0.04em] text-[#1a1a1a] leading-none hover:opacity-60 transition-opacity">ALBUM</a>
+        <a href="/logs" className="text-[18px] sm:text-[18px] tracking-[0.04em] text-[#1a1a1a] leading-none hover:opacity-60 transition-opacity">LOGS</a>
+        <a href="/woaidan" className="text-[18px] sm:text-[18px] tracking-[0.04em] text-[#1a1a1a] leading-none hover:opacity-60 transition-opacity">MYDAN</a>
+      </nav>
 
       {/* 电脑 — 移动端整体上移 */}
       <div className="-translate-y-[45px] sm:translate-y-0">
