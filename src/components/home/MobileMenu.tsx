@@ -61,7 +61,7 @@ export default function MobileMenu() {
         style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
         aria-label="打开菜单"
       >
-        <span className="text-[28px] tracking-[0.04em] leading-none">Menu</span>
+        <span className="text-[22px] tracking-[0.04em] leading-none">MENU</span>
         <PixelCross size={20} />
       </button>
 
@@ -88,7 +88,7 @@ export default function MobileMenu() {
                 style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
                 aria-label="关闭菜单"
               >
-                <span className="text-[28px] tracking-[0.04em] leading-none">CLOSE</span>
+                <span className="text-[22px] tracking-[0.04em] leading-none">CLOSE</span>
                 {/* 旋转 45° → 变成 ✕ */}
                 <span className="block rotate-45">
                   <PixelCross size={30} />

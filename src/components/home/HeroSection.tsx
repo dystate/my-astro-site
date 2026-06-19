@@ -21,7 +21,7 @@ export default function HeroSection() {
       {/* Logo — 左上角，与 MobileMenu overlay 内 logo 位置一致 */}
       <div className="absolute top-0 left-0 p-4">
         <span
-          className="text-[58px] sm:text-[28px] tracking-[-0.02em] text-[#1a1a1a] leading-none"
+          className="text-[28px] sm:text-[28px] tracking-[-0.02em] text-[#1a1a1a] leading-none"
           style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
         >
           Dystate
