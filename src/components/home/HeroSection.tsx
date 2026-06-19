@@ -23,11 +23,33 @@ export default function HeroSection() {
         </span>
       </div>
 
-      {/* 电脑 — 移动端缩小一倍 */}
-      <RetroComputer width={mobile ? 250 : 500} />
+      {/* 电脑 + 文字区 — 移动端整体上移 */}
+      <div className="-translate-y-[100px] sm:translate-y-0 flex flex-col items-center">
+        <RetroComputer width={mobile ? 250 : 500} />
 
-      {/* 文字 — 右下角，左对齐 */}
-      <div className="absolute left-8 bottom-8 text-left max-w-sm">
+        {/* 文字 — 左下角 */}
+        <div className="self-start pl-8 -mt-6 sm:hidden">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+            className="font-instrument text-[22px] leading-[0.95] tracking-tight text-[#1a1a1a] mb-2"
+          >
+            Short notes. <br /> Daily calm.
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="font-sans text-[12px] font-normal leading-relaxed text-[#1a1a1a]/60"
+          >
+            Linked with a single anonymous peer. One message every day.
+          </motion.div>
+        </div>
+      </div>
+
+      {/* 文字 — 桌面端左下角 */}
+      <div className="absolute left-8 bottom-8 text-left max-w-sm hidden sm:block">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -46,6 +68,7 @@ export default function HeroSection() {
           rhythm in the digital noise.
         </motion.div>
       </div>
+
       {/* Scroll down — 右下角 */}
       <div className="absolute right-8 bottom-8 text-right">
         <span className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#1a1a1a]/40">
