@@ -54,15 +54,26 @@ export default function MobileMenu() {
   return (
     // sm:hidden → 仅移动端渲染
     <div className="sm:hidden">
-      {/* 右上角触发按钮 */}
+      {/* 右上角按钮 — MENU / CLOSE 共用，旋转加号动画切换 */}
       <button
-        onClick={() => setOpen(true)}
-        className="fixed top-4 right-4 z-[60] flex items-center gap-2 text-[#1a1a1a]"
+        onClick={() => setOpen((v) => !v)}
+        className={[
+          "fixed top-4 right-4 z-[80] flex items-center gap-2",
+          open ? "text-white" : "text-[#1a1a1a]",
+        ].join(" ")}
         style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
-        aria-label="打开菜单"
+        aria-label={open ? "关闭菜单" : "打开菜单"}
       >
-        <span className="text-[22px] tracking-[0.04em] leading-none">MENU</span>
-        <PixelCross size={20} />
+        <span className="text-[22px] tracking-[0.04em] leading-none">
+          {open ? "CLOSE" : "MENU"}
+        </span>
+        <motion.span
+          className="inline-flex"
+          animate={{ rotate: open ? 45 : 0 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <PixelCross size={20} />
+        </motion.span>
       </button>
 
       <AnimatePresence>
@@ -74,26 +85,14 @@ export default function MobileMenu() {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-[70] flex flex-col bg-black text-white"
           >
-            {/* 顶部：Logo + CLOSE，位置与主页 Dystate / MENU 按钮完全对齐 */}
-            <div className="absolute top-0 inset-x-0 flex justify-between p-4">
+            {/* 顶部：仅 Logo，位置与主页一致 */}
+            <div className="absolute top-0 left-0 p-4">
               <span
                 className="text-[28px] leading-none tracking-[-0.02em]"
                 style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
               >
                 Dystate
               </span>
-              <button
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2"
-                style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
-                aria-label="关闭菜单"
-              >
-                <span className="text-[22px] tracking-[0.04em] leading-none">CLOSE</span>
-                {/* 旋转 45° → 变成 ✕ */}
-                <span className="block rotate-45">
-                  <PixelCross size={30} />
-                </span>
-              </button>
             </div>
 
             {/* 主导航：右对齐大标题 */}
