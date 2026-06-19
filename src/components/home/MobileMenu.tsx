@@ -77,7 +77,7 @@ export default function MobileMenu() {
             {/* 顶部：Logo + CLOSE */}
             <div className="flex items-center justify-between p-4">
               <span
-                className="text-[28px] leading-none tracking-[-0.02em]"
+                className="text-[45px] leading-none tracking-[-0.02em]"
                 style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
               >
                 Dystate
