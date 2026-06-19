@@ -23,13 +23,13 @@ function PixelCross({ size = 22, color = "currentColor" }: { size?: number; colo
 }
 
 const LINKS = [
-  { label: "WORK", href: "/work" },
-  { label: "ABOUT", href: "/about" },
-  { label: "CONTACT", href: "/contact" },
+  { label: "ALBUM", href: "/album" },
+  { label: "LOGS", href: "/logs" },
+  { label: "MYDAN", href: "/woaidan" },
 ];
 
 const SOCIALS = [
-  { label: "INSTAGRAM", href: "https://instagram.com" },
+  { label: "TIKTOK", href: "https://douyin.com" },
   { label: "VIMEO", href: "https://vimeo.com" },
 ];
 

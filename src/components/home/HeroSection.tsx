@@ -18,8 +18,8 @@ export default function HeroSection() {
       {/* 移动端右上角菜单 */}
       <MobileMenu />
 
-      {/* Logo — 左上角顶格 */}
-      <div className="absolute top-0 left-0">
+      {/* Logo — 左上角，与 MobileMenu overlay 内 logo 位置一致 */}
+      <div className="absolute top-0 left-0 p-4">
         <span
           className="text-[45px] sm:text-[55px] tracking-[-0.02em] text-[#1a1a1a] leading-none"
           style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
@@ -29,7 +29,7 @@ export default function HeroSection() {
       </div>
 
       {/* 电脑 — 移动端整体上移 */}
-      <div className="-translate-y-[50px] sm:translate-y-0">
+      <div className="-translate-y-[45px] sm:translate-y-0">
         <RetroComputer width={mobile ? 250 : 500} />
       </div>
 

@@ -113,7 +113,7 @@ export default function RetroComputer({
 
   // rotation targets (driven by pointer + inertia), smoothed by springs
   const rotXTarget = useMotionValue(-8);
-  const rotYTarget = useMotionValue(-22);
+  const rotYTarget = useMotionValue(-30);
   const rotX = useSpring(rotXTarget, { stiffness: 90, damping: 18, mass: 0.6 });
   const rotY = useSpring(rotYTarget, { stiffness: 90, damping: 18, mass: 0.6 });
   const transform = useMotionTemplate`rotateX(${rotX}deg) rotateY(${rotY}deg)`;
