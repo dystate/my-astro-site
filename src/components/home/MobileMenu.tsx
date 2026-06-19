@@ -77,7 +77,7 @@ export default function MobileMenu() {
             {/* 顶部：Logo + CLOSE */}
             <div className="flex items-center justify-between p-4">
               <span
-                className="text-[45px] leading-none tracking-[-0.02em]"
+                className="text-[28px] leading-none tracking-[-0.02em]"
                 style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
               >
                 Dystate
@@ -88,10 +88,10 @@ export default function MobileMenu() {
                 style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
                 aria-label="关闭菜单"
               >
-                <span className="text-[18px] tracking-[0.04em] leading-none">CLOSE</span>
+                <span className="text-[28px] tracking-[0.04em] leading-none">CLOSE</span>
                 {/* 旋转 45° → 变成 ✕ */}
                 <span className="block rotate-45">
-                  <PixelCross size={20} />
+                  <PixelCross size={30} />
                 </span>
               </button>
             </div>
