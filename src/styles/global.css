@@ -128,3 +128,17 @@
     @apply font-sans;
     }
 }
+
+/* Nokia 像素字体 */
+@import url('https://db.onlinewebfonts.com/c/440b53b1a1c65037f944ff19259d8014?family=Nokia+Cellphone+FC+Small');
+
+/* 补充字体（Nokia 像素 + Instrument Serif） */
+@theme inline {
+  --font-instrument: "Instrument Serif", serif;
+  --font-serif: "Instrument Serif", serif;
+  --font-nokia: "Nokia Cellphone FC Small", monospace;
+}
+
+@utility font-instrument {
+  font-family: "Instrument Serif", serif;
+}

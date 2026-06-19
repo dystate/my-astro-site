@@ -206,13 +206,9 @@ const shelves = [booksData];
       text-decoration: none;
       color: #1c2026;
       opacity: 0.55;
-      transition: opacity .2s;
+      transition: opacity .2s, color .2s;
     }
-    .hint a:hover { opacity: 1; }
-
-    .hint .d { color: #2563eb; }      /* blue-600 */
-    .hint .st { color: #22c55e; }     /* green-500 */
-    .hint .u { color: #eab308; }      /* yellow-500 */
+    .hint a:hover { opacity: 1; color: #5451f2; }
 
 
 
@@ -586,7 +582,7 @@ const shelves = [booksData];
 
       <div class="hint">
         <a href="/menu" aria-label="返回菜单">
-          <span class="d">D</span>y<span class="st">st</span>ate<span class="u">_</span>
+          Dystate_
         </a>
       </div>
 
