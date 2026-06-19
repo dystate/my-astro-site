@@ -1,21 +1,30 @@
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import RetroComputer from "./RetroComputer";
 
 export default function HeroSection() {
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center bg-[#F3F4ED] px-4">
-      {/* Logo — 左上角 */}
-      <div className="absolute top-8 left-8">
+    <section className="relative flex min-h-screen flex-col items-center justify-center bg-[#F3F4ED] overflow-x-hidden">
+      {/* Logo — 左上角顶格 */}
+      <div className="absolute top-0 left-0">
         <span
-          className="text-[45px] tracking-[-0.02em] text-[#1a1a1a]"
+          className="text-[45px] sm:text-[55px] tracking-[-0.02em] text-[#1a1a1a] leading-none"
           style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
         >
           Dystate
         </span>
       </div>
 
-      {/* 电脑 */}
-      <RetroComputer width={500} />
+      {/* 电脑 — 移动端缩小一倍 */}
+      <RetroComputer width={mobile ? 250 : 500} />
 
       {/* 文字 — 右下角，左对齐 */}
       <div className="absolute left-8 bottom-8 text-left max-w-sm">
