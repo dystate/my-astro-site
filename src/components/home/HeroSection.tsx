@@ -21,10 +21,10 @@ export default function HeroSection() {
       {/* Logo — 左上角，与 MobileMenu overlay 内 logo 位置一致 */}
       <div className="absolute top-0 left-0 p-4">
         <span
-          className="text-[28px] sm:text-[28px] tracking-[-0.02em] text-[#1a1a1a] leading-none"
+          className="text-[58px] sm:text-[28px] tracking-[-0.02em] text-[#1a1a1a] leading-none"
           style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
         >
-          DYSTATE
+          Dystate
         </span>
       </div>
 
@@ -39,9 +39,9 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-          className="font-instrument text-[18px] sm:text-[28px] md:text-[36px] leading-[0.95] tracking-tight text-[#1a1a1a] mb-2 sm:mb-3"
+          className="font-instrument text-[18px] sm:text-[38px] md:text-[46px] leading-[0.95] tracking-tight text-[#1a1a1a] mb-2 sm:mb-3"
         >
-          Short notes. <br /> Daily calm.
+          Weekly update. <br /> Daily Progress.
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -49,8 +49,8 @@ export default function HeroSection() {
           transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="font-sans text-[11px] sm:text-[14px] md:text-[15px] font-normal leading-relaxed text-[#1a1a1a]/60"
         >
-          Linked with a single anonymous peer. One message every day. A quiet
-          rhythm in the digital noise.
+          Hi, this is Dystate.
+          Welcome to my channel!
         </motion.div>
       </div>
     </section>

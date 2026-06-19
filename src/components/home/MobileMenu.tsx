@@ -61,7 +61,7 @@ export default function MobileMenu() {
         style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
         aria-label="打开菜单"
       >
-        <span className="text-[28px] tracking-[0.04em] leading-none">MENU</span>
+        <span className="text-[28px] tracking-[0.04em] leading-none">Menu</span>
         <PixelCross size={20} />
       </button>
 
@@ -80,7 +80,7 @@ export default function MobileMenu() {
                 className="text-[28px] leading-none tracking-[-0.02em]"
                 style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
               >
-                DYSTATE
+                Dystate
               </span>
               <button
                 onClick={() => setOpen(false)}
