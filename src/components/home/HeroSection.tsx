@@ -24,7 +24,7 @@ export default function HeroSection() {
       </div>
 
       {/* 电脑 — 移动端整体上移 */}
-      <div className="-translate-y-[100px] sm:translate-y-0">
+      <div className="-translate-y-[60px] sm:translate-y-0">
         <RetroComputer width={mobile ? 250 : 500} />
       </div>
 

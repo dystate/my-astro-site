@@ -118,8 +118,6 @@ export default function RetroComputer({
   const rotY = useSpring(rotYTarget, { stiffness: 90, damping: 18, mass: 0.6 });
   const transform = useMotionTemplate`rotateX(${rotX}deg) rotateY(${rotY}deg)`;
 
-  const [hintVisible, setHintVisible] = useState(true);
-
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
@@ -138,7 +136,6 @@ export default function RetroComputer({
       lastX = e.clientX;
       lastY = e.clientY;
       lastT = performance.now();
-      setHintVisible(false);
       stage.style.cursor = "grabbing";
       stage.setPointerCapture?.(e.pointerId);
     };
@@ -576,26 +573,6 @@ export default function RetroComputer({
         </div>
       </div>
 
-      {/* drag hint */}
-      {hintVisible && (
-        <div
-          className="font-sans"
-          style={{
-            position: "absolute",
-            left: "50%",
-            bottom: -8,
-            transform: "translateX(-50%)",
-            fontSize: 12,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "rgba(26,26,26,.45)",
-            pointerEvents: "none",
-            whiteSpace: "nowrap",
-          }}
-        >
-          drag to rotate ↻
-        </div>
-      )}
     </div>
   );
 }
