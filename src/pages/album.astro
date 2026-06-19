@@ -1,0 +1,15 @@
+---
+// src/pages/album.astro
+// 换成你实际的 Layout（用来注入 Tailwind / 全局字体 Open Sans·Instrument·nokia）。
+import Layout from "../layouts/Layout.astro";
+import AlbumGallery from "../components/AlbumGallery";
+import { ALBUM_ITEMS } from "../data/album";
+
+// 纯静态页，默认 prerender 即可。
+// 只有当你之后改成从 Cloudflare D1/R2 绑定动态拉取作品时，才需要：
+// export const prerender = false;
+---
+
+<Layout title="Album · Dystate">
+  <AlbumGallery client:load items={ALBUM_ITEMS} />
+</Layout>
