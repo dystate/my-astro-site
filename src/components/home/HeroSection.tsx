@@ -7,7 +7,7 @@ export default function HeroSection() {
       {/* Logo — 左上角 */}
       <div className="absolute top-8 left-8">
         <span
-          className="text-[55px] tracking-[-0.02em] text-[#1a1a1a]"
+          className="text-[45px] tracking-[-0.02em] text-[#1a1a1a]"
           style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
         >
           Dystate
