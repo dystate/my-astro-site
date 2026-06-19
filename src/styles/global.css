@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import url('https://db.onlinewebfonts.com/c/440b53b1a1c65037f944ff19259d8014?family=Nokia+Cellphone+FC+Small');
 @import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
@@ -129,8 +130,6 @@
     }
 }
 
-/* Nokia 像素字体 */
-@import url('https://db.onlinewebfonts.com/c/440b53b1a1c65037f944ff19259d8014?family=Nokia+Cellphone+FC+Small');
 
 /* 补充字体（Nokia 像素 + Instrument Serif） */
 @theme inline {
