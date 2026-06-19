@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import RetroComputer from "./RetroComputer";
+import MobileMenu from "./MobileMenu";
+
 
 export default function HeroSection() {
   const [mobile, setMobile] = useState(false);
@@ -13,6 +15,9 @@ export default function HeroSection() {
 
   return (
     <section className="relative flex h-dvh flex-col items-center justify-center bg-[#F3F4ED] overflow-hidden">
+      {/* 移动端右上角菜单 */}
+      <MobileMenu />
+
       {/* Logo — 左上角顶格 */}
       <div className="absolute top-0 left-0">
         <span
