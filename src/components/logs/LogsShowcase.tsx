@@ -132,7 +132,6 @@ export default function LogsShowcase({
         </h2>
         <p className="intro-blurb">{category.blurb}</p>
         <button className="intro-more" onClick={() => setOpen(true)}>展开更多 ／ VIEW ALL →</button>
-        <div className="intro-hint">滑动 scroll →</div>
       </div>
 
       {/* 右侧：三张竖卡横排（时间序） */}
@@ -140,11 +139,6 @@ export default function LogsShowcase({
         {top3.map((e, i) => (
           <Card key={e.slug} e={e} n={i} />
         ))}
-        <button className="more-panel" onClick={() => setOpen(true)} aria-label="展开全部文章">
-          <span className="more-num">{pad(entries.length)}</span>
-          <span className="more-label">展开更多<br />VIEW ALL</span>
-          <span className="more-arrow">→</span>
-        </button>
       </div>
 
       <AnimatePresence>
