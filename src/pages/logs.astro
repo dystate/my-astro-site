@@ -130,7 +130,7 @@ const groups = LOG_CATEGORIES.map((cat) => ({
   .m-menu.open .socials a { opacity: 1; transition-delay: .34s; }
 
   /* ===== 页面 ===== */
-  .logs-dark { min-height: 100dvh; background: #000; color: #fff; padding-bottom: 12vh; padding-top: clamp(80px, 10vh, 120px); }
+  .logs-dark { min-height: 100dvh; background: #000; color: #fff; padding-bottom: 12vh; padding-top: clamp(65px, 10vh, 105px); }
 
   /* 混排标题：衬线 + 无衬线 800 */
   .t-serif { font-family: "Instrument Serif", serif; font-weight: 400; }
@@ -203,11 +203,11 @@ const groups = LOG_CATEGORIES.map((cat) => ({
     .showcase { flex-direction: column; margin-top: clamp(32px,6vh,64px); }
     .show-intro { flex: none; align-self: stretch; padding: 0 clamp(16px,5vw,24px); }
     .intro-title { font-size: clamp(32px,9vw,48px); }
-    .show-track { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding: 20px 16px 18px; gap: 14px; }
+    .show-track { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding: 20px clamp(16px,5vw,24px) 18px; gap: 14px; }
     .show-track::-webkit-scrollbar { height: 6px; }
     .show-track::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); border-radius: 99px; }
     .show-track::-webkit-scrollbar-track { background: transparent; }
-    .show-card { flex: 0 0 auto; width: 76vw; scroll-snap-align: start; }
+    .show-card { flex: 0 0 auto; width: 64vw; scroll-snap-align: start; }
     .list-row { grid-template-columns: 2.4rem 1fr auto; gap: 12px; }
     .lr-arrow { display: none; }
   }
