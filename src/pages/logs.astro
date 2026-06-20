@@ -1,0 +1,235 @@
+---
+import Layout from "../layouts/Layout.astro";
+import LogsShowcase from "../components/logs/LogsShowcase";
+import { getCollection } from "astro:content";
+import { readingTime, formatDate } from "../lib/logs";
+import { LOG_CATEGORIES } from "../data/logCategories";
+
+const all = (
+  await getCollection("logs", ({ data }) => (import.meta.env.PROD ? !data.draft : true))
+).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const serialize = (e: (typeof all)[number]) => ({
+  slug: e.id,
+  title: e.data.title,
+  dateLabel: formatDate(e.data.date),
+  summary: e.data.summary ?? "",
+  tags: e.data.tags,
+  readMins: readingTime(e.body ?? ""),
+  cover: e.data.cover ?? null,
+  accent: e.data.accent ?? null,
+  motif: e.data.motif ?? null,
+});
+
+const groups = LOG_CATEGORIES.map((cat) => ({
+  cat,
+  entries: all.filter((e) => (e.data.category ?? "dev") === cat.slug).map(serialize),
+})).filter((g) => g.entries.length > 0);
+---
+
+<Layout title="Logs · Dystate">
+  {/* 深色页 → 白色顶栏 + PixelCross 全屏菜单 */}
+  <header class="logs-header">
+    <a class="logs-logo" href="/">Dystate</a>
+    <nav class="logs-nav" aria-label="导航">
+      <a href="/album">ALBUM</a>
+      <a href="/logs" class="active">LOGS</a>
+      <a href="/woaidan">MYDAN</a>
+    </nav>
+    <button class="menu-btn" id="menu-open" aria-label="打开菜单">
+      MENU
+      <span class="px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="10" y="0" width="4" height="4" fill="currentColor"/><rect x="10" y="5" width="4" height="4" fill="currentColor"/><rect x="10" y="10" width="4" height="4" fill="currentColor"/><rect x="10" y="15" width="4" height="4" fill="currentColor"/><rect x="10" y="20" width="4" height="4" fill="currentColor"/><rect x="0" y="10" width="4" height="4" fill="currentColor"/><rect x="5" y="10" width="4" height="4" fill="currentColor"/><rect x="15" y="10" width="4" height="4" fill="currentColor"/><rect x="20" y="10" width="4" height="4" fill="currentColor"/>
+      </svg></span>
+    </button>
+  </header>
+
+  <div class="m-menu" id="m-menu" aria-hidden="true">
+    <div class="m-menu-top">
+      <span class="logs-logo">Dystate</span>
+      <button class="m-menu-x" id="menu-close" aria-label="关闭菜单">CLOSE
+        <span class="px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="10" y="0" width="4" height="4" fill="currentColor"/><rect x="10" y="5" width="4" height="4" fill="currentColor"/><rect x="10" y="10" width="4" height="4" fill="currentColor"/><rect x="10" y="15" width="4" height="4" fill="currentColor"/><rect x="10" y="20" width="4" height="4" fill="currentColor"/><rect x="0" y="10" width="4" height="4" fill="currentColor"/><rect x="5" y="10" width="4" height="4" fill="currentColor"/><rect x="15" y="10" width="4" height="4" fill="currentColor"/><rect x="20" y="10" width="4" height="4" fill="currentColor"/>
+        </svg></span>
+      </button>
+    </div>
+    <nav>
+      <a href="/album">ALBUM</a>
+      <a href="/logs">LOGS</a>
+      <a href="/woaidan">MYDAN</a>
+    </nav>
+    <div class="socials">
+      <a href="https://douyin.com" target="_blank" rel="noreferrer">TIKTOK</a>
+      <a href="https://vimeo.com" target="_blank" rel="noreferrer">VIMEO</a>
+    </div>
+  </div>
+
+  <main class="logs-dark">
+    {groups.map((g, i) => (
+      <LogsShowcase client:visible category={g.cat} entries={g.entries} index={i} />
+    ))}
+  </main>
+
+  <script is:inline>
+    (function () {
+      var o = document.getElementById("menu-open"),
+          c = document.getElementById("menu-close"),
+          m = document.getElementById("m-menu");
+      if (!o || !m) return;
+      function open() { m.classList.add("open"); m.setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden"; }
+      function close() { m.classList.remove("open"); m.setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; }
+      o.addEventListener("click", open);
+      if (c) c.addEventListener("click", close);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+      m.querySelectorAll("nav a").forEach(function (a) { a.addEventListener("click", close); });
+    })();
+
+    // 横滑轨道：垂直滚轮不劫持为水平滚动
+    (function () {
+      document.querySelectorAll(".show-track").forEach(function (track) {
+        track.addEventListener("wheel", function (e) {
+          if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) return; // 垂直为主 → 让页面正常滚
+          e.preventDefault();
+          track.scrollLeft += e.deltaY || e.deltaX;
+        }, { passive: false });
+      });
+    })();
+  </script>
+</Layout>
+
+<style is:global>
+  body { background: #000; }
+
+  /* ===== Header（白色） ===== */
+  .logs-header { position: fixed; top: 0; inset-inline: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 16px clamp(16px,4vw,40px); pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
+  .logs-header > * { pointer-events: auto; }
+  .logs-logo { font: 800 clamp(24px,6vw,40px)/1 "Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-decoration: none; }
+  .logs-nav { display: none; align-items: center; gap: 32px; }
+  @media (min-width: 860px) { .logs-nav { display: flex; } .menu-btn { display: none; } }
+  .logs-nav a { position: relative; font: 800 18px/1 "Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; transition: opacity .2s; }
+  .logs-nav a:hover { opacity: .6; }
+  .logs-nav a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; background: #fff; }
+  .menu-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; color: #fff; font: 800 22px/1 "Open Sans",sans-serif; letter-spacing: .04em; }
+  .px { display: inline-flex; }
+
+  /* ===== 全屏菜单 ===== */
+  .m-menu { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; background: #000; color: #fff; opacity: 0; pointer-events: none; transition: opacity .3s cubic-bezier(.16,1,.3,1); }
+  .m-menu.open { opacity: 1; pointer-events: auto; }
+  .m-menu-top { display: flex; align-items: center; justify-content: space-between; padding: 16px; }
+  .m-menu-x { display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; color: #fff; font: 800 22px/1 "Open Sans",sans-serif; letter-spacing: .04em; }
+  .m-menu-x .px { transition: transform .3s cubic-bezier(.16,1,.3,1); }
+  .m-menu.open .m-menu-x .px { transform: rotate(45deg); }
+  .m-menu nav { flex: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 0 16px; }
+  .m-menu nav a { font: 800 64px/.95 "Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-decoration: none; opacity: 0; transform: translateY(24px); transition: opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1); }
+  .m-menu.open nav a { opacity: 1; transform: none; }
+  .m-menu.open nav a:nth-child(1) { transition-delay: .10s; }
+  .m-menu.open nav a:nth-child(2) { transition-delay: .18s; }
+  .m-menu.open nav a:nth-child(3) { transition-delay: .26s; }
+  .m-menu .socials { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding: 16px 16px 32px; }
+  .m-menu .socials a { font: 800 16px/1.2 "Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; opacity: 0; transition: opacity .4s ease; }
+  .m-menu.open .socials a { opacity: 1; transition-delay: .34s; }
+
+  /* ===== 页面 ===== */
+  .logs-dark { min-height: 100dvh; background: #000; color: #fff; padding-bottom: 12vh; padding-top: clamp(80px, 10vh, 120px); }
+
+  /* 混排标题：衬线 + 无衬线 800 */
+  .t-serif { font-family: "Instrument Serif", serif; font-weight: 400; }
+  .t-sans { font-family: "Open Sans", sans-serif; font-weight: 800; letter-spacing: -.01em; }
+
+  /* ===== showcase 一行 ===== */
+  .showcase { position: relative; display: flex; align-items: stretch; gap: 0; margin-top: clamp(40px, 8vh, 96px); }
+
+  .show-intro {
+    flex: 0 0 clamp(280px, 34vw, 460px); align-self: center;
+    padding: 0 clamp(28px,3vw,52px) 0 clamp(16px,5vw,64px); box-sizing: border-box;
+  }
+  .intro-kicker { font: 400 12px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .12em; color: rgba(255,255,255,.45); }
+  .intro-title { margin: 14px 0 0; font-size: clamp(34px, 4vw, 56px); line-height: 1.02; letter-spacing: -.01em; }
+  .intro-title .t-sans { display: inline; }
+  .intro-blurb { margin: 22px 0 0; max-width: 34ch; font: 400 clamp(17px,1.4vw,21px)/1.5 "Instrument Serif", Georgia, serif; color: rgba(255,255,255,.72); }
+  .intro-more { margin: 26px 0 0; background: none; border: none; cursor: pointer; padding: 0; font: 800 13px/1 "Open Sans",sans-serif; letter-spacing: .06em; color: #fff; transition: opacity .2s; }
+  .intro-more:hover { opacity: .6; }
+  .intro-hint { margin-top: 14px; font: 400 12px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .1em; color: rgba(255,255,255,.3); }
+
+  /* 横滑轨道 */
+  .show-track {
+    flex: 1 1 auto; min-width: 0; display: flex; align-items: stretch; gap: 18px;
+    overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity;
+    padding: 4px clamp(16px,5vw,64px) 18px 0; -webkit-overflow-scrolling: touch;
+  }
+  .show-track::-webkit-scrollbar { height: 6px; }
+  .show-track::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); border-radius: 99px; }
+  .show-track::-webkit-scrollbar-track { background: transparent; }
+
+  /* ===== 卡片 ===== */
+  .show-card {
+    position: relative; flex: 0 0 auto; width: clamp(230px, 24vw, 300px); aspect-ratio: 3 / 4;
+    scroll-snap-align: start; overflow: hidden; text-decoration: none; color: #fff; background: #111;
+    transition: transform .35s cubic-bezier(.16,1,.3,1);
+  }
+  .show-card:hover { transform: translateY(-6px); }
+  .card-media { position: absolute; inset: 0; background-size: cover; background-position: center; transition: transform .5s ease; }
+  .show-card:hover .card-media { transform: scale(1.04); }
+  .card-grad { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 38%, rgba(0,0,0,0) 60%, rgba(0,0,0,.4) 100%); }
+  /* 色卡：重复关键词纹理 */
+  .card-motif { position: absolute; inset: 0; overflow: hidden; opacity: .9; }
+  .card-motif span { position: absolute; font-family: "Open Sans", sans-serif; font-weight: 800; color: rgba(0,0,0,.14); white-space: nowrap; letter-spacing: -.02em; text-transform: uppercase; }
+  .card-stamp { position: absolute; left: 14px; right: 14px; top: 52%; transform: translateY(-50%); text-align: center; font: 800 clamp(22px,2.4vw,34px)/1 "Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-transform: uppercase; text-shadow: 0 2px 0 rgba(0,0,0,.25); pointer-events: none; }
+  .card-head { position: absolute; left: 16px; right: 16px; top: 16px; }
+  .card-meta { font: 400 11px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .06em; color: rgba(255,255,255,.8); margin-bottom: 8px; }
+  .card-title { margin: 0; font: 400 clamp(19px,1.5vw,24px)/1.18 "Instrument Serif", serif; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
+  .card-index { position: absolute; right: 14px; bottom: 12px; font: 700 12px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .08em; color: rgba(255,255,255,.7); }
+
+  /* 展开更多面板 */
+  .more-panel {
+    flex: 0 0 auto; width: clamp(150px, 14vw, 190px); aspect-ratio: auto; align-self: stretch;
+    display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
+    background: none; cursor: pointer; color: #fff; text-align: left;
+    border: 1px dashed rgba(255,255,255,.35); padding: 16px; scroll-snap-align: start;
+    transition: background .2s, border-color .2s;
+  }
+  .more-panel:hover { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.6); }
+  .more-num { font: 700 13px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .08em; color: rgba(255,255,255,.6); }
+  .more-label { font: 800 18px/1.15 "Open Sans",sans-serif; letter-spacing: -.01em; }
+  .more-arrow { font: 400 26px/1 "Open Sans",sans-serif; }
+
+  /* ===== 展开列表（覆盖层 / "list 页面"） ===== */
+  .list-panel { position: fixed; inset: 0; z-index: 66; background: #050505; color: #fff; display: flex; flex-direction: column; }
+  .list-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: clamp(18px,3vw,28px) clamp(16px,5vw,64px); border-bottom: 1px solid rgba(255,255,255,.12); }
+  .list-cat { font-size: clamp(22px,3vw,34px); line-height: 1.1; }
+  .list-count { font: 400 13px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .06em; color: rgba(255,255,255,.45); margin-left: 10px; }
+  .list-close { background: none; border: none; cursor: pointer; color: #fff; font: 800 13px/1 "Open Sans",sans-serif; letter-spacing: .08em; transition: opacity .2s; }
+  .list-close:hover { opacity: .6; }
+  .list-rows { flex: 1; overflow-y: auto; padding: 0 clamp(16px,5vw,64px) 64px; }
+  .list-row {
+    position: relative; display: grid; grid-template-columns: 3rem 1fr auto 1.5rem; align-items: baseline; gap: clamp(12px,3vw,32px);
+    padding: clamp(16px,2.4vw,26px) 0; border-bottom: 1px solid rgba(255,255,255,.1);
+    text-decoration: none; color: #fff; transition: padding-left .25s cubic-bezier(.16,1,.3,1), background .2s;
+  }
+  .list-row:hover { padding-left: 12px; background: rgba(255,255,255,.03); }
+  .lr-num { font: 700 14px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; color: rgba(255,255,255,.4); }
+  .lr-main { min-width: 0; }
+  .lr-title { display: block; font: 800 clamp(20px,2.6vw,30px)/1.15 "Open Sans",sans-serif; letter-spacing: -.01em; transition: color .2s; }
+  .list-row:hover .lr-title { color: #5451f2; }
+  .lr-tags { display: block; margin-top: 6px; font: 600 11px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .04em; color: #5451f2; }
+  .lr-date { font: 400 13px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .04em; color: rgba(255,255,255,.55); white-space: nowrap; }
+  .lr-arrow { font: 400 18px/1 "Open Sans",sans-serif; color: rgba(255,255,255,.3); transition: color .2s, transform .2s; }
+  .list-row:hover .lr-arrow { color: #5451f2; transform: translateX(4px); }
+
+  /* ===== 移动端：介绍在上、卡片横滑在下（参考图） ===== */
+  @media (max-width: 860px) {
+    .showcase { flex-direction: column; margin-top: clamp(32px,6vh,64px); }
+    .show-intro { flex: none; align-self: stretch; padding: 0 clamp(16px,5vw,24px); }
+    .intro-title { font-size: clamp(32px,9vw,48px); }
+    .intro-hint { display: none; }
+    .show-track { padding: 20px 16px 18px; gap: 14px; scroll-snap-type: x mandatory; }
+    .show-card { width: 76vw; }
+    .more-panel { width: 56vw; }
+    .list-row { grid-template-columns: 2.4rem 1fr auto; gap: 12px; }
+    .lr-arrow { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .show-card, .card-media, .list-row, .m-menu, .m-menu nav a, .m-menu .socials a { transition: none; }
+  }
+</style>

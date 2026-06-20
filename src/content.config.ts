@@ -15,4 +15,19 @@ const woaidan = defineCollection({
   }),
 });
 
-export const collections = { woaidan };
+const logs = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/data/logs' }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    category: z.string().default('dev'),
+    summary: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+    cover: z.string().url().optional(),
+    accent: z.tuple([z.string(), z.string()]).optional(),
+    motif: z.string().optional(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { woaidan, logs };
