@@ -49,7 +49,7 @@ function Card({ e, n }: { e: ShowEntry; n: number }) {
       <div className="card-grad" />
       {!e.cover && <div className="card-stamp">{e.motif ?? "LOG"}</div>}
       <div className="card-head">
-        <div className="card-meta">{e.dateLabel} · {e.readMins} MIN</div>
+        <div className="card-meta">{e.dateLabel}</div>
         <h3 className="card-title">{e.title}</h3>
       </div>
       <div className="card-index">{pad(n + 1)}</div>

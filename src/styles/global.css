@@ -119,26 +119,20 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-    }
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
+    overflow-x: clip;          /* was: hidden */
     scrollbar-width: none;
-    }
-  body::-webkit-scrollbar {
-    display: none;
-    }
+  }
+  body::-webkit-scrollbar { display: none; }
+
   html {
     @apply font-sans;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    overflow-x: hidden;
-    }
-  html::-webkit-scrollbar {
-    display: none;
-    }
+    overflow-x: clip;          /* was: hidden */
+  }
+  html::-webkit-scrollbar { display: none; }
 }
 
 

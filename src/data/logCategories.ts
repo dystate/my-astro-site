@@ -10,13 +10,13 @@ export interface LogCategory {
 
 export const LOG_CATEGORIES: LogCategory[] = [
   {
-    slug: "dev",
-    title: "代码与构建的*持续记录",
-    blurb: "把 Dystate 一砖一瓦搭起来：踩过的坑、重构的取舍、偶尔的灵光一现，按时间顺序留在这里。",
+    slug: "summary",
+    title: "很会偷懒的*年度总结",
+    blurb: "来看看这一年我都干了什么吧！",
   },
   {
-    slug: "design",
-    title: "质感与*秩序的笔记",
-    blurb: "颜色、字体、动效曲线，以及把它们写成 design.md 规矩的尝试。",
+    slug: "essay",
+    title: "胡乱瞎写的*随笔",
+    blurb: "我是怎样一个人？",
   },
 ];

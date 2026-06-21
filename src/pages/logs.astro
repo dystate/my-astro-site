@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import LogsShowcase from "../components/logs/LogsShowcase";
+import SiteNav from "../components/SiteNav.astro";
 import { getCollection } from "astro:content";
 import { readingTime, formatDate } from "../lib/logs";
 import { LOG_CATEGORIES } from "../data/logCategories";
@@ -32,9 +33,7 @@ const groups = LOG_CATEGORIES.map((cat) => ({
   <header class="logs-header">
     <a class="logs-logo" href="/">Dystate</a>
     <nav class="logs-nav" aria-label="导航">
-      <a href="/album">ALBUM</a>
-      <a href="/logs" class="active">LOGS</a>
-      <a href="/woaidan">MYDAN</a>
+      <SiteNav current="logs" />
     </nav>
     <button class="menu-btn" id="menu-open" aria-label="打开菜单">
       MENU
@@ -54,9 +53,7 @@ const groups = LOG_CATEGORIES.map((cat) => ({
       </button>
     </div>
     <nav>
-      <a href="/album">ALBUM</a>
-      <a href="/logs">LOGS</a>
-      <a href="/woaidan">MYDAN</a>
+      <SiteNav current="logs" />
     </nav>
     <div class="socials">
       <a href="https://douyin.com" target="_blank" rel="noreferrer">TIKTOK</a>
@@ -105,11 +102,10 @@ const groups = LOG_CATEGORIES.map((cat) => ({
   .logs-header > * { pointer-events: auto; }
   .logs-logo { font: 800 clamp(24px,6vw,40px)/1 "Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-decoration: none; }
   .logs-nav { display: none; align-items: center; gap: 32px; }
-  @media (min-width: 860px) { .logs-nav { display: flex; } .menu-btn { display: none; } }
-  .logs-nav a { position: relative; font: 800 18px/1 "Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; transition: opacity .2s; }
+  .logs-nav a { font: 800 18px/1 "Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; transition: opacity .2s; }
   .logs-nav a:hover { opacity: .6; }
-  .logs-nav a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; background: #fff; }
   .menu-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; color: #fff; font: 800 22px/1 "Open Sans",sans-serif; letter-spacing: .04em; }
+  @media (min-width: 860px) { .logs-nav { display: flex; } .menu-btn { display: none; } }
   .px { display: inline-flex; }
 
   /* ===== 全屏菜单 ===== */

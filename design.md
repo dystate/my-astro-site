@@ -238,6 +238,57 @@ padding: clamp(22px, 3.5vw, 46px);
 
 ---
 
+## 导航系统
+
+### 核心规则：DRY —— 链接只定义一次
+
+桌面端导航和移动端全屏菜单**共享同一份链接数据**，通过 `<SiteNav />` 组件渲染。**禁止在页面中分别硬编码两份相同的 `<a>` 标签。**
+
+### SiteNav 组件
+
+```
+src/components/SiteNav.astro
+```
+
+| Prop | 类型 | 说明 |
+|------|------|------|
+| `current` | `string` | 当前页面标识（`"logs"` / `"album"` / `"woaidan"`），自动给对应链接加 `.active` 类 |
+| `class` | `string` | 可选，附加到每个 `<a>` 的 CSS 类名 |
+
+组件内部定义了唯一的链接数组 `LINKS`，添加新页面时**只在这里加一条**，所有引用页面自动同步。
+
+### 使用模式
+
+```astro
+<!-- 桌面端导航 -->
+<nav class="site-nav" aria-label="导航">
+  <SiteNav current="logs" />
+</nav>
+
+<!-- 移动端全屏菜单 —— 同一个组件，不重复定义链接 -->
+<nav>
+  <SiteNav current="logs" />
+</nav>
+```
+
+### 样式
+
+桌面端和移动端的 `<a>` 样式差异通过**父级选择器**控制（如 `.logs-nav a` vs `.m-menu nav a`），`SiteNav` 本身不包含任何样式，完全由页面 CSS 决定。
+
+### 现有导航链接
+
+| 路径 | 标签 | 标识 |
+|------|------|------|
+| `/album` | ALBUM | `album` |
+| `/logs` | LOGS | `logs` |
+| `/woaidan` | MYDAN | `woaidan` |
+
+### 菜单交互（vanilla JS）
+
+移动端菜单的开关逻辑（`menu-open` / `menu-close` / `Escape` 关闭 / 导航后关闭）各页面通过 `<script is:inline>` 实现，不封装为组件——因为不同页面的菜单结构细节可能不同（如 `logs.astro` 和 `woaidan.astro` 的菜单 top-bar 布局略有差异），但交互逻辑保持一致。
+
+---
+
 ## 动画与动效
 
 ### 交互效果
@@ -284,10 +335,9 @@ padding: clamp(22px, 3.5vw, 46px);
 | 菜单 | `/menu` | `#e5e5e5` | 堆叠粘性卡片、滚动缩放、渐变文字页脚、纯文本 Logo |
 | 关于我 | `/me` | `#2d2e36` | 告示板布局、点阵网格、10px 阴影、图钉 |
 | 生活 | `/life` | `#2d2e36` | 拍立得白色卡片、CSS 多列布局、灯箱 |
+| 日志 | `/logs` | `#000` | 深色 CRT 主题、横滑卡片展示、分类列表覆盖层、单篇文章动态路由 |
 | 书架 | `/woaidan` | 白色 + 点阵 | VHS 磁带风格书脊（11 色）、3D 翻书、自定义音视频播放器、登录验证 |
 | 待办 | `/xzds` | `#f0f2f5` | 双栏看板：奶油黄 + 克莱因蓝、圆角卡片 |
-
-> 日志（/study）页面及相关组件（NoiseField、BracketPanel、MarkdownLayout）已移除。
 
 ---
 

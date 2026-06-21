@@ -150,8 +150,11 @@ export default function AlbumGallery({ items }: { items: AlbumItem[] }) {
       {/* ── 顶部 ── */}
       <header className="fixed top-0 inset-x-0 z-50">
         <div
-          className="flex items-center justify-between px-4 sm:px-6 py-4"
-          style={{ background: "linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0))" }}
+          className="flex items-center justify-between"
+          style={{
+            padding: "16px clamp(16px,4vw,40px)",
+            background: "linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0))",
+          }}
         >
           <a
             href="/"

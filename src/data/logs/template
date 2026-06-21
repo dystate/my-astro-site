@@ -1,0 +1,21 @@
+---
+title: ""
+date: 2026-01-01
+category: 
+summary: ""
+tags: [""]
+accent: ["#2f6fe0", "#0c2747"]
+motif: ""
+---
+
+import PhotoStack from "@/components/logs/PhotoStack";
+
+export const a = [
+  { src: "" },
+  { src: "" },
+  { src: "" },
+  { src: "" },
+];
+
+
+<PhotoStack items={a} client:visible />

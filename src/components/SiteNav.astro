@@ -1,0 +1,21 @@
+---
+// src/components/SiteNav.astro
+// 共享导航链接 —— 桌面端和移动端共用同一份数据，避免重复
+export interface Props {
+  current?: string; // 当前页面标识，如 "logs" | "album" | "woaidan"
+  class?: string;   // 附加到每个 <a> 的类名（可选）
+}
+const { current, class: linkClass } = Astro.props;
+
+const LINKS = [
+  { href: "/album",  label: "ALBUM",  key: "album" },
+  { href: "/logs",   label: "LOGS",   key: "logs" },
+  { href: "/woaidan",label: "MYDAN",  key: "woaidan" },
+] as const;
+---
+
+{LINKS.map((l) => (
+  <a href={l.href} class={`${linkClass ?? ""} ${l.key === current ? "active" : ""}`.trim() || undefined}>
+    {l.label}
+  </a>
+))}

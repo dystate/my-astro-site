@@ -119,7 +119,7 @@ const SignInBlock = () => {
           className="text-[28px] leading-none tracking-[-0.02em] text-white"
           style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
         >
-          WOADAN
+          MYDAN
         </CardTitle>
       </CardHeader>
 
@@ -166,7 +166,7 @@ const SignInBlock = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <Checkbox
               id="rememberMe"
               checked={formData.rememberMe}
@@ -174,7 +174,7 @@ const SignInBlock = () => {
                 handleInputChange("rememberMe", checked === true)
               }
             />
-            <Label htmlFor="rememberMe" className="ml-2 text-sm cursor-pointer">
+            <Label htmlFor="rememberMe" className="text-sm text-white cursor-pointer">
               记住我
             </Label>
           </div>
