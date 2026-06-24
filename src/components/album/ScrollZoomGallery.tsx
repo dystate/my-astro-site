@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import type { AlbumPhoto } from "../../data/album";
 
@@ -12,6 +12,7 @@ const AUTO_SPEED = 0.0055; // 自动前进速度（步/帧）
 const LERP = 0.085;        // 目标→实际的平滑系数（惯性）
 const RESUME_MS = 3000;    // 交互后多久恢复自动播放
 const GAP_PX = 10;         // 照片之间的最小间距（碰撞检测用）
+const SIZE = 1.3;          // 全局尺寸倍数（基于基准 vw）
 const FIXED_TITLE = "Dystate"; // 固定在屏幕中央的标题
 
 // 一组分散、互不相邻的锚点；相邻索引用跨步分配 → 同屏的相邻照片落在彼此远处
@@ -33,7 +34,13 @@ const smooth = (t: number) => {
 };
 
 /** 单张图片（无 src 时回退到渐变占位） */
-function Frame({ photo }: { photo: AlbumPhoto }) {
+function Frame({
+  photo,
+  onLoad,
+}: {
+  photo: AlbumPhoto;
+  onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
+}) {
   const [a, b] = photo.accent ?? ["#2a2a2a", "#0a0a0a"];
   return (
     <>
@@ -42,7 +49,8 @@ function Frame({ photo }: { photo: AlbumPhoto }) {
           src={photo.src}
           alt={photo.title}
           draggable={false}
-          className="absolute inset-0 h-full w-full object-cover select-none"
+          onLoad={onLoad}
+          className="absolute inset-0 h-full w-full object-contain select-none"
         />
       ) : (
         <div
@@ -81,7 +89,7 @@ export default function ScrollZoomGallery({ albumTitle, photos }: Props) {
         return {
           ax: clamp01(a[0] + (rnd(1) - 0.5) * 0.05),
           ay: clamp01(a[1] + (rnd(2) - 0.5) * 0.05),
-          vw: 14 + rnd(3) * 8, // 14..22 vw（偏小，避免重叠）
+          vw: (14 + rnd(3) * 8) * SIZE, // 14..22 vw ×SIZE
           portrait: rnd(4) > 0.4,
         };
       }),
@@ -91,11 +99,39 @@ export default function ScrollZoomGallery({ albumTitle, photos }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // 每张图的真实宽高比（w/h），加载前先用 layout 的横竖猜测，onLoad 后用真实值
+  const aspectRef = useRef<number[]>([]);
+  if (aspectRef.current.length !== n) {
+    aspectRef.current = photos.map((_, i) => (layout[i].portrait ? 3 / 4 : 4 / 3));
+  }
+  const onImgLoad = (i: number) => (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth && img.naturalHeight) {
+      aspectRef.current[i] = img.naturalWidth / img.naturalHeight;
+      const node = layerRefs.current[i];
+      if (node) node.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+    }
+  };
+
   const progress = useRef(0);
   const target = useRef(0);
   const auto = useRef(true);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchY = useRef<number | null>(null);
+
+  // 移动端把图放大一倍（mulRef 供 rAF 碰撞计算用，mobile 状态供 JSX 宽度用，两者保持一致）
+  const [mobile, setMobile] = useState(false);
+  const mulRef = useRef(1);
+  useEffect(() => {
+    const check = () => {
+      const m = window.innerWidth < 640;
+      setMobile(m);
+      mulRef.current = m ? 2 : 1;
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const poke = () => {
     auto.current = false;
@@ -152,8 +188,8 @@ export default function ScrollZoomGallery({ albumTitle, photos }: Props) {
         const scale = Math.min(1, Math.pow(GROWTH, -d)); // 上限 1：到前景就不再长大
         const op = smooth((VIS - d) / FADE_FAR) * smooth((d + PASS) / (PASS + FRONT));
         const L = layout[i];
-        const w = (L.vw / 100) * cw * scale;
-        const h = w / (L.portrait ? 0.75 : 1.3333);
+        const w = (L.vw / 100) * cw * scale * mulRef.current; // 移动端 ×2
+        const h = w / (aspectRef.current[i] || 1.3333); // 用真实宽高比
         const cx = L.ax * cw;
         const cy = L.ay * ch;
         st[i] = { d, scale, op, l: cx - w / 2, t: cy - h / 2, r: cx + w / 2, b: cy + h / 2, hidden: false };
@@ -237,7 +273,7 @@ export default function ScrollZoomGallery({ albumTitle, photos }: Props) {
               style={{
                 left: n < 2 ? "50%" : `${L.ax * 100}%`,
                 top: n < 2 ? "50%" : `${L.ay * 100}%`,
-                width: n < 2 ? "clamp(280px,42vw,560px)" : `${L.vw.toFixed(2)}vw`,
+                width: n < 2 ? "clamp(280px,42vw,560px)" : `${(L.vw * (mobile ? 2 : 1)).toFixed(2)}vw`,
                 aspectRatio: n < 2 ? "4 / 3" : L.portrait ? "3 / 4" : "4 / 3",
                 willChange: "transform, opacity",
                 backfaceVisibility: "hidden",
@@ -245,7 +281,7 @@ export default function ScrollZoomGallery({ albumTitle, photos }: Props) {
                   n < 2 ? "translate3d(-50%,-50%,0) scale(1)" : "translate3d(-50%,-50%,0) scale(0.001)",
               }}
             >
-              <Frame photo={photo} />
+              <Frame photo={photo} onLoad={onImgLoad(i)} />
             </div>
           );
         })}
@@ -265,15 +301,6 @@ export default function ScrollZoomGallery({ albumTitle, photos }: Props) {
         </h1>
       </div>
 
-      {/* 底部操作说明 */}
-      <div className="absolute inset-x-0 bottom-6 sm:bottom-8 z-[4000] flex flex-col items-center gap-1 px-4 text-center">
-        <p className="text-[11px] sm:text-[12px] tracking-[0.18em] text-white/70 uppercase" style={{ fontWeight: 800 }}>
-          Use mouse wheel, arrow keys, or touch to navigate
-        </p>
-        <p className="font-nokia text-[10px] sm:text-[11px] tracking-[0.2em] text-white/35 uppercase">
-          Auto-play resumes after 3 seconds of inactivity
-        </p>
-      </div>
     </main>
   );
 }
