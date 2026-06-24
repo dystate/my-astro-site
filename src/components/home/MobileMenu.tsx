@@ -59,7 +59,7 @@ export default function MobileMenu() {
         onClick={() => setOpen((v) => !v)}
         className={[
           "fixed top-4 right-4 z-[80] flex items-center gap-2",
-          open ? "text-white" : "text-[#1a1a1a]",
+          "text-white",
         ].join(" ")}
         style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
         aria-label={open ? "关闭菜单" : "打开菜单"}
