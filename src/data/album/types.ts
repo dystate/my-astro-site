@@ -31,4 +31,40 @@ export interface AlbumItem {
   photos?: AlbumPhoto[];
   /** 列表排序，数字越小越靠前；不填按文件夹名排序 */
   order?: number;
+  /** 详情页类型：gallery=滚动缩放画廊（默认）；desk=散落物品桌面 */
+  kind?: "gallery" | "desk";
+  /** kind==="desk" 时，桌面上散落的可点击物品 */
+  desk?: DeskObject[];
 }
+
+/* ─────────────── 散落物品桌面（desk） ─────────────── */
+
+/** 点击物品后弹出的内容类型（待具体定义） */
+export type DeskAction =
+  | { kind: "timeline" } // 时间轴
+  | { kind: "toc" }      // 目录
+  | { kind: "none" };    // 暂未指定
+
+/** 一本立体的书：封面朝上、有厚度、可歪斜摆放 */
+export interface DeskBook {
+  type: "book";
+  id: string;
+  /** 书名（仅作备注/无障碍 alt；视觉以封面图为准） */
+  title: string;
+  /** 封面图，如 /images/thread.jpg */
+  cover: string;
+  /** 书的厚度(px)，决定侧边页块的高度，默认 28 */
+  thickness?: number;
+  /** 封面基准宽度(px)，默认 210 */
+  w?: number;
+  /** 在桌面中的位置，单位为百分比 0–100（物品中心点） */
+  x: number;
+  y: number;
+  /** 歪斜角度(deg)，默认 0 */
+  rotate?: number;
+  /** 点击后的动作 */
+  action?: DeskAction;
+}
+
+/** 桌面物品（目前仅书，之后可扩展：| DeskPhoto | DeskNote …） */
+export type DeskObject = DeskBook;

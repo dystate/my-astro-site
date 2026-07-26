@@ -28,11 +28,6 @@ const LINKS = [
   { label: "MYDAN", href: "/woaidan" },
 ];
 
-const SOCIALS = [
-  { label: "TIKTOK", href: "https://douyin.com" },
-  { label: "VIMEO", href: "https://vimeo.com" },
-];
-
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
 
@@ -118,23 +113,6 @@ export default function MobileMenu() {
             </nav>
 
             {/* 底部：社交链接，右下角 */}
-            <div className="flex flex-col items-end gap-1 p-4 pb-8">
-              {SOCIALS.map((s, i) => (
-                <motion.a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.4 + i * 0.06 }}
-                  className="text-[16px] tracking-[0.04em] leading-tight"
-                  style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
-                >
-                  {s.label}
-                </motion.a>
-              ))}
-            </div>
           </motion.div>
         )}
       </AnimatePresence>

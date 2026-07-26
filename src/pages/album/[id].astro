@@ -3,6 +3,7 @@
 // 点进某个作品后展示的 scroll-linked zoom 画廊详情页。
 import Layout from "../../layouts/Layout.astro";
 import ScrollZoomGallery from "../../components/album/ScrollZoomGallery";
+import DeskBoard from "../../components/album/DeskBoard";
 import { ALBUM_ITEMS } from "../../data/album";
 
 // server 输出模式下需显式预渲染，getStaticPaths 才会生效（否则 item 为空）
@@ -20,9 +21,9 @@ const photos = item.photos ?? [];
 ---
 
 <Layout title={`${item.title} · Dystate`}>
-  <ScrollZoomGallery
-    client:load
-    albumTitle={item.title}
-    photos={photos}
-  />
+  {item.kind === "desk" ? (
+    <DeskBoard client:load albumTitle={item.title} objects={item.desk ?? []} />
+  ) : (
+    <ScrollZoomGallery client:load albumTitle={item.title} photos={photos} />
+  )}
 </Layout>

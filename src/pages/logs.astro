@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import LogsShowcase from "../components/logs/LogsShowcase";
+import LogsSearch from "../components/logs/LogsSearch";
 import SiteNav from "../components/SiteNav.astro";
 import { getCollection } from "astro:content";
 import { readingTime, formatDate } from "../lib/logs";
@@ -26,6 +27,18 @@ const groups = LOG_CATEGORIES.map((cat) => ({
   cat,
   entries: all.filter((e) => (e.data.category ?? "dev") === cat.slug).map(serialize),
 })).filter((g) => g.entries.length > 0);
+
+// 扁平化用于搜索：附带所属分类标题（去掉混排分隔符 "*"）
+const searchEntries = groups.flatMap((g) =>
+  g.entries.map((e) => ({
+    slug: e.slug,
+    title: e.title,
+    dateLabel: e.dateLabel,
+    summary: e.summary,
+    tags: e.tags,
+    catTitle: g.cat.title.replace("*", ""),
+  }))
+);
 ---
 
 <Layout title="Logs · Dystate">
@@ -66,6 +79,9 @@ const groups = LOG_CATEGORIES.map((cat) => ({
       <LogsShowcase client:visible category={g.cat} entries={g.entries} index={i} />
     ))}
   </main>
+
+  {/* 悬浮搜索栏：固定在页面正下方居中 */}
+  <LogsSearch client:idle entries={searchEntries} />
 
   <script is:inline>
     (function () {
@@ -208,7 +224,62 @@ const groups = LOG_CATEGORIES.map((cat) => ({
     .lr-arrow { display: none; }
   }
 
+  /* ===== 悬浮搜索栏（固定底部居中） ===== */
+  .logs-search { position: fixed; left: 50%; bottom: clamp(18px, 4vh, 34px); transform: translateX(-50%); z-index: 60; width: min(92vw, 540px); }
+
+  .ls-bar {
+    position: relative;
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    background: rgba(12,12,12,.82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 10px 34px rgba(0,0,0,.55);
+  }
+  /* SVG 边框：两层矩形叠加 —— 虚线常驻，实线在聚焦时描绘出来 */
+  .ls-border { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .ls-border rect { fill: none; }
+  .ls-b-dash { stroke: rgba(255,255,255,.5); stroke-width: 1.5; stroke-dasharray: 1.6 1.6; }
+  .ls-b-solid {
+    stroke: #fff; stroke-width: 1.5;
+    stroke-dasharray: 100; stroke-dashoffset: 100;
+    transition: stroke-dashoffset .6s cubic-bezier(.16,1,.3,1);
+  }
+  .logs-search:focus-within .ls-b-solid { stroke-dashoffset: 0; }
+  .ls-ico { display: inline-flex; color: rgba(255,255,255,.5); transition: color .2s; }
+  .logs-search:focus-within .ls-ico { color: #fff; }
+  .ls-input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: #fff; font: 800 15px/1 "Open Sans", sans-serif; letter-spacing: .01em; }
+  .ls-input::placeholder { color: rgba(255,255,255,.4); font-weight: 600; }
+  .ls-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+  .ls-kbd { flex: none; font: 700 11px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; color: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.2); padding: 4px 7px; }
+  .ls-clear { flex: none; background: none; border: none; cursor: pointer; color: rgba(255,255,255,.55); font: 400 15px/1 "Open Sans", sans-serif; padding: 2px 4px; transition: color .2s; }
+  .ls-clear:hover { color: #fff; }
+
+  /* 结果浮层（向上弹出） */
+  .ls-results {
+    position: absolute; left: 0; right: 0; bottom: calc(100% + 10px);
+    background: rgba(8,8,8,.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,.14); box-shadow: 0 14px 44px rgba(0,0,0,.6);
+    max-height: 52vh; overflow-y: auto; overscroll-behavior: contain;
+  }
+  .ls-row {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 14px;
+    padding: 13px 16px; text-decoration: none; color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    transition: background .15s, padding-left .2s cubic-bezier(.16,1,.3,1);
+  }
+  .ls-row:last-child { border-bottom: none; }
+  .ls-row:hover { background: rgba(255,255,255,.04); padding-left: 22px; }
+  .ls-row:hover .ls-title { color: #5451f2; }
+  .ls-cat { font: 700 10px/1.2 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .06em; color: #5451f2; white-space: nowrap; }
+  .ls-title { min-width: 0; font: 800 15px/1.25 "Open Sans", sans-serif; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .15s; }
+  .ls-date { font: 400 11px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; color: rgba(255,255,255,.5); white-space: nowrap; }
+  .ls-empty { padding: 18px 16px; font: 400 16px/1.4 "Instrument Serif", serif; color: rgba(255,255,255,.65); }
+
+  @media (max-width: 860px) {
+    .logs-search { width: 92vw; bottom: 14px; }
+    .ls-row { grid-template-columns: 1fr auto; }
+    .ls-cat { display: none; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .show-card, .card-media, .list-row, .m-menu, .m-menu nav a, .m-menu .socials a { transition: none; }
+    .show-card, .card-media, .list-row, .m-menu, .m-menu nav a, .m-menu .socials a, .ls-b-solid { transition: none; }
   }
 </style>
