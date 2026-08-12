@@ -17,6 +17,14 @@ pnpm-debug.log*
 .env
 .env.production
 
+# standalone Log Studio environment files
+log-studio/.env*
+!log-studio/.env.example
+log-studio/dist-desktop/
+log-studio/release/
+log-studio/desktop-release/
+log-studio/mobile-dist/
+
 # macOS-specific files
 .DS_Store
 

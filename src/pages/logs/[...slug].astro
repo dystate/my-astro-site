@@ -4,28 +4,33 @@
 import "@/styles/global.css";
 import { getCollection, getEntry, render } from "astro:content";
 import { formatDate } from "../../lib/logs";
+import { getPublishedRemoteLog } from "../../lib/remoteLogs";
+import { marked } from "marked";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/logs");
 
 // 1️⃣ 优先用 getEntry() 查找（有 render() 方法）
-let entry = await getEntry("logs", slug!);
+let remoteEntry = await getPublishedRemoteLog(slug!);
+let entry = remoteEntry ? null : await getEntry("logs", slug!);
 
 // 2️⃣ Fallback：dev server 重命名文件后缓存可能滞后，用 getCollection 兜底
-if (!entry || !("render" in entry)) {
+if (!remoteEntry && (!entry || !("render" in entry))) {
   const all = await getCollection("logs", ({ data }) =>
     import.meta.env.PROD ? !data.draft : true
   );
   entry = all.find((e) => e.id === slug) as typeof entry;
 }
 
-if (!entry || !("render" in entry)) return Astro.redirect("/404");
+if (!remoteEntry && (!entry || !("render" in entry))) return Astro.redirect("/404");
 
 // 生产环境隐藏草稿
-if (import.meta.env.PROD && entry.data.draft) return Astro.redirect("/404");
+if (!remoteEntry && import.meta.env.PROD && entry!.data.draft) return Astro.redirect("/404");
 
-const { Content } = await render(entry as any);
-const { title, date } = entry.data;
+const rendered = remoteEntry ? null : await render(entry as any);
+const Content = rendered?.Content;
+const { title, date } = remoteEntry?.data ?? entry!.data;
+const remoteHtml = remoteEntry ? await marked.parse(remoteEntry.body) : "";
 ---
 
 <html lang="zh-CN">
@@ -56,7 +61,7 @@ const { title, date } = entry.data;
           <h1 class="article-title">{title}</h1>
         </header>
         <div class="article-content">
-          <Content />
+          {remoteEntry ? <Fragment set:html={remoteHtml} /> : Content && <Content />}
         </div>
       </article>
     </main>

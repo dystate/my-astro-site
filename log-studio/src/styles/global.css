@@ -1,0 +1,36 @@
+:root {
+  font-family: Inter, "SF Pro Text", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  color: #202124;
+  background: #f7f7f5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --canvas: #f7f7f5;
+  --sidebar: #efefed;
+  --surface: #ffffff;
+  --line: #dededb;
+  --line-strong: #c9c9c5;
+  --text: #202124;
+  --muted: #777873;
+  --faint: #a5a6a1;
+  --blue: #315efb;
+  --blue-soft: #e7edff;
+  --green: #168a49;
+  --red: #c63838;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; min-width: 320px; min-height: 100%; background: var(--canvas); }
+
+body { min-height: 100dvh; overflow: hidden; }
+
+button, input, select, textarea { font: inherit; }
+button { color: inherit; }
+
+::selection { color: #102a76; background: #dbe5ff; }
+
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+@media (max-width: 760px) {
+  body { overflow: auto; }
+}

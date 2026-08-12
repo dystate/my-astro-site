@@ -6,10 +6,15 @@ import SiteNav from "../components/SiteNav.astro";
 import { getCollection } from "astro:content";
 import { readingTime, formatDate } from "../lib/logs";
 import { LOG_CATEGORIES } from "../data/logCategories";
+import { getPublishedRemoteLogs } from "../lib/remoteLogs";
 
-const all = (
+const local = (
   await getCollection("logs", ({ data }) => (import.meta.env.PROD ? !data.draft : true))
 ).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const remote = await getPublishedRemoteLogs();
+const remoteIds = new Set(remote.map((entry) => entry.id));
+const all = [...remote, ...local.filter((entry) => !remoteIds.has(entry.id))]
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const serialize = (e: (typeof all)[number]) => ({
   slug: e.id,
@@ -23,7 +28,18 @@ const serialize = (e: (typeof all)[number]) => ({
   motif: e.data.motif ?? null,
 });
 
-const groups = LOG_CATEGORIES.map((cat) => ({
+// Log Studio 可创建新分类。预配置分类继续使用自定义标题和介绍；
+// 未预配置的 category 自动追加，避免新日志因分类未登记而从列表消失。
+const configuredCategorySlugs = new Set(LOG_CATEGORIES.map((cat) => cat.slug));
+const discoveredCategories = Array.from(
+  new Set(all.map((entry) => entry.data.category ?? "dev")),
+)
+  .filter((slug) => !configuredCategorySlugs.has(slug))
+  .map((slug) => ({ slug, title: slug, blurb: "新的日志分类。" }));
+
+const categories = [...LOG_CATEGORIES, ...discoveredCategories];
+
+const groups = categories.map((cat) => ({
   cat,
   entries: all.filter((e) => (e.data.category ?? "dev") === cat.slug).map(serialize),
 })).filter((g) => g.entries.length > 0);
