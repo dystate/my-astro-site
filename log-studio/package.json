@@ -2,7 +2,7 @@
   "name": "dystate-log-studio",
   "description": "A private Markdown and MDX log editor for Dystate.",
   "author": "Dystate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
