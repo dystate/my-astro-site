@@ -24,6 +24,7 @@ log-studio/dist-desktop/
 log-studio/release/
 log-studio/desktop-release/
 log-studio/mobile-dist/
+log-studio/github-artifacts/
 
 # macOS-specific files
 .DS_Store
