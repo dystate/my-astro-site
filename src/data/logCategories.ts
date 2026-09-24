@@ -19,4 +19,14 @@ export const LOG_CATEGORIES: LogCategory[] = [
     title: "胡乱瞎写的*随笔",
     blurb: "我是怎样一个人？",
   },
+  {
+    slug: "family",
+    title: "不知道怎么说的*一家人",
+    blurb: "嗯......",
+  },
+  {
+    slug: "us",
+    title: "永远的*我们",
+    blurb: "2026-forever",
+  },
 ];
