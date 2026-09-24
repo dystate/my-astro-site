@@ -7,7 +7,6 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 const NAV = [
   { label: "ALBUM", href: "/album" },
   { label: "LOGS", href: "/logs" },
-  { label: "MYDAN", href: "/woaidan" },
 ];
 const SOCIALS = [
   { label: "TIKTOK", href: "https://douyin.com" },

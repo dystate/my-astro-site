@@ -22,13 +22,14 @@ This is a personal website ("Dystate") built with **Astro 6 in SSR mode** (`outp
 
 ### Rendering model
 - `.astro` files (`src/pages/`, `src/layouts/`, `src/components/*.astro`) render on the server.
-- `.tsx`/`.jsx` components are React **islands** — interactive widgets (3D scenes, galleries, login, mobile menu) hydrated on the client. Heavy libraries (Three.js, motion, swiper, page-flip) live only in islands.
+- `.tsx`/`.jsx` components are React **islands** — interactive widgets (3D scenes, galleries, mobile menu) hydrated on the client. Heavy libraries (Three.js, motion, swiper, page-flip) live only in islands. The bookshelf page (`/album/newjourney`) is the exception: it is plain `.astro` + a vanilla `page-flip` script, no island.
 - Pages are in `src/pages/`. Dynamic routes: `album/[id].astro`, `logs/[...slug].astro`.
+- `/album/[id].astro` branches on `AlbumItem.kind` — `"shelf"` renders `src/components/book/Bookshelf.astro` (book spines + flip reader); anything else renders the scroll-zoom gallery.
 
 ### Content collections (`src/content.config.ts`)
 Two glob-based collections, both sourced from `src/data/` (kept out of `src/content/` to avoid reserved-directory conflicts):
 - `logs` — blog/journal entries (`src/data/logs/`), schema requires `title`/`date`; supports `category`, `draft`, `accent`, etc.
-- `woaidan` — a "bookshelf" of markdown pages grouped into books (`src/data/woaidan/`).
+- `woaidan` — a glob loader over `src/data/woaidan/`, kept for future markdown-based book pages. **Currently matches no files** (that folder holds only `.ts` book data) and no page consumes it; the live bookshelf reads `src/data/books.ts` instead.
 
 Non-collection structured data also lives in `src/data/` as `.ts` files (e.g. `data/books.ts`, `data/album/index.ts`).
 

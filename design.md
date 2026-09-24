@@ -66,11 +66,11 @@ Dystate 是一个以**新粗野主义 (Neo-Brutalism)** 为核心设计语言的
 
 | 色系 | 色值 | 使用场景 |
 |------|------|----------|
-| **蓝色** | `#2563eb`, `#3B82F6`, `#5451f2`, `#60a5fa` | 链接、克莱因蓝看板、登录角色 |
+| **蓝色** | `#2563eb`, `#3B82F6`, `#5451f2`, `#60a5fa` | 链接、克莱因蓝看板 |
 | **绿色** | `#16a34a`, `#22c55e`, `#4ade80`, `#9be014` | 成功状态、标志字母 |
 | **红色/粉色** | `#ef4444`, `#ff5c39`, `#d81e8f` | 错误、强调、图钉 |
 | **黄色** | `#facc15`, `#eab308`, `#ffe14d`, `#f4c20d` | 便签纸背景、标志字母、图钉 |
-| **橙色** | `#FF9B6B`, `#e0552b` | 登录角色、温暖强调 |
+| **橙色** | `#FF9B6B`, `#e0552b` | 温暖强调 |
 | **深色背景** | `#2d2e36`, `#f0f0f0`, `#e5e5e5`, `#e9e7e0` | 各页面独立背景色 |
 
 ### 图表颜色
@@ -234,7 +234,7 @@ padding: clamp(22px, 3.5vw, 46px);
 |------|------|------|
 | **DottedSurface** | Three.js（原生） | 40×60 点阵网格，正弦波高度动画，尊重 `prefers-reduced-motion` |
 | **FlipBook** | StPageFlip | 3D 翻书效果，硬壳封面/封底，软内页，自动单/双页布局 |
-| **AnimatedLogin** | React + Motion | 四角色（紫/黑/橙/黄），瞳孔跟随鼠标，随机眨眼，密码聚焦时移开视线 |
+| **Bookshelf** | StPageFlip + vanilla JS | 书架（`/album/newjourney`）：VHS 磁带风书脊、点击开书、翻页阅读器、自定义音视频播放器 |
 
 ---
 
@@ -252,7 +252,7 @@ src/components/SiteNav.astro
 
 | Prop | 类型 | 说明 |
 |------|------|------|
-| `current` | `string` | 当前页面标识（`"logs"` / `"album"` / `"woaidan"`），自动给对应链接加 `.active` 类 |
+| `current` | `string` | 当前页面标识（`"logs"` / `"album"`），自动给对应链接加 `.active` 类 |
 | `class` | `string` | 可选，附加到每个 `<a>` 的 CSS 类名 |
 
 组件内部定义了唯一的链接数组 `LINKS`，添加新页面时**只在这里加一条**，所有引用页面自动同步。
@@ -281,11 +281,10 @@ src/components/SiteNav.astro
 |------|------|------|
 | `/album` | ALBUM | `album` |
 | `/logs` | LOGS | `logs` |
-| `/woaidan` | MYDAN | `woaidan` |
 
 ### 菜单交互（vanilla JS）
 
-移动端菜单的开关逻辑（`menu-open` / `menu-close` / `Escape` 关闭 / 导航后关闭）各页面通过 `<script is:inline>` 实现，不封装为组件——因为不同页面的菜单结构细节可能不同（如 `logs.astro` 和 `woaidan.astro` 的菜单 top-bar 布局略有差异），但交互逻辑保持一致。
+移动端菜单的开关逻辑（`menu-open` / `menu-close` / `Escape` 关闭 / 导航后关闭）各页面通过 `<script is:inline>` 实现，不封装为组件——因为不同页面的菜单结构细节可能不同（如 `logs.astro` 和 `Bookshelf.astro` 的菜单 top-bar 布局略有差异），但交互逻辑保持一致。
 
 ---
 
@@ -336,7 +335,7 @@ src/components/SiteNav.astro
 | 关于我 | `/me` | `#2d2e36` | 告示板布局、点阵网格、10px 阴影、图钉 |
 | 生活 | `/life` | `#2d2e36` | 拍立得白色卡片、CSS 多列布局、灯箱 |
 | 日志 | `/logs` | `#000` | 深色 CRT 主题、横滑卡片展示、分类列表覆盖层、单篇文章动态路由 |
-| 书架 | `/woaidan` | 白色 + 点阵 | VHS 磁带风格书脊（11 色）、3D 翻书、自定义音视频播放器、登录验证 |
+| 书架 | `/album/newjourney` | 黑色 + 磷光绿 | VHS 磁带风书脊（11 色）、3D 翻书、自定义音视频播放器，无登录拦截 |
 | 待办 | `/xzds` | `#f0f2f5` | 双栏看板：奶油黄 + 克莱因蓝、圆角卡片 |
 
 ---

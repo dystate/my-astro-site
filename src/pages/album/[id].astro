@@ -1,9 +1,10 @@
 ---
 // src/pages/album/[id].astro
-// 点进某个作品后展示的 scroll-linked zoom 画廊详情页。
+// 点进某个作品后展示的详情页。
+// kind === "shelf" → 书架 + 翻书阅读器；默认 → scroll-linked zoom 画廊。
 import Layout from "../../layouts/Layout.astro";
 import ScrollZoomGallery from "../../components/album/ScrollZoomGallery";
-import DeskBoard from "../../components/album/DeskBoard";
+import Bookshelf from "../../components/book/Bookshelf.astro";
 import { ALBUM_ITEMS } from "../../data/album";
 
 // server 输出模式下需显式预渲染，getStaticPaths 才会生效（否则 item 为空）
@@ -18,11 +19,12 @@ export function getStaticPaths() {
 
 const { item } = Astro.props;
 const photos = item.photos ?? [];
+const title = item.kind === "shelf" ? "Dystate · 书架" : `${item.title} · Dystate`;
 ---
 
-<Layout title={`${item.title} · Dystate`}>
-  {item.kind === "desk" ? (
-    <DeskBoard client:load albumTitle={item.title} objects={item.desk ?? []} />
+<Layout title={title}>
+  {item.kind === "shelf" ? (
+    <Bookshelf />
   ) : (
     <ScrollZoomGallery client:load albumTitle={item.title} photos={photos} />
   )}

@@ -25,7 +25,6 @@ function PixelCross({ size = 22, color = "currentColor" }: { size?: number; colo
 const LINKS = [
   { label: "ALBUM", href: "/album" },
   { label: "LOGS", href: "/logs" },
-  { label: "MYDAN", href: "/woaidan" },
 ];
 
 export default function MobileMenu() {

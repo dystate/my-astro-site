@@ -2,7 +2,8 @@
  * 书本页数据 — 每本书的封面 + 内页（图片 or 文字）
  *
  * 图片请放在 public/images/ 下，写 "/images/xxx.jpg" 即可。
- * 用法：在 woaidan.astro 中 import { books } from "../data/books";
+ * 用法：在 src/components/book/Bookshelf.astro 中 import { books } from "../../data/books";
+ *      （书架展示在 /album/newjourney）
  */
 
 export interface BookPage {
@@ -15,6 +16,8 @@ export interface BookPage {
 }
 
 export interface BookData {
+  /** 书脊编号（由 Bookshelf 按 order 排序后自动写入，无需手填） */
+  id?: number;
   /** 书名（显示在书脊上） */
   name: string;
   /** 书架上的排列顺序（越小越靠左） */
