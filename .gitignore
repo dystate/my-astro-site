@@ -33,5 +33,8 @@ log-studio/github-artifacts/
 .idea/
 .vercel
 
+# local agent workspace (backups / screenshots / memory)
+.workbuddy/
+
 # runtime data (comments etc.)
 src/data/comments-runtime.json
