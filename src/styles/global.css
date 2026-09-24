@@ -305,26 +305,51 @@
 .serene-hero__content h1 { color: #fff; font: 400 clamp(2.25rem, 7vw, 6.875rem)/.9 'Instrument Serif', serif; letter-spacing: -.025em; text-shadow: 0 0 40px rgba(255,255,255,.4), 0 0 80px rgba(255,255,255,.2), 0 0 120px rgba(255,255,255,.1); }
 .serene-hero__content h1 em { font-style: italic; }
 .serene-hero__content p { max-width: 36rem; margin-top: 1.75rem; color: rgba(255,255,255,.7); font: 400 .875rem/1.5 'Inter', sans-serif; }
-.serene-button { display: inline-flex; align-items: center; justify-content: center; margin-top: 2.25rem; padding: .875rem 2rem; border-radius: 999px; background: #fff; color: #000; font: 500 .875rem/1 'Inter', sans-serif; letter-spacing: .04em; text-decoration: none; box-shadow: 0 0 20px rgba(255,255,255,.3), 0 0 40px rgba(255,255,255,.1); transition: background .3s ease, transform .3s ease; }
-.serene-button:hover { background: rgba(255,255,255,.9); transform: translateY(-2px); }
 .serene-sound { position: absolute; z-index: 10; bottom: 2rem; left: 2rem; display: flex; align-items: center; gap: .75rem; color: rgba(255,255,255,.6); font: 400 .75rem/1.35 'Inter', sans-serif; }
 .serene-sound__icon { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid rgba(255,255,255,.2); border-radius: 50%; }
 .serene-sound__icon i { display: block; width: 13px; height: 2px; background: #fff; }
-.serene-quote { position: relative; display: flex; min-height: 100svh; height: 100svh; align-items: center; justify-content: center; overflow: hidden; background: linear-gradient(to bottom, #010A17 0%, #0A4267 30%, #20658E 60%, #6BADC4 100%); }
-.serene-quote__rainbow { position: absolute; top: 0; left: 0; z-index: 30; width: 100%; height: auto; min-height: 34%; object-fit: cover; opacity: .52; mix-blend-mode: screen; pointer-events: none; will-change: transform; }
-.serene-quote__cloud { position: absolute; z-index: 10; bottom: 10%; width: 500px; height: auto; margin-left: -50%; opacity: 0; pointer-events: none; will-change: transform, opacity; }
-.serene-quote__cloud--left { left: 0; }
-.serene-quote__cloud--right { right: 0; bottom: 15%; margin-right: -75%; transform: scaleX(-1); }
-.serene-quote__content { position: relative; z-index: 20; width: min(90vw, 960px); margin-top: 2rem; text-align: center; }
-.serene-quote__content blockquote { color: #fff; font: 400 clamp(1.25rem, 3.2vw, 2.625rem)/1.5 'Instrument Serif', serif; }
-.serene-quote__content p { margin-top: 2rem; color: rgba(255,255,255,.8); font: 400 clamp(.875rem, 1.5vw, 1rem)/1.4 'Inter', sans-serif; letter-spacing: .04em; }
-
 @media (max-width: 700px) {
   .serene-hero__content { margin-top: -90px; }
   .serene-hero__content p { margin-top: 1.25rem; font-size: .8125rem; }
-  .serene-button { margin-top: 1.5rem; }
   .serene-sound { display: none; }
-  .serene-quote__rainbow { min-height: 28%; object-fit: cover; }
-  .serene-quote__content { margin-top: 1rem; }
-  .serene-quote__content p { margin-top: 1.5rem; }
+}
+
+/* ── 门缝光束 Hero（仅桌面端 ≥769px；移动端 ≤768px 继续用 .serene-hero，不改） ── */
+.beam-hero { display: none; }
+
+@media (min-width: 769px) {
+  .serene-hero { display: none; }
+
+  .beam-hero { position: relative; display: block; height: 100svh; min-height: 640px; overflow: hidden; background: #030306; color: #fff; }
+
+  /* 背景：底部一道光缝，向上散开成光柱 */
+  .beam-hero__bg { position: absolute; inset: 0; pointer-events: none; }
+  .beam-hero__halo { position: absolute; bottom: -6%; left: 50%; width: min(72vw, 980px); height: 78%; transform: translateX(-50%); background: radial-gradient(ellipse 50% 58% at 50% 68%, rgba(168, 186, 238, .30), rgba(120, 142, 214, .12) 46%, transparent 72%); filter: blur(8px); }
+  .beam-hero__seam { position: absolute; bottom: 0; left: 50%; width: 1px; height: 46%; background: linear-gradient(to top, rgba(255,255,255,.85), rgba(255,255,255,.30)); }
+  .beam-hero__cone { position: absolute; bottom: 0; left: 50%; width: min(36vw, 500px); height: 84%; transform: translateX(-50%); clip-path: polygon(9% 0, 91% 0, 50.9% 100%, 49.1% 100%); background: linear-gradient(to top, rgba(238, 242, 255, .92), rgba(196, 210, 248, .48) 38%, rgba(134, 154, 220, .15) 68%, transparent 94%); filter: blur(16px); }
+  .beam-hero__core { position: absolute; bottom: 0; left: 50%; width: min(12vw, 160px); height: 60%; transform: translateX(-50%); clip-path: polygon(22% 0, 78% 0, 55% 100%, 45% 100%); background: linear-gradient(to top, #ffffff, rgba(226, 233, 255, .72) 46%, rgba(172, 188, 238, .18) 82%, transparent); filter: blur(5px); }
+
+  /* 顶栏：左 logo / 中导航 / 右 Login */
+  .beam-header { position: absolute; inset: 0 0 auto; z-index: 20; display: flex; align-items: center; padding: 20px clamp(24px, 3.5vw, 48px); }
+  .beam-header__logo { color: #fff; font: 700 15px/1 'Inter', sans-serif; letter-spacing: -.01em; text-decoration: none; }
+  .beam-header__nav { position: absolute; left: 50%; display: flex; gap: clamp(1.6rem, 3vw, 2.8rem); transform: translateX(-50%); }
+  .beam-header__nav a { color: rgba(255,255,255,.70); font: 500 12px/1 'Inter', sans-serif; letter-spacing: .07em; text-decoration: none; transition: color .2s ease; }
+  .beam-header__nav a:hover { color: #fff; }
+  .beam-header__login { position: relative; margin-left: auto; }
+  .beam-header__login button { padding: 8px 18px; color: #fff; font: 600 12px/1 'Inter', sans-serif; letter-spacing: .05em; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.24); border-radius: 999px; cursor: pointer; transition: background .2s ease, border-color .2s ease, transform .12s ease; }
+  .beam-header__login button:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.42); }
+  .beam-header__login button:active { transform: scale(.95); }
+  .beam-header__hint { position: absolute; top: calc(100% + 10px); right: 0; padding: 7px 12px; white-space: nowrap; color: rgba(255,255,255,.78); font: 400 11px/1.4 'Noto Sans SC', 'Inter', sans-serif; background: rgba(18, 20, 30, .92); border: 1px solid rgba(255,255,255,.14); border-radius: 8px; }
+
+  /* 内容：左下大标题 + 装饰虚线，右侧入口按钮 */
+  .beam-hero__content { position: absolute; right: clamp(28px, 6vw, 96px); bottom: 19%; left: clamp(28px, 6vw, 96px); z-index: 10; display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; }
+  .beam-hero__headline h1 { margin: 0; color: #fff; font: 300 clamp(2.5rem, 4.6vw, 3.9rem)/1.18 'Noto Sans SC', 'Inter', sans-serif; letter-spacing: .06em; }
+  .beam-hero__dashes { display: flex; gap: 10px; margin-top: 26px; }
+  .beam-hero__dashes i { display: block; width: 34px; height: 1px; background: rgba(255,255,255,.55); }
+  .beam-hero__dashes i:last-child { width: 66px; }
+
+  /* 内容行右端胶囊按钮（避开底部中央的光源） */
+  .beam-hero__cta { flex-shrink: 0; margin-bottom: 2px; padding: 10px 24px; color: rgba(255,255,255,.85); font: 500 12px/1 'Noto Sans SC', 'Inter', sans-serif; letter-spacing: .14em; text-decoration: none; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.22); border-radius: 999px; cursor: pointer; backdrop-filter: blur(6px); transition: background .2s ease, border-color .2s ease, transform .12s ease; }
+  .beam-hero__cta:hover { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.45); }
+  .beam-hero__cta:active { transform: scale(.95); }
 }
