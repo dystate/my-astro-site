@@ -79,14 +79,9 @@ export default function MobileMenu() {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-[70] flex flex-col bg-black text-white"
           >
-            {/* 顶部：仅 Logo，位置与主页一致 */}
+            {/* 顶部：仅 Logo，字号/字距直接复用首页顶栏的 .lamp-header__logo，保证两处完全一致 */}
             <div className="absolute top-0 left-0 p-4">
-              <span
-                className="text-[28px] leading-none tracking-[-0.02em]"
-                style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
-              >
-                Dystate
-              </span>
+              <span className="lamp-header__logo">Dystate</span>
             </div>
 
             {/* 主导航：右对齐大标题 */}
