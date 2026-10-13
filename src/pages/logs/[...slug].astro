@@ -275,8 +275,9 @@ const remoteHtml = remoteEntry ? await renderRemoteLogMarkdown(remoteEntry.body)
     overflow: hidden; touch-action: pan-y;
   }
   .rpf-deck {
-    position: relative; width: min(78vw, 430px); aspect-ratio: 3 / 4;
-    margin-right: min(10vw, 58px); outline: none; cursor: grab;
+    position: relative; width: calc(100% - clamp(44px, 8vw, 60px));
+    height: clamp(420px, 78vw, 620px);
+    margin-right: clamp(44px, 8vw, 60px); outline: none; cursor: grab;
     touch-action: pan-y; user-select: none; -webkit-user-select: none;
   }
   .rpf-deck:active { cursor: grabbing; }
@@ -303,9 +304,28 @@ const remoteHtml = remoteEntry ? await renderRemoteLogMarkdown(remoteEntry.body)
     margin: 0 !important; border-radius: 0 !important; object-fit: cover;
     pointer-events: none;
   }
+  .remote-photo-flow.is-single { overflow: visible; }
+  .is-single .rpf-deck {
+    display: flex; justify-content: center; width: 100%; height: auto;
+    margin-right: 0; cursor: default; touch-action: auto;
+  }
+  .is-single .rpf-card {
+    position: relative; inset: auto; display: inline-block;
+    width: auto; height: auto; max-width: 100%; overflow: hidden;
+    transform: none !important;
+  }
+  .is-single .rpf-media {
+    position: static; width: auto; height: auto; max-width: 100%;
+    object-fit: contain;
+  }
   @media (max-width: 640px) {
     .remote-photo-flow { margin-inline: calc(50% - 50vw); }
-    .rpf-deck { width: min(76vw, 390px); margin-right: 11vw; }
+    .rpf-deck {
+      width: calc(100% - 13vw); height: min(118vw, 540px);
+      margin-right: 13vw;
+    }
+    .remote-photo-flow.is-single { margin-inline: 0; }
+    .is-single .rpf-deck { width: 100%; height: auto; margin-right: 0; }
   }
 
   /* 移动端安全带 */

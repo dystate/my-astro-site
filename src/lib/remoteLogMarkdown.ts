@@ -78,9 +78,10 @@ function photoFlow(photos: RemotePhoto[]): string {
     <article class="rpf-card${index === 0 ? " is-active" : ""}" data-flow-index="${index}" aria-hidden="${index === 0 ? "false" : "true"}">
       <img class="rpf-media" src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.title || photo.caption || "Journal photo")}" loading="lazy" />
     </article>`).join("");
+  const interactive = photos.length > 1;
   return `
-    <section class="remote-photo-flow" data-flow-index="0" aria-label="滑动切换图片">
-      <div class="rpf-deck" role="button" tabindex="0" aria-label="滑动或点击查看下一张图片">${cards}</div>
+    <section class="remote-photo-flow${interactive ? "" : " is-single"}" data-flow-index="0" aria-label="${interactive ? "滑动切换图片" : "日志图片"}">
+      <div class="rpf-deck"${interactive ? ' role="button" tabindex="0" aria-label="滑动或点击查看下一张图片"' : ""}>${cards}</div>
     </section>`;
 }
 
