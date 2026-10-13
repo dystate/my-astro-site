@@ -74,28 +74,13 @@ function photoStack(photos: RemotePhoto[]): string {
 
 function photoFlow(photos: RemotePhoto[]): string {
   if (!photos.length) return "";
-  const total = String(photos.length).padStart(2, "0");
   const cards = photos.map((photo, index) => `
-    <article class="rpf-card${index === 0 ? " is-active" : ""}" data-flow-index="${index}" style="--rpf-ratio:1">
+    <article class="rpf-card${index === 0 ? " is-active" : ""}" data-flow-index="${index}" aria-hidden="${index === 0 ? "false" : "true"}">
       <img class="rpf-media" src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.title || photo.caption || "Journal photo")}" loading="lazy" />
-      <div class="rpf-overlay"></div>
-      <div class="rpf-info">
-        ${photo.title ? `<div class="rpf-title">${escapeHtml(photo.title)}</div>` : ""}
-        ${photo.caption ? `<div class="rpf-caption">${escapeHtml(photo.caption)}</div>` : ""}
-      </div>
-      <span class="rpf-number">${String(index + 1).padStart(2, "0")} / ${total}</span>
     </article>`).join("");
   return `
-    <section class="remote-photo-flow" data-flow-index="0" aria-label="动态图片展示">
-      <div class="rpf-toolbar">
-        <span class="rpf-label">2号流动</span>
-        <div class="rpf-controls">
-          <button type="button" class="rpf-button rpf-previous" aria-label="上一张图片" disabled>←</button>
-          <span class="rpf-position" aria-live="polite">01 / ${total}</span>
-          <button type="button" class="rpf-button rpf-next" aria-label="下一张图片"${photos.length === 1 ? " disabled" : ""}>→</button>
-        </div>
-      </div>
-      <div class="rpf-viewport"><div class="rpf-track">${cards}</div></div>
+    <section class="remote-photo-flow" data-flow-index="0" aria-label="滑动切换图片">
+      <div class="rpf-deck" role="button" tabindex="0" aria-label="滑动或点击查看下一张图片">${cards}</div>
     </section>`;
 }
 
