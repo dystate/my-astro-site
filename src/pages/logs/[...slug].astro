@@ -269,6 +269,68 @@ const remoteHtml = remoteEntry ? await renderRemoteLogMarkdown(remoteEntry.body)
     .remote-photo-stack.is-collapsed .rps-card-wrap { width: 86vw; height: min(56vh, 320px); }
   }
 
+  /* 2号流动：固定展示区内横向切换，卡片按图片比例平滑改变尺寸。 */
+  .remote-photo-flow { margin: 2rem 0 2.5rem; }
+  .rpf-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; margin-bottom: 12px;
+    font: 800 12px/1 "Open Sans", sans-serif; letter-spacing: .08em;
+  }
+  .rpf-label { color: rgba(255,255,255,.52); text-transform: uppercase; }
+  .rpf-controls { display: flex; align-items: center; gap: 10px; }
+  .rpf-position {
+    min-width: 60px; text-align: center; color: rgba(255,255,255,.72);
+    font-family: "Nokia Cellphone FC Small", ui-monospace, monospace;
+  }
+  .rpf-button {
+    width: 34px; height: 34px; padding: 0; cursor: pointer;
+    color: #fff; background: #171717; border: 2px solid rgba(255,255,255,.28);
+    border-radius: 2px; box-shadow: 3px 3px 0 #5451f2;
+    font: 800 17px/1 "Open Sans", sans-serif;
+    transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+  }
+  .rpf-button:hover:not(:disabled) { transform: translate(2px,2px); box-shadow: 1px 1px 0 #5451f2; }
+  .rpf-button:disabled { cursor: default; opacity: .28; box-shadow: none; }
+  .rpf-viewport {
+    height: clamp(326px, 54vw, 420px); overflow-x: auto; overflow-y: hidden;
+    overscroll-behavior-inline: contain; scroll-snap-type: x mandatory;
+    scroll-behavior: smooth; scrollbar-width: none;
+  }
+  .rpf-viewport::-webkit-scrollbar { display: none; }
+  .rpf-track {
+    display: flex; align-items: center; gap: clamp(16px, 3vw, 28px);
+    width: max-content; min-width: 100%; height: 100%;
+    padding: 0 max(18px, calc(50vw - 360px)); box-sizing: border-box;
+  }
+  .rpf-card {
+    --rpf-height: clamp(238px, 40vw, 300px);
+    position: relative; flex: 0 0 auto; overflow: hidden; box-sizing: border-box;
+    width: clamp(184px, calc(var(--rpf-height) * var(--rpf-ratio)), min(72vw, 500px));
+    height: var(--rpf-height); border: 2px solid rgba(255,255,255,.18); border-radius: 12px;
+    background: #111; opacity: .58; transform: scale(.94);
+    scroll-snap-align: center; scroll-snap-stop: always;
+    transition: width 440ms cubic-bezier(.22,1,.36,1), height 440ms cubic-bezier(.22,1,.36,1), transform 440ms cubic-bezier(.22,1,.36,1), opacity 320ms ease, border-color 320ms ease;
+  }
+  .rpf-card.is-active {
+    --rpf-height: clamp(292px, 49vw, 372px);
+    opacity: 1; transform: scale(1); border-color: rgba(255,255,255,.42);
+  }
+  .rpf-media {
+    position: absolute; inset: 0; display: block; width: 100%; height: 100%;
+    margin: 0 !important; border-radius: 0 !important; object-fit: cover;
+  }
+  .rpf-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.74), rgba(0,0,0,.06) 58%, transparent); }
+  .rpf-info { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; padding: clamp(14px,2.2vw,22px); }
+  .rpf-title { color: #fff; font: 400 clamp(21px,3vw,32px)/1.08 "Instrument Serif", Georgia, serif; }
+  .rpf-caption { margin-top: 6px; color: rgba(255,255,255,.82); font: 400 clamp(13px,1.4vw,15px)/1.42 "Geist Variable", system-ui, sans-serif; }
+  .rpf-number { position: absolute; z-index: 2; top: 15px; right: 15px; color: rgba(255,255,255,.88); font: 700 11px/1 "Nokia Cellphone FC Small", monospace; letter-spacing: .08em; }
+  @media (max-width: 640px) {
+    .rpf-viewport { height: 350px; margin-inline: calc(50% - 50vw); }
+    .rpf-track { gap: 14px; padding-inline: 11vw; }
+    .rpf-card { --rpf-height: 232px; width: clamp(170px, calc(var(--rpf-height) * var(--rpf-ratio)), 72vw); }
+    .rpf-card.is-active { --rpf-height: 310px; }
+  }
+
   /* 移动端安全带 */
   @media (max-width: 640px) {
     .article-title {
@@ -283,10 +345,71 @@ const remoteHtml = remoteEntry ? await renderRemoteLogMarkdown(remoteEntry.body)
     .back-btn {
       transition: none;
     }
+    .rpf-viewport { scroll-behavior: auto; }
+    .rpf-card, .rpf-button { transition: none; }
   }
 </style>
 
 <script is:inline>
+  const setupPhotoFlow = (flow) => {
+    const viewport = flow.querySelector(".rpf-viewport");
+    const cards = [...flow.querySelectorAll(".rpf-card")];
+    const previous = flow.querySelector(".rpf-previous");
+    const next = flow.querySelector(".rpf-next");
+    const position = flow.querySelector(".rpf-position");
+    if (!(viewport instanceof HTMLElement) || cards.length === 0) return;
+
+    let activeIndex = 0;
+    let scrollTimer = 0;
+    const centerCard = (card, behavior = "smooth") => {
+      viewport.scrollTo({
+        left: card.offsetLeft - (viewport.clientWidth - card.offsetWidth) / 2,
+        behavior,
+      });
+    };
+    const activate = (index, shouldScroll = true) => {
+      activeIndex = Math.max(0, Math.min(cards.length - 1, index));
+      flow.dataset.flowIndex = String(activeIndex);
+      cards.forEach((card, cardIndex) => card.classList.toggle("is-active", cardIndex === activeIndex));
+      if (previous instanceof HTMLButtonElement) previous.disabled = activeIndex === 0;
+      if (next instanceof HTMLButtonElement) next.disabled = activeIndex === cards.length - 1;
+      if (position) position.textContent = `${String(activeIndex + 1).padStart(2, "0")} / ${String(cards.length).padStart(2, "0")}`;
+      if (shouldScroll) requestAnimationFrame(() => centerCard(cards[activeIndex]));
+    };
+
+    cards.forEach((card, index) => {
+      const image = card.querySelector(".rpf-media");
+      const setRatio = () => {
+        if (!(image instanceof HTMLImageElement) || !image.naturalHeight) return;
+        const ratio = Math.max(.64, Math.min(1.8, image.naturalWidth / image.naturalHeight));
+        card.style.setProperty("--rpf-ratio", String(ratio));
+        if (index === activeIndex) window.setTimeout(() => centerCard(card, "auto"), 460);
+      };
+      if (image instanceof HTMLImageElement) {
+        if (image.complete) setRatio(); else image.addEventListener("load", setRatio, { once: true });
+      }
+      card.addEventListener("click", () => activate(index));
+    });
+    previous?.addEventListener("click", () => activate(activeIndex - 1));
+    next?.addEventListener("click", () => activate(activeIndex + 1));
+    viewport.addEventListener("scroll", () => {
+      window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        const center = viewport.scrollLeft + viewport.clientWidth / 2;
+        let closest = activeIndex;
+        let distance = Infinity;
+        cards.forEach((card, index) => {
+          const nextDistance = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center);
+          if (nextDistance < distance) { distance = nextDistance; closest = index; }
+        });
+        if (closest !== activeIndex) activate(closest, false);
+      }, 90);
+    }, { passive: true });
+    activate(0, false);
+  };
+
+  document.querySelectorAll(".remote-photo-flow").forEach(setupPhotoFlow);
+
   document.addEventListener("click", (event) => {
     const button = event.target instanceof Element ? event.target.closest(".rps-toggle") : null;
     if (!(button instanceof HTMLButtonElement)) return;
