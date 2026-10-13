@@ -287,7 +287,7 @@ const remoteHtml = remoteEntry ? await renderRemoteLogMarkdown(remoteEntry.body)
   .rpf-card {
     --rpf-x: 0px; --rpf-y: 0px; --rpf-scale: 1; --rpf-rotate: 0deg; --rpf-drag-x: 0px;
     position: absolute; inset: 0; overflow: hidden; box-sizing: border-box;
-    border: 2px solid rgba(255,255,255,.28); border-radius: 14px;
+    border: 0; border-radius: 14px;
     background: #111; transform-origin: center;
     transform: translate3d(calc(var(--rpf-x) + var(--rpf-drag-x)), var(--rpf-y), 0) scale(var(--rpf-scale)) rotate(var(--rpf-rotate));
     transition: transform 430ms cubic-bezier(.22,1,.36,1), opacity 280ms ease;
