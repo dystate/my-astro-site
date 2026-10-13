@@ -16,6 +16,11 @@ export interface RemoteLogEntry {
   };
 }
 
+export interface RemoteLogState {
+  entries: RemoteLogEntry[];
+  hiddenIds: Set<string>;
+}
+
 function parseDocument(path: string, source: string): RemoteLogEntry | null {
   const match = source.replace(/^\uFEFF/, "").match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
   if (!match) return null;
@@ -41,21 +46,30 @@ function parseDocument(path: string, source: string): RemoteLogEntry | null {
   } catch { return null; }
 }
 
-export async function getPublishedRemoteLogs(): Promise<RemoteLogEntry[]> {
+export async function getRemoteLogState(): Promise<RemoteLogState> {
   // Publishable credentials are intentionally safe to expose; RLS remains the authorization boundary.
   const url = import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || "https://tsckvnducjsjmfyoblyu.supabase.co";
   const key = import.meta.env.SUPABASE_ANON_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_ou0HOOnOt1PN6TwUifIz3g_zISEWRBO";
-  if (!url || !key) return [];
+  if (!url || !key) return { entries: [], hiddenIds: new Set() };
   try {
-    const response = await fetch(`${url.replace(/\/$/, "")}/rest/v1/log_entries?select=path,content&published=eq.true`, {
+    const response = await fetch(`${url.replace(/\/$/, "")}/rest/v1/log_entries?select=path,content,published`, {
       headers: { apikey: key, authorization: `Bearer ${key}` },
     });
-    if (!response.ok) return [];
-    const rows = await response.json() as Array<{ path: string; content: string }>;
-    return rows.map((row) => parseDocument(row.path, row.content)).filter((entry): entry is RemoteLogEntry => Boolean(entry));
-  } catch { return []; }
+    if (!response.ok) return { entries: [], hiddenIds: new Set() };
+    const rows = await response.json() as Array<{ path: string; content: string; published: boolean }>;
+    const hiddenIds = new Set(rows.filter((row) => !row.published).map((row) => row.path.replace(/\.(md|mdx)$/i, "")));
+    const entries = rows
+      .filter((row) => row.published)
+      .map((row) => parseDocument(row.path, row.content))
+      .filter((entry): entry is RemoteLogEntry => Boolean(entry));
+    return { entries, hiddenIds };
+  } catch { return { entries: [], hiddenIds: new Set() }; }
+}
+
+export async function getPublishedRemoteLogs(): Promise<RemoteLogEntry[]> {
+  return (await getRemoteLogState()).entries;
 }
 
 export async function getPublishedRemoteLog(slug: string): Promise<RemoteLogEntry | null> {
-  return (await getPublishedRemoteLogs()).find((entry) => entry.id === slug) || null;
+  return (await getRemoteLogState()).entries.find((entry) => entry.id === slug) || null;
 }

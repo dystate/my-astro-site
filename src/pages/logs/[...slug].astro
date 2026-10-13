@@ -4,14 +4,16 @@
 import "@/styles/global.css";
 import { getCollection, getEntry, render } from "astro:content";
 import { formatDate } from "../../lib/logs";
-import { getPublishedRemoteLog } from "../../lib/remoteLogs";
-import { marked } from "marked";
+import { getRemoteLogState } from "../../lib/remoteLogs";
+import { renderRemoteLogMarkdown } from "../../lib/remoteLogMarkdown";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/logs");
 
 // 1️⃣ 优先用 getEntry() 查找（有 render() 方法）
-let remoteEntry = await getPublishedRemoteLog(slug!);
+const remoteState = await getRemoteLogState();
+if (remoteState.hiddenIds.has(slug!)) return Astro.redirect("/404");
+let remoteEntry = remoteState.entries.find((entry) => entry.id === slug!) || null;
 let entry = remoteEntry ? null : await getEntry("logs", slug!);
 
 // 2️⃣ Fallback：dev server 重命名文件后缓存可能滞后，用 getCollection 兜底
@@ -30,7 +32,7 @@ if (!remoteEntry && import.meta.env.PROD && entry!.data.draft) return Astro.redi
 const rendered = remoteEntry ? null : await render(entry as any);
 const Content = rendered?.Content;
 const { title, date } = remoteEntry?.data ?? entry!.data;
-const remoteHtml = remoteEntry ? await marked.parse(remoteEntry.body) : "";
+const remoteHtml = remoteEntry ? await renderRemoteLogMarkdown(remoteEntry.body) : "";
 ---
 
 <html lang="zh-CN">
@@ -222,6 +224,51 @@ const remoteHtml = remoteEntry ? await marked.parse(remoteEntry.body) : "";
     margin: 2.5em 0;
   }
 
+  /* Supabase journals use the same PhotoStack geometry as local MDX logs. */
+  .remote-photo-stack { position: relative; margin: .25rem 0; }
+  .rps-toolbar {
+    position: sticky; top: clamp(64px, 9vh, 84px); z-index: 6;
+    display: flex; justify-content: flex-end; padding-bottom: 8px;
+    pointer-events: none;
+  }
+  .rps-toggle {
+    pointer-events: auto; cursor: pointer; color: #fff;
+    font: 800 12px/1 "Open Sans", sans-serif; letter-spacing: .06em;
+    padding: 8px 14px; border-radius: 999px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+    backdrop-filter: blur(8px);
+  }
+  .rps-card-wrap {
+    height: min(72vh, 500px); display: flex; align-items: flex-start;
+    justify-content: center; padding: clamp(24px, 6vh, 56px) 16px 0;
+    box-sizing: border-box;
+  }
+  .rps-card {
+    position: sticky; top: calc(clamp(64px, 9vh, 84px) + var(--rps-top));
+    width: min(100%, 440px); height: min(50vh, 340px);
+    border-radius: 14px; overflow: hidden; transform-origin: top center;
+    box-shadow: 0 22px 46px -20px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .rps-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; margin: 0 !important; border-radius: 0 !important; }
+  .rps-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,.15) 38%, transparent 60%); }
+  .rps-info { position: absolute; left: 0; right: 0; bottom: 0; padding: clamp(14px,2.2vw,22px); z-index: 2; }
+  .rps-title { font: 400 clamp(22px,3vw,34px)/1.06 "Instrument Serif", Georgia, serif; color: #fff; text-shadow: 0 2px 16px rgba(0,0,0,.45); }
+  .rps-caption { margin-top: 7px; font: 400 clamp(13px,1.4vw,15px)/1.45 "Geist Variable", "Geist", system-ui, sans-serif; color: rgba(255,255,255,.84); max-width: 46ch; }
+  .rps-number { position: absolute; top: clamp(16px,2.4vw,26px); right: clamp(16px,2.4vw,26px); z-index: 2; font: 700 12px/1 "Nokia Cellphone FC Small", monospace; letter-spacing: .08em; color: rgba(255,255,255,.85); }
+  .remote-photo-stack.is-collapsed .rps-toolbar { position: static; margin-bottom: 8px; }
+  .remote-photo-stack.is-collapsed .rps-cards { position: relative; width: min(100%, 440px); height: min(54vh, 372px); margin: 0 auto; }
+  .remote-photo-stack.is-collapsed .rps-card-wrap {
+    position: absolute; inset: 0; width: 100%; height: min(50vh, 340px); padding: 0;
+    z-index: var(--rps-reverse); transform: translateY(var(--rps-offset)) scale(var(--rps-scale));
+    transform-origin: top center;
+  }
+  .remote-photo-stack.is-collapsed .rps-card { position: relative; top: 0; width: 100%; height: 100%; }
+  @media (max-width: 640px) {
+    .rps-card { width: 86vw; height: min(56vh, 320px); border-radius: 12px; }
+    .remote-photo-stack.is-collapsed .rps-cards { width: 86vw; height: min(58vh, 350px); }
+    .remote-photo-stack.is-collapsed .rps-card-wrap { width: 86vw; height: min(56vh, 320px); }
+  }
+
   /* 移动端安全带 */
   @media (max-width: 640px) {
     .article-title {
@@ -238,3 +285,15 @@ const remoteHtml = remoteEntry ? await marked.parse(remoteEntry.body) : "";
     }
   }
 </style>
+
+<script is:inline>
+  document.addEventListener("click", (event) => {
+    const button = event.target instanceof Element ? event.target.closest(".rps-toggle") : null;
+    if (!(button instanceof HTMLButtonElement)) return;
+    const stack = button.closest(".remote-photo-stack");
+    if (!stack) return;
+    const collapsed = stack.classList.toggle("is-collapsed");
+    button.setAttribute("aria-pressed", String(collapsed));
+    button.textContent = collapsed ? "展开 ↓" : "收起 ↑";
+  });
+</script>

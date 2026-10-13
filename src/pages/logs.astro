@@ -6,14 +6,15 @@ import SiteNav from "../components/SiteNav.astro";
 import { getCollection } from "astro:content";
 import { readingTime, formatDate } from "../lib/logs";
 import { LOG_CATEGORIES } from "../data/logCategories";
-import { getPublishedRemoteLogs } from "../lib/remoteLogs";
+import { getRemoteLogState } from "../lib/remoteLogs";
 
 const local = (
   await getCollection("logs", ({ data }) => (import.meta.env.PROD ? !data.draft : true))
 ).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-const remote = await getPublishedRemoteLogs();
+const remoteState = await getRemoteLogState();
+const remote = remoteState.entries;
 const remoteIds = new Set(remote.map((entry) => entry.id));
-const all = [...remote, ...local.filter((entry) => !remoteIds.has(entry.id))]
+const all = [...remote, ...local.filter((entry) => !remoteIds.has(entry.id) && !remoteState.hiddenIds.has(entry.id))]
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const serialize = (e: (typeof all)[number]) => ({
