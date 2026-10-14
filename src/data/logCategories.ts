@@ -5,28 +5,23 @@
 export interface LogCategory {
   slug: string;   // 对应日志 frontmatter 的 category
   title: string;  // 形如 "代码与构建的*持续记录"
-  blurb: string;  // 衬线介绍段
 }
 
 export const LOG_CATEGORIES: LogCategory[] = [
   {
     slug: "summary",
     title: "很会偷懒的*年度总结",
-    blurb: "来看看这一年我都干了什么吧！",
   },
   {
     slug: "essay",
     title: "胡乱瞎写的*随笔",
-    blurb: "我是怎样一个人？",
   },
   {
     slug: "family",
     title: "不知道怎么说的*一家人",
-    blurb: "嗯......",
   },
   {
     slug: "us",
     title: "永远的*我们",
-    blurb: "2026-forever",
   },
 ];

@@ -36,7 +36,7 @@ const discoveredCategories = Array.from(
   new Set(all.map((entry) => entry.data.category ?? "dev")),
 )
   .filter((slug) => !configuredCategorySlugs.has(slug))
-  .map((slug) => ({ slug, title: slug, blurb: "新的日志分类。" }));
+  .map((slug) => ({ slug, title: slug }));
 
 const categories = [...LOG_CATEGORIES, ...discoveredCategories];
 
@@ -131,7 +131,7 @@ const searchEntries = groups.flatMap((g) =>
   body { background: #000; }
 
   /* ===== Header（白色） ===== */
-  .logs-header { position: fixed; top: 0; inset-inline: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 16px; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
+  .logs-header { position: fixed; top: 0; inset-inline: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 16px; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,.96), rgba(0,0,0,0)); }
   .logs-header > * { pointer-events: auto; }
   .logs-logo { color: #fff; text-decoration: none; }
   .logs-nav { display: none; align-items: center; gap: 32px; }
@@ -162,7 +162,7 @@ const searchEntries = groups.flatMap((g) =>
   .logs-dark { min-height: 100dvh; background: #000; color: #fff; padding-bottom: 12vh; padding-top: clamp(40px, 6vh, 75px); }
 
   /* 混排标题：衬线 + 无衬线 800 */
-  .t-serif { font-family: "Cal Sans", "Instrument Serif", serif; font-weight: 400; }
+  .t-serif { font-family: "Cal Sans", "Instrument Serif", serif; font-size: calc(1em - 2px); font-weight: 400; }
   .t-sans { font-family: "Cal Sans", "Open Sans", sans-serif; font-weight: 800; letter-spacing: -.01em; }
 
   /* ===== showcase 一行 ===== */
@@ -174,7 +174,6 @@ const searchEntries = groups.flatMap((g) =>
   }
   .intro-title { margin: 0; font-size: clamp(34px, 4vw, 56px); line-height: 1.02; letter-spacing: -.01em; }
   .intro-title .t-sans { display: inline; }
-  .intro-blurb { margin: 22px 0 0; max-width: 34ch; font: 400 clamp(17px,1.4vw,21px)/1.5 "Cal Sans", "Instrument Serif", Georgia, serif; color: rgba(255,255,255,.72); }
   .intro-more { margin: 26px 0 0; background: none; border: none; cursor: pointer; padding: 0; font: 800 13px/1 "Cal Sans","Open Sans",sans-serif; letter-spacing: .06em; color: #fff; transition: opacity .2s; }
   .intro-more:hover { opacity: .6; }
 
@@ -193,7 +192,6 @@ const searchEntries = groups.flatMap((g) =>
   .show-card:hover { transform: translateY(-6px); }
   .card-media { position: absolute; inset: 0; background-size: cover; background-position: center; transition: transform .5s ease; }
   .show-card:hover .card-media { transform: scale(1.04); }
-  .card-grad { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 38%, rgba(0,0,0,0) 60%, rgba(0,0,0,.4) 100%); }
   /* 色卡：重复关键词纹理 */
   .card-motif { position: absolute; inset: 0; overflow: hidden; opacity: .9; }
   .card-motif span { position: absolute; font-family: "Cal Sans", "Open Sans", sans-serif; font-weight: 800; color: rgba(0,0,0,.14); white-space: nowrap; letter-spacing: -.02em; text-transform: uppercase; }

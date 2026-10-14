@@ -77,11 +77,11 @@ function MediaTile({ item }: { item: AlbumItem }) {
   const mediaFit = item.media?.fit ?? "cover";
   const useEffects = item.media?.effects ?? true;
   const mediaClass = mediaFit === "contain"
-    ? "absolute left-1/2 top-1/2 h-[89%] w-[89%] -translate-x-1/2 -translate-y-1/2 object-contain"
+    ? "absolute left-1/2 top-1/2 h-[92%] w-[90%] -translate-x-1/2 -translate-y-1/2 object-contain"
     : "absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]";
 
   return (
-    <div className="relative w-full overflow-hidden bg-black aspect-[4/3] sm:aspect-[2/1]">
+    <div className={`relative w-full overflow-hidden aspect-[4/3] sm:aspect-[2/1] ${mediaFit === "contain" ? "bg-transparent" : "bg-black"}`}>
       {item.media?.type === "video" ? (
         <video
           ref={vref}
@@ -161,7 +161,7 @@ export default function AlbumGallery({ items }: { items: AlbumItem[] }) {
           className="flex items-center justify-between"
           style={{
             padding: "16px",
-            background: "linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0))",
+            background: "linear-gradient(to bottom, rgba(0,0,0,.96), rgba(0,0,0,0))",
           }}
         >
           <a

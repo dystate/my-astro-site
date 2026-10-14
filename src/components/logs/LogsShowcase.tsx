@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const pad = (n: number) => String(n).padStart(2, "0");
+const COVER_COLORS = ["#0065FF", "#008F55", "#FF5A58", "#3E568C", "#00A3FF", "#FFC700"] as const;
 
 export interface ShowEntry {
   slug: string;
@@ -15,7 +16,7 @@ export interface ShowEntry {
   accent?: [string, string] | null;
   motif?: string | null;
 }
-export interface ShowCategory { slug: string; title: string; blurb: string }
+export interface ShowCategory { slug: string; title: string }
 
 // 色卡上重复关键词的固定散布点（top%, left%, rotate, em）
 const SPOTS = [
@@ -24,8 +25,7 @@ const SPOTS = [
   [14, 36, 30, 1.6], [40, 44, -30, 2.0], [73, 80, 6, 1.8], [92, 34, -10, 2.4],
 ] as const;
 
-function Card({ e, n }: { e: ShowEntry; n: number }) {
-  const accent = e.accent ?? ["#5451f2", "#312fb0"];
+function Card({ e, n, color }: { e: ShowEntry; n: number; color: string }) {
   return (
     <a className={`show-card ${e.cover ? "is-image" : "is-text"}`} href={`/logs/${e.slug}`}>
       <div
@@ -33,7 +33,7 @@ function Card({ e, n }: { e: ShowEntry; n: number }) {
         style={
           e.cover
             ? { backgroundImage: `url(${e.cover})` }
-            : { background: `linear-gradient(160deg, ${accent[0]}, ${accent[1]})` }
+            : { backgroundColor: color }
         }
       >
         {!e.cover && (
@@ -46,7 +46,6 @@ function Card({ e, n }: { e: ShowEntry; n: number }) {
           </div>
         )}
       </div>
-      <div className="card-grad" />
       {!e.cover && <div className="card-stamp">{e.motif ?? "LOG"}</div>}
       <div className="card-head">
         <div className="card-meta">{e.dateLabel}</div>
@@ -114,7 +113,7 @@ function ListPanel({
 }
 
 export default function LogsShowcase({
-  category, entries,
+  category, entries, index = 0,
 }: { category: ShowCategory; entries: ShowEntry[]; index?: number }) {
   const reduce = useReducedMotion() ?? false;
   const [open, setOpen] = useState(false);
@@ -129,14 +128,13 @@ export default function LogsShowcase({
           <span className="t-serif">{serif}</span>
           {sans && <span className="t-sans">{sans}</span>}
         </h2>
-        <p className="intro-blurb">{category.blurb}</p>
         <button className="intro-more" onClick={() => setOpen(true)}>展开更多 ／ VIEW ALL →</button>
       </div>
 
       {/* 右侧：三张竖卡横排（时间序） */}
       <div className="show-track">
         {top3.map((e, i) => (
-          <Card key={e.slug} e={e} n={i} />
+          <Card key={e.slug} e={e} n={i} color={COVER_COLORS[(index + i) % COVER_COLORS.length]} />
         ))}
       </div>
 
