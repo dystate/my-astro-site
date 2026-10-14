@@ -1,0 +1,108 @@
+---
+// src/pages/album/book/[slug].astro
+// 每本书的详情页：点书架上的书 → 跳转到这里，翻书器以小组件形式嵌在页面中。
+import Layout from "../../../layouts/Layout.astro";
+import BookReader from "../../../components/book/BookReader.astro";
+import { bookVisual } from "../../../components/book/visual";
+import { books as booksData } from "../../../data/books";
+
+// server 输出模式下需显式预渲染，getStaticPaths 才会生效
+export const prerender = true;
+
+/* 与 Bookshelf 相同的排序，保证 id 一致（配色也一致） */
+booksData.forEach((b, i) => (b.id = i));
+booksData.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || a.name.localeCompare(b.name));
+
+export function getStaticPaths() {
+  return booksData.map((book, i) => ({
+    params: { slug: book.slug ?? String(i) },
+    props: { book },
+  }));
+}
+
+const { book } = Astro.props;
+const v = bookVisual(book.id ?? 0, book.name);
+---
+
+<Layout title={`${book.name || '未命名'} · Dystate`}>
+  {/* 全局 CRT 质感叠层 */}
+  <div class="bk-scan" aria-hidden="true"></div>
+  <div class="bk-vignette" aria-hidden="true"></div>
+
+  {/* 顶部：返回书架 + logo */}
+  <header class="bk-header">
+    <a class="bk-back" href="/album/newjourney">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      书架
+    </a>
+    <a class="bk-logo" href="/">Dystate</a>
+  </header>
+
+  {/* 书名 */}
+  <h1 class="bk-title">{book.name || '未命名'}</h1>
+
+  {/* 翻书器小组件 */}
+  <div class="bk-reader-zone">
+    <BookReader name={book.name} cover={book.cover} color={v.color} pages={book.pages} />
+  </div>
+
+  {/* 四角线框 */}
+  <div class="bk-corners"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+</Layout>
+
+<style>
+  .bk-scan{ position:fixed; inset:0; z-index:8; pointer-events:none;
+    background-image:radial-gradient(circle, rgba(0,0,0,.08) 0.5px, transparent 1px);
+    background-size:12px 12px; }
+  .bk-vignette{ position:fixed; inset:0; z-index:8; pointer-events:none;
+    background:radial-gradient(120% 120% at 50% 40%, transparent 58%, rgba(0,0,0,.6)); }
+
+  /* 顶栏：返回书架（左）/ logo（右） */
+  .bk-header{ position:fixed; top:0; inset-inline:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px clamp(16px,4vw,40px); pointer-events:none;
+    background:linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
+  .bk-header > *{ pointer-events:auto; }
+  .bk-back{ display:flex; align-items:center; gap:6px;
+    font:800 15px/1 'Open Sans',sans-serif; letter-spacing:.06em; color:rgba(255,255,255,.82);
+    text-decoration:none; transition:color .2s; }
+  .bk-back:hover{ color:#fff; }
+  .bk-logo{ font:800 clamp(24px,6vw,40px)/1 'Open Sans',sans-serif; letter-spacing:-.02em; color:#fff; text-decoration:none; }
+
+  /* 书名：衬线大字，居中在阅读器上方 */
+  .bk-title{ margin:clamp(72px,12vh,120px) 0 0; text-align:center;
+    font:700 clamp(20px,3.4vw,34px)/1.2 "Noto Serif SC","Songti SC",serif;
+    letter-spacing:.14em; text-indent:.14em; color:rgba(255,255,255,.92); }
+
+  /* 阅读器占满剩余空间 */
+  .bk-reader-zone{ position:fixed; inset:0; z-index:10;
+    display:flex; flex-direction:column; }
+  .bk-reader-zone :global(.reader-widget){ flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column; position:relative;
+    padding-top:clamp(64px,10vh,110px); /* 给顶栏+书名留出空间 */ }
+
+  /* 四角线框装饰 */
+  .bk-corners{ position:fixed; inset:16px; pointer-events:none; z-index:6; }
+  .bk-corners i{ position:absolute; width:26px; height:26px; border:1.5px solid rgba(255,255,255,.22); }
+  .bk-corners i.tl{ top:0; left:0; border-right:0; border-bottom:0; }
+  .bk-corners i.tr{ top:0; right:0; border-left:0; border-bottom:0; }
+  .bk-corners i.bl{ bottom:0; left:0; border-right:0; border-top:0; }
+  .bk-corners i.br{ bottom:0; right:0; border-left:0; border-top:0; }
+
+  @media (max-width:760px){
+    .bk-corners{ inset:10px; }
+    .bk-corners i{ width:18px; height:18px; }
+  }
+</style>
+
+<style is:global>
+  /* 本页体感与书架一致：纯黑 + CRT 底色渐变，禁止页面滚动（阅读器自己接管） */
+  html, body{ margin:0; padding:0; }
+  body{
+    background:radial-gradient(120% 120% at 50% 38%, #0c1410 0%, #060a08 55%, #000 100%);
+    color:#fff; overflow:hidden;
+    font-family:'Open Sans',sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    -webkit-user-select:none; user-select:none;
+  }
+</style>

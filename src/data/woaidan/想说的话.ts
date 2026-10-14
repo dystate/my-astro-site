@@ -2,6 +2,7 @@ import type { BookData } from "../books";
 
 const 想说的话: BookData = {
   name: "想说的话",
+  slug: "xiang-shuo-de-hua",
   order: 2,
   cover: "/images/xsdh.png",
   pages: [

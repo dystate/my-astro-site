@@ -1,0 +1,332 @@
+---
+/**
+ * BookReader.astro —— 书本翻页阅读器小组件（StPageFlip）
+ *
+ * 从 Bookshelf.astro 抽出的独立组件：传入一本书的数据，
+ * 在页面内原地渲染翻书器（不再是全屏遮罩）。书架点书 → 书籍详情页嵌此组件。
+ *
+ * 用法：
+ *   <BookReader name="想说的话" cover="/images/xsdh.png" color="#9bb0c4" pages={[...]} />
+ */
+interface Props {
+  name: string;
+  cover?: string;
+  /** 封面底色（与书脊同色最协调） */
+  color?: string;
+  pages: { image?: string | null; text?: string | null; title?: string | null }[];
+}
+const { name, cover = "", color = "#2f4858", pages = [] } = Astro.props;
+const bookJson = JSON.stringify({ name, cover, color, pages });
+const total = pages.length;
+---
+
+<div class="reader-widget" id="reader-widget">
+  <div class="bv-counter"><span id="bv-cur">封面</span> / <span id="bv-total">{total}</span></div>
+  <div class="flip-stage">
+    <div id="flip-wind" class="flip-wind">
+      <div id="flipbook" class="flipbook"></div>
+      <i class="book-spine" aria-hidden="true"></i>
+    </div>
+  </div>
+  <div class="bv-bottom">
+    <span class="bv-drag-hint">drag to turn</span>
+    <span class="bv-credit">Dystate</span>
+  </div>
+</div>
+
+{/* 书本数据（JSON 嵌入，供客户端翻页使用） */}
+<script type="application/json" id="book-data" set:html={bookJson} />
+
+<script>
+  import { PageFlip } from 'page-flip';
+
+  const widget = document.getElementById('reader-widget');
+  if (widget) {
+    const flipRoot = document.getElementById('flipbook') as HTMLElement;
+    const windEl = document.getElementById('flip-wind') as HTMLElement;
+    const curEl = document.getElementById('bv-cur') as HTMLElement;
+    const totEl = document.getElementById('bv-total') as HTMLElement;
+
+    const book = JSON.parse((document.getElementById('book-data') as HTMLScriptElement).textContent || '{}');
+    const total: number = (book.pages || []).length;
+    totEl.textContent = String(total);
+    const isMobile = () => window.matchMedia('(max-width: 760px)').matches;
+
+    /* ===== 页面渲染 ===== */
+    function setPage(el: HTMLElement, i: number) {
+      el.classList.remove('type-image', 'type-media', 'type-text');
+      const pg = book.pages[i];
+      if (!pg) { el.innerHTML = ''; return; }
+
+      if (pg.image) {
+        el.innerHTML = '<img src="' + pg.image + '" alt="" draggable="false" />';
+        el.classList.add('type-image');
+      } else if (pg.text) {
+        const title = pg.title || '';
+        const html = pg.text.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+        el.innerHTML = (title ? '<p class="bv-leaf-title">' + title + '</p>' : '') + '<p>' + html + '</p>';
+        el.classList.add('type-text');
+      }
+      el.scrollTop = 0;
+    }
+
+    /* 构建一张软内容页 */
+    function buildContentPage(i: number) {
+      const page = document.createElement('div');
+      page.className = 'page';
+      page.setAttribute('data-density', 'soft');
+      const content = document.createElement('div');
+      content.className = 'page-content';
+      setPage(content, i);
+      page.appendChild(content);
+      return page;
+    }
+
+    /* 构建硬壳封面 / 封底 */
+    function buildCoverPage(opts: { title: string; image?: string; color?: string; back?: boolean }) {
+      const page = document.createElement('div');
+      page.className = 'page';
+      page.setAttribute('data-density', 'hard');
+      const content = document.createElement('div');
+      content.className = 'page-content is-cover';
+      const art = document.createElement('div');
+      art.className = 'cover-art' + (opts.back ? ' cover-back' : '');
+      art.style.setProperty('--cover-c', opts.color || '#2f4858');
+      if (opts.image && !opts.back) {
+        art.classList.add('has-image');
+        art.style.backgroundImage = 'url("' + opts.image + '")';
+      }
+      const t = document.createElement('span');
+      t.className = 'cover-title';
+      t.textContent = opts.back ? (opts.title ? opts.title + ' · 完' : '完') : (opts.title || '');
+      art.appendChild(t);
+      content.appendChild(art);
+      page.appendChild(content);
+      return page;
+    }
+
+    function buildPages() {
+      const pages: HTMLElement[] = [];
+      pages.push(buildCoverPage({ title: book.name, image: book.cover, color: book.color }));
+      for (let i = 0; i < total; i++) pages.push(buildContentPage(i));
+      // showCover 模式下内容页为奇数时补一张空白，让封底单独成页
+      if (total % 2 === 1) {
+        const blank = document.createElement('div');
+        blank.className = 'page'; blank.setAttribute('data-density', 'soft');
+        blank.innerHTML = '<div class="page-content"></div>';
+        pages.push(blank);
+      }
+      pages.push(buildCoverPage({ title: book.name, color: book.color, back: true }));
+      pages.forEach((p) => flipRoot.appendChild(p));
+    }
+
+    function mountFlip() {
+      const stage = flipRoot.closest('.flip-stage') as HTMLElement || flipRoot.parentElement as HTMLElement;
+      const availH = (stage.clientHeight || 600) - 6;
+      const availW = (stage.clientWidth || 360) - 6;
+      const PAGE_W = 1200, PAGE_H = 1600;
+      const PAGE_RATIO = PAGE_H / PAGE_W;
+      const landscape = !isMobile();
+
+      let pageH = availH;
+      let pageW = pageH / PAGE_RATIO;
+      let bookW = landscape ? pageW * 2 : pageW;
+      if (bookW > availW) {
+        bookW = availW;
+        pageW = landscape ? bookW / 2 : bookW;
+        pageH = pageW * PAGE_RATIO;
+      }
+      if (pageW > PAGE_W) { pageW = PAGE_W; pageH = PAGE_H; }
+      pageW = Math.round(pageW * 0.8);
+      pageH = Math.round(pageH * 0.8);
+      bookW = landscape ? pageW * 2 : pageW;
+
+      flipRoot.style.width = bookW + 'px';
+      flipRoot.style.height = pageH + 'px';
+
+      pageFlip = new PageFlip(flipRoot, {
+        width: PAGE_W,
+        height: PAGE_H,
+        size: 'stretch',
+        minWidth: landscape ? 200 : pageW + 1,
+        maxWidth: PAGE_W,
+        minHeight: 280,
+        maxHeight: PAGE_H,
+        maxShadowOpacity: 0.75,
+        showCover: true,
+        usePortrait: true,
+        drawShadow: true,
+        flippingTime: 950,
+        autoSize: false,
+        mobileScrollSupport: false,
+      });
+      pageFlip.loadFromHTML(flipRoot.querySelectorAll('.page'));
+
+      pageFlip.on('flip', (e: any) => updateCounter(e.data));
+      pageFlip.on('changeOrientation', (e: any) => {
+        updateCounter(pageFlip.getCurrentPageIndex());
+        if (windEl) windEl.classList.toggle('is-landscape', e.data === 'landscape');
+      });
+      if (windEl) windEl.classList.toggle('is-landscape', pageFlip.getOrientation() === 'landscape');
+      pageFlip.on('changeState', (e: any) => {
+        if (windEl) windEl.classList.toggle('is-flipping', e.data !== 'read');
+      });
+      updateCounter(0);
+    }
+
+    let pageFlip: any = null;
+
+    function destroyFlip() {
+      if (pageFlip) { try { pageFlip.destroy(); } catch (e) {} pageFlip = null; }
+      // destroy() 会把 #flipbook 节点从 DOM 删除，重建一个干净的容器
+      let fb = document.getElementById('flipbook');
+      if (!fb) {
+        fb = document.createElement('div');
+        fb.id = 'flipbook';
+        fb.className = 'flipbook';
+        windEl.appendChild(fb);
+      } else {
+        fb.innerHTML = '';
+        fb.removeAttribute('style');
+      }
+    }
+
+    function updateCounter(index: number) {
+      if (!pageFlip) return;
+      const last = pageFlip.getPageCount() - 1;
+      if (index <= 0) { curEl.textContent = '封面'; return; }
+      if (index >= last) { curEl.textContent = '封底'; return; }
+      const landscape = !isMobile();
+      const a = Math.min(index, total);
+      const b = landscape && index + 1 <= total ? index + 1 : null;
+      curEl.textContent = (b && b !== a) ? (a + '-' + b) : String(a);
+    }
+
+    /* ===== 启动：预加载图片 → 构建翻页器 ===== */
+    const imgUrls = (book.pages || []).filter((p: any) => p.image).map((p: any) => p.image);
+    const preload = imgUrls.map((url: string) => new Promise((resolve) => {
+      const img = new Image();
+      img.onload = img.onerror = resolve;
+      img.src = url;
+    }));
+    Promise.all(preload).then(() => {
+      requestAnimationFrame(() => {
+        try { buildPages(); mountFlip(); }
+        catch (err) { console.error('[book-reader] 初始化失败：', book.name, err); }
+      });
+    });
+
+    /* 键盘翻页 */
+    document.addEventListener('keydown', (e) => {
+      if (!pageFlip) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') pageFlip.flipNext();
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') pageFlip.flipPrev();
+    });
+
+    /* 窗口尺寸变化：重建翻页器（保留所在页） */
+    let rzTimer: ReturnType<typeof setTimeout> | null = null;
+    window.addEventListener('resize', () => {
+      if (!pageFlip) return;
+      if (rzTimer) clearTimeout(rzTimer);
+      rzTimer = setTimeout(() => {
+        const cur = pageFlip ? pageFlip.getCurrentPageIndex() : 0;
+        destroyFlip();
+        buildPages();
+        mountFlip();
+        if (pageFlip && cur > 0) { try { pageFlip.turnToPage(cur); } catch (e) {} }
+      }, 220);
+    });
+  }
+</script>
+
+<style is:global>
+  /* ============================================================
+     BookReader —— 翻页阅读器小组件样式（从 Bookshelf 抽出）
+     ============================================================ */
+
+  /* 悬浮页码（右上角，Nokia 等宽） */
+  .reader-widget .bv-counter{ position:absolute; top:max(16px, env(safe-area-inset-top)); right:16px; z-index:31;
+    font:400 13px/1 'Nokia Cellphone FC Small',ui-monospace,"SFMono-Regular",monospace; letter-spacing:.06em;
+    color:rgba(255,255,255,.72); pointer-events:none; }
+
+  /* 舞台（perspective 在外层，给 .flip-wind 的 rotateX 提供透视） */
+  .reader-widget .flip-stage{ position:relative; flex:1 1 auto; min-height:0; display:flex; align-items:center; justify-content:center;
+    padding: 8px 8px 8px; perspective:2400px; perspective-origin:50% 42%; }
+  .reader-widget .flipbook{ filter:drop-shadow(0 30px 50px rgba(0,0,0,.6)); -webkit-user-select:none; user-select:none; touch-action:pan-y; }
+
+  /* 轻微整体晃动 + 微俯视角（立体感），翻页时暂停晃动 */
+  .reader-widget .flip-wind{ --sway-rot:0.55deg; --sway-shift:3px; --book-tilt:8deg; flex:0 0 auto; position:relative;
+    display:flex; align-items:center; justify-content:center;
+    transform:rotateX(var(--book-tilt));
+    animation:bookSway 6.5s ease-in-out infinite; transform-origin:50% 46%; will-change:transform; }
+  .reader-widget .flip-wind.is-flipping{ animation-play-state:paused; }
+  @keyframes bookSway{
+    0%{ transform:rotateX(var(--book-tilt)) rotate(calc(var(--sway-rot) * -1)) translateY(0); }
+    50%{ transform:rotateX(var(--book-tilt)) rotate(var(--sway-rot)) translateY(calc(var(--sway-shift) * -1)); }
+    100%{ transform:rotateX(var(--book-tilt)) rotate(calc(var(--sway-rot) * -1)) translateY(0); }
+  }
+
+  /* 纸叠厚度：左右页缘的多层细条纹（仅对开模式显示） */
+  .reader-widget .flip-wind::before, .reader-widget .flip-wind::after{ content:""; position:absolute; top:3px; bottom:3px; width:9px;
+    display:none; pointer-events:none; border-radius:2px;
+    background:repeating-linear-gradient(to bottom, #f2efe6 0 2px, #c9c5b6 2px 3px); }
+  .reader-widget .flip-wind::before{ right:-11px; box-shadow:inset -2px 0 3px rgba(0,0,0,.18); }
+  .reader-widget .flip-wind::after{ left:-11px; box-shadow:inset 2px 0 3px rgba(0,0,0,.18); }
+  .reader-widget .flip-wind.is-landscape::before, .reader-widget .flip-wind.is-landscape::after{ display:block; }
+
+  /* 书脊暗缝：摊开时中缝自然下陷 */
+  .reader-widget .book-spine{ position:absolute; left:50%; top:0; bottom:0; width:clamp(48px, 14%, 150px); transform:translateX(-50%);
+    z-index:5; pointer-events:none; opacity:0; transition:opacity .35s ease;
+    background:linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,.30) 38%, rgba(0,0,0,.44) 50%, rgba(0,0,0,.30) 62%, rgba(0,0,0,0) 100%); }
+  .reader-widget .flip-wind.is-landscape .book-spine{ opacity:1; }
+
+  /* StPageFlip 必需基础样式 */
+  .stf__parent{ position:relative; display:block; box-sizing:border-box; transform:translateZ(0); -ms-touch-action:pan-y; touch-action:pan-y; margin:0 auto; }
+  .stf__parent canvas{ position:absolute; width:100%; height:100%; left:0; top:0; }
+  .stf__block{ position:absolute; width:100%; height:100%; box-sizing:border-box; perspective:2000px; }
+  .stf__item{ display:none; position:absolute; transform-style:preserve-3d; }
+  .stf__outerShadow,.stf__innerShadow,.stf__hardShadow,.stf__hardInnerShadow{ position:absolute; left:0; top:0; }
+
+  /* 单页（纸张为浅色，故内页文字强制深色） */
+  .page{ background:#EDEDED; overflow:hidden; }
+  .page-content{ width:100%; height:100%; position:relative; box-sizing:border-box; padding:0; overflow:hidden; scrollbar-width:none; color:#2a2620; }
+  .page-content::-webkit-scrollbar{ display:none; }
+  .page-content.is-cover{ padding:0; }
+
+  /* 硬壳封面 / 封底（边框与角点改用磷光绿呼应主题） */
+  .cover-art{ width:100%; height:100%; border-radius:6px;
+    background:linear-gradient(140deg, rgba(255,255,255,.14), rgba(255,255,255,0) 42%), linear-gradient(rgba(0,0,0,.32), rgba(0,0,0,.42)), var(--cover-c,#2f4858);
+    display:flex; align-items:center; justify-content:center; padding:22px; box-sizing:border-box; position:relative; }
+  .cover-art::after{ content:""; position:absolute; inset:12px; border-radius:4px; border:1px solid rgba(115,245,154,.5); }
+  .cover-art::before{ content:""; position:absolute; top:14px; right:14px; width:14px; height:14px; background:var(--phosphor,#73F59A); border-radius:2px; z-index:2; }
+  .cover-art.has-image{ background-size:cover; background-position:center; padding:0; }
+  .cover-art.has-image::after, .cover-art.has-image::before{ display:none; }
+  .cover-art.has-image .cover-title{ display:none; }
+  .cover-title{ font:700 clamp(16px,5vw,26px)/1.3 "Noto Serif SC","Songti SC",serif; color:rgba(255,255,255,.94); text-align:center; text-shadow:0 2px 6px rgba(0,0,0,.5); z-index:1; word-break:break-word; padding:0 14px; }
+  .cover-art.cover-back{ background:linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.6)), var(--cover-c,#2f4858); }
+  .cover-art.cover-back::before{ display:none; }
+  .cover-art.cover-back .cover-title{ font-size:clamp(13px,3.4vw,18px); letter-spacing:3px; opacity:.85; }
+
+  /* 页面类型 */
+  .page-content.type-image{ padding:0; display:flex; align-items:center; justify-content:center; }
+  .page-content.type-image img{ width:100%; height:100%; object-fit:contain; display:block; margin:0; }
+  .page-content.type-text{ padding:clamp(22px,3.5vw,48px); overflow-y:auto; }
+  .page-content.type-text img{ display:block; margin:10px auto; max-width:100%; max-height:55%; height:auto; object-fit:contain; border-radius:4px; }
+  .page-content p{ line-height:1.7; margin:0 0 .8em; font-size:15px; color:#2a2620; }
+  .bv-leaf-title{ font:700 14px/1.4 "Noto Serif SC",serif; color:#3a342a; margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid #e6e0d4; }
+
+  /* 底栏（Instrument 斜体提示 + 署名） */
+  .reader-widget .bv-bottom{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:14px; width:min(92vw,920px); margin:0 auto; padding:8px 4px max(16px, env(safe-area-inset-bottom)); border-top:1px solid rgba(255,255,255,.14); position:relative; z-index:31; }
+  .reader-widget .bv-drag-hint{ font:italic 400 clamp(16px,3.4vw,24px)/1 'Instrument Serif',Georgia,serif; color:#fff; }
+  .reader-widget .bv-credit{ font:800 clamp(14px,2.6vw,18px)/1 'Open Sans',system-ui,sans-serif; color:#fff; }
+
+  /* ---------- 手机端 ---------- */
+  @media (max-width:760px){
+    .reader-widget .flip-wind{ --book-tilt:5deg; }
+  }
+
+  /* ---------- 减少动画偏好 ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .reader-widget .flip-wind{ animation:none; }
+  }
+</style>

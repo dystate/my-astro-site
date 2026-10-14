@@ -1,7 +1,8 @@
 import type { BookData } from "../books";
 
-const 故事线: BookData = {
-  name: "故事线",
+const 愛: BookData = {
+  name: "",
+  slug: "ai",
   order: 1,
   cover: "/images/thread.jpg",
   pages: [
@@ -9,4 +10,4 @@ const 故事线: BookData = {
   ],
 };
 
-export default 故事线;
+export default 愛;

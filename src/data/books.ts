@@ -20,6 +20,8 @@ export interface BookData {
   id?: number;
   /** 书名（显示在书脊上） */
   name: string;
+  /** 书籍详情页 URL 代号（/album/book/<slug>）；不填则用序号 */
+  slug?: string;
   /** 书架上的排列顺序（越小越靠左） */
   order?: number;
   /** 封面图片（如 /images/cover.png）；不填则用纯色硬壳封面 */
@@ -28,7 +30,7 @@ export interface BookData {
   pages: BookPage[];
 }
 
-import 故事线 from "./woaidan/故事线";
+import 愛 from "./woaidan/愛";
 import 想说的话 from "./woaidan/想说的话";
 
-export const books: BookData[] = [故事线, 想说的话];
+export const books: BookData[] = [愛, 想说的话];
