@@ -48,6 +48,8 @@ const remoteHtml = remoteEntry ? await renderRemoteLogMarkdown(remoteEntry.body)
     />
   </head>
   <body class="article-body">
+    <a href="/" class="article-brand dystate-brand">Dystate</a>
+
     <!-- 返回按钮 -->
     <a href="/logs" class="back-btn" title="返回日志列表">
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -80,11 +82,18 @@ const remoteHtml = remoteEntry ? await renderRemoteLogMarkdown(remoteEntry.body)
     -webkit-font-smoothing: antialiased;
   }
 
+  .article-brand {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 50;
+  }
+
   /* 返回按钮 */
   .back-btn {
     position: fixed;
-    top: clamp(16px, 3vw, 28px);
-    left: clamp(12px, 3vw, 28px);
+    top: 16px;
+    right: 16px;
     z-index: 50;
     display: inline-flex;
     align-items: center;

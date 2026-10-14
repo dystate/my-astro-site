@@ -74,6 +74,11 @@ function MediaTile({ item }: { item: AlbumItem }) {
   }, []);
 
   const [a, b] = item.accent ?? ["#2a2a2a", "#0a0a0a"];
+  const mediaFit = item.media?.fit ?? "cover";
+  const useEffects = item.media?.effects ?? true;
+  const mediaClass = mediaFit === "contain"
+    ? "absolute left-1/2 top-1/2 h-[89%] w-[89%] -translate-x-1/2 -translate-y-1/2 object-contain"
+    : "absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]";
 
   return (
     <div className="relative w-full overflow-hidden bg-black aspect-[4/3] sm:aspect-[2/1]">
@@ -86,13 +91,13 @@ function MediaTile({ item }: { item: AlbumItem }) {
           loop
           playsInline
           preload="metadata"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+          className={mediaClass}
         />
       ) : item.media?.type === "image" ? (
         <img
           src={item.media.src}
           alt={item.title}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+          className={mediaClass}
         />
       ) : (
         <div
@@ -105,18 +110,22 @@ function MediaTile({ item }: { item: AlbumItem }) {
         </div>
       )}
 
-      {/* 扫描线 + 暗角，呼应站点的 CRT 质感 */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(to bottom,rgba(0,0,0,.10) 0 1px,transparent 1px 3px)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: "radial-gradient(120% 120% at 50% 40%, transparent 58%, rgba(0,0,0,.5))" }}
-      />
+      {useEffects && (
+        <>
+          {/* 扫描线 + 暗角，呼应站点的 CRT 质感 */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(to bottom,rgba(0,0,0,.10) 0 1px,transparent 1px 3px)",
+            }}
+          />
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "radial-gradient(120% 120% at 50% 40%, transparent 58%, rgba(0,0,0,.5))" }}
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -151,14 +160,13 @@ export default function AlbumGallery({ items }: { items: AlbumItem[] }) {
         <div
           className="flex items-center justify-between"
           style={{
-            padding: "16px clamp(16px,4vw,40px)",
+            padding: "16px",
             background: "linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0))",
           }}
         >
           <a
             href="/"
-            className="leading-none tracking-tight text-white"
-            style={{ fontWeight: 800, fontSize: "clamp(24px,6vw,40px)" }}
+            className="dystate-brand"
           >
             Dystate
           </a>
@@ -179,7 +187,7 @@ export default function AlbumGallery({ items }: { items: AlbumItem[] }) {
           {/* 移动端 MENU */}
           <button
             onClick={() => setOpen(true)}
-            className="sm:hidden flex items-center gap-2 text-white"
+            className="site-menu-label site-menu-corner sm:hidden flex items-center gap-2 text-white"
             style={{ fontWeight: 800 }}
             aria-label="打开菜单"
           >
@@ -322,14 +330,13 @@ export default function AlbumGallery({ items }: { items: AlbumItem[] }) {
           >
             <div className="flex items-center justify-between px-4 py-4">
               <span
-                className="leading-none tracking-tight"
-                style={{ fontWeight: 800, fontSize: "clamp(24px,6vw,40px)" }}
+                className="dystate-brand"
               >
                 Dystate
               </span>
               <button
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2"
+                className="site-menu-label site-menu-corner flex items-center gap-2"
                 style={{ fontWeight: 800 }}
                 aria-label="关闭菜单"
               >

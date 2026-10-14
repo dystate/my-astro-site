@@ -61,11 +61,11 @@ const searchEntries = groups.flatMap((g) =>
 <Layout title="Logs · Dystate">
   {/* 深色页 → 白色顶栏 + PixelCross 全屏菜单 */}
   <header class="logs-header">
-    <a class="logs-logo" href="/">Dystate</a>
+    <a class="logs-logo dystate-brand" href="/">Dystate</a>
     <nav class="logs-nav" aria-label="导航">
       <SiteNav current="logs" />
     </nav>
-    <button class="menu-btn" id="menu-open" aria-label="打开菜单">
+    <button class="menu-btn site-menu-label site-menu-corner" id="menu-open" aria-label="打开菜单">
       MENU
       <span class="px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <rect x="10" y="0" width="4" height="4" fill="currentColor"/><rect x="10" y="5" width="4" height="4" fill="currentColor"/><rect x="10" y="10" width="4" height="4" fill="currentColor"/><rect x="10" y="15" width="4" height="4" fill="currentColor"/><rect x="10" y="20" width="4" height="4" fill="currentColor"/><rect x="0" y="10" width="4" height="4" fill="currentColor"/><rect x="5" y="10" width="4" height="4" fill="currentColor"/><rect x="15" y="10" width="4" height="4" fill="currentColor"/><rect x="20" y="10" width="4" height="4" fill="currentColor"/>
@@ -75,8 +75,8 @@ const searchEntries = groups.flatMap((g) =>
 
   <div class="m-menu" id="m-menu" aria-hidden="true">
     <div class="m-menu-top">
-      <span class="logs-logo">Dystate</span>
-      <button class="m-menu-x" id="menu-close" aria-label="关闭菜单">CLOSE
+      <span class="logs-logo dystate-brand">Dystate</span>
+      <button class="m-menu-x site-menu-label site-menu-corner" id="menu-close" aria-label="关闭菜单">CLOSE
         <span class="px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <rect x="10" y="0" width="4" height="4" fill="currentColor"/><rect x="10" y="5" width="4" height="4" fill="currentColor"/><rect x="10" y="10" width="4" height="4" fill="currentColor"/><rect x="10" y="15" width="4" height="4" fill="currentColor"/><rect x="10" y="20" width="4" height="4" fill="currentColor"/><rect x="0" y="10" width="4" height="4" fill="currentColor"/><rect x="5" y="10" width="4" height="4" fill="currentColor"/><rect x="15" y="10" width="4" height="4" fill="currentColor"/><rect x="20" y="10" width="4" height="4" fill="currentColor"/>
         </svg></span>
@@ -97,8 +97,8 @@ const searchEntries = groups.flatMap((g) =>
     ))}
   </main>
 
-  {/* 悬浮搜索栏：固定在页面正下方居中 */}
-  <LogsSearch client:idle entries={searchEntries} />
+  {/* 悬浮搜索栏：桌面端底部居中，移动端收起在左下角 */}
+  <LogsSearch client:load entries={searchEntries} />
 
   <script is:inline>
     (function () {
@@ -131,11 +131,11 @@ const searchEntries = groups.flatMap((g) =>
   body { background: #000; }
 
   /* ===== Header（白色） ===== */
-  .logs-header { position: fixed; top: 0; inset-inline: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 16px clamp(16px,4vw,40px); pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
+  .logs-header { position: fixed; top: 0; inset-inline: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 16px; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
   .logs-header > * { pointer-events: auto; }
-  .logs-logo { font: 800 clamp(24px,6vw,40px)/1 "Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-decoration: none; }
+  .logs-logo { color: #fff; text-decoration: none; }
   .logs-nav { display: none; align-items: center; gap: 32px; }
-  .logs-nav a { font: 800 18px/1 "Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; transition: opacity .2s; }
+  .logs-nav a { font: 800 18px/1 "Cal Sans","Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; transition: opacity .2s; }
   .logs-nav a:hover { opacity: .6; }
   .menu-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; color: #fff; font: 800 22px/1 "Open Sans",sans-serif; letter-spacing: .04em; }
   @media (min-width: 860px) { .logs-nav { display: flex; } .menu-btn { display: none; } }
@@ -149,21 +149,21 @@ const searchEntries = groups.flatMap((g) =>
   .m-menu-x .px { transition: transform .3s cubic-bezier(.16,1,.3,1); }
   .m-menu.open .m-menu-x .px { transform: rotate(45deg); }
   .m-menu nav { flex: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 0 16px; }
-  .m-menu nav a { font: 800 64px/.95 "Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-decoration: none; opacity: 0; transform: translateY(24px); transition: opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1); }
+  .m-menu nav a { font: 800 64px/.95 "Cal Sans","Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-decoration: none; opacity: 0; transform: translateY(24px); transition: opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1); }
   .m-menu.open nav a { opacity: 1; transform: none; }
   .m-menu.open nav a:nth-child(1) { transition-delay: .10s; }
   .m-menu.open nav a:nth-child(2) { transition-delay: .18s; }
   .m-menu.open nav a:nth-child(3) { transition-delay: .26s; }
   .m-menu .socials { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding: 16px 16px 32px; }
-  .m-menu .socials a { font: 800 16px/1.2 "Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; opacity: 0; transition: opacity .4s ease; }
+  .m-menu .socials a { font: 800 16px/1.2 "Cal Sans","Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; opacity: 0; transition: opacity .4s ease; }
   .m-menu.open .socials a { opacity: 1; transition-delay: .34s; }
 
   /* ===== 页面 ===== */
   .logs-dark { min-height: 100dvh; background: #000; color: #fff; padding-bottom: 12vh; padding-top: clamp(40px, 6vh, 75px); }
 
   /* 混排标题：衬线 + 无衬线 800 */
-  .t-serif { font-family: "Instrument Serif", serif; font-weight: 400; }
-  .t-sans { font-family: "Open Sans", sans-serif; font-weight: 800; letter-spacing: -.01em; }
+  .t-serif { font-family: "Cal Sans", "Instrument Serif", serif; font-weight: 400; }
+  .t-sans { font-family: "Cal Sans", "Open Sans", sans-serif; font-weight: 800; letter-spacing: -.01em; }
 
   /* ===== showcase 一行 ===== */
   .showcase { position: relative; display: flex; align-items: stretch; gap: 0; margin-top: clamp(40px, 8vh, 96px); }
@@ -172,11 +172,10 @@ const searchEntries = groups.flatMap((g) =>
     flex: 0 0 clamp(280px, 34vw, 460px); align-self: center;
     padding: 0 clamp(28px,3vw,52px) 0 clamp(16px,5vw,64px); box-sizing: border-box;
   }
-  .intro-kicker { font: 400 12px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .12em; color: rgba(255,255,255,.45); }
-  .intro-title { margin: 14px 0 0; font-size: clamp(34px, 4vw, 56px); line-height: 1.02; letter-spacing: -.01em; }
+  .intro-title { margin: 0; font-size: clamp(34px, 4vw, 56px); line-height: 1.02; letter-spacing: -.01em; }
   .intro-title .t-sans { display: inline; }
-  .intro-blurb { margin: 22px 0 0; max-width: 34ch; font: 400 clamp(17px,1.4vw,21px)/1.5 "Instrument Serif", Georgia, serif; color: rgba(255,255,255,.72); }
-  .intro-more { margin: 26px 0 0; background: none; border: none; cursor: pointer; padding: 0; font: 800 13px/1 "Open Sans",sans-serif; letter-spacing: .06em; color: #fff; transition: opacity .2s; }
+  .intro-blurb { margin: 22px 0 0; max-width: 34ch; font: 400 clamp(17px,1.4vw,21px)/1.5 "Cal Sans", "Instrument Serif", Georgia, serif; color: rgba(255,255,255,.72); }
+  .intro-more { margin: 26px 0 0; background: none; border: none; cursor: pointer; padding: 0; font: 800 13px/1 "Cal Sans","Open Sans",sans-serif; letter-spacing: .06em; color: #fff; transition: opacity .2s; }
   .intro-more:hover { opacity: .6; }
 
   /* 横滑轨道 */
@@ -197,19 +196,19 @@ const searchEntries = groups.flatMap((g) =>
   .card-grad { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 38%, rgba(0,0,0,0) 60%, rgba(0,0,0,.4) 100%); }
   /* 色卡：重复关键词纹理 */
   .card-motif { position: absolute; inset: 0; overflow: hidden; opacity: .9; }
-  .card-motif span { position: absolute; font-family: "Open Sans", sans-serif; font-weight: 800; color: rgba(0,0,0,.14); white-space: nowrap; letter-spacing: -.02em; text-transform: uppercase; }
-  .card-stamp { position: absolute; left: 14px; right: 14px; top: 52%; transform: translateY(-50%); text-align: center; font: 800 clamp(22px,2.4vw,34px)/1 "Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-transform: uppercase; text-shadow: 0 2px 0 rgba(0,0,0,.25); pointer-events: none; }
+  .card-motif span { position: absolute; font-family: "Cal Sans", "Open Sans", sans-serif; font-weight: 800; color: rgba(0,0,0,.14); white-space: nowrap; letter-spacing: -.02em; text-transform: uppercase; }
+  .card-stamp { position: absolute; left: 14px; right: 14px; top: 52%; transform: translateY(-50%); text-align: center; font: 800 clamp(22px,2.4vw,34px)/1 "Cal Sans","Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-transform: uppercase; text-shadow: 0 2px 0 rgba(0,0,0,.25); pointer-events: none; }
   .card-head { position: absolute; left: 16px; right: 16px; top: 16px; }
-  .card-meta { font: 400 11px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .06em; color: rgba(255,255,255,.8); margin-bottom: 8px; }
-  .card-title { margin: 0; font: 400 clamp(19px,1.5vw,24px)/1.18 "Instrument Serif", serif; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
-  .card-index { position: absolute; right: 14px; bottom: 12px; font: 700 12px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .08em; color: rgba(255,255,255,.7); }
+  .card-meta { font: 400 11px/1 "Cal Sans", "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .06em; color: rgba(255,255,255,.8); margin-bottom: 8px; }
+  .card-title { margin: 0; font: 400 clamp(19px,1.5vw,24px)/1.18 "Cal Sans", "Instrument Serif", serif; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
+  .card-index { position: absolute; right: 14px; bottom: 12px; font: 700 12px/1 "Cal Sans", "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .08em; color: rgba(255,255,255,.7); }
 
   /* ===== 展开列表（覆盖层 / "list 页面"） ===== */
   .list-panel { position: fixed; inset: 0; z-index: 66; background: #050505; color: #fff; display: flex; flex-direction: column; }
   .list-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: clamp(18px,3vw,28px) clamp(16px,5vw,64px); border-bottom: 1px solid rgba(255,255,255,.12); }
   .list-cat { font-size: clamp(22px,3vw,34px); line-height: 1.1; }
-  .list-count { font: 400 13px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .06em; color: rgba(255,255,255,.45); margin-left: 10px; }
-  .list-close { background: none; border: none; cursor: pointer; color: #fff; font: 800 13px/1 "Open Sans",sans-serif; letter-spacing: .08em; transition: opacity .2s; }
+  .list-count { font: 400 13px/1 "Cal Sans", "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .06em; color: rgba(255,255,255,.45); margin-left: 10px; }
+  .list-close { background: none; border: none; cursor: pointer; color: #fff; font: 800 13px/1 "Cal Sans","Open Sans",sans-serif; letter-spacing: .08em; transition: opacity .2s; }
   .list-close:hover { opacity: .6; }
   .list-rows { flex: 1; overflow-y: auto; padding: 0 clamp(16px,5vw,64px) 64px; }
   .list-row {
@@ -218,17 +217,17 @@ const searchEntries = groups.flatMap((g) =>
     text-decoration: none; color: #fff; transition: padding-left .25s cubic-bezier(.16,1,.3,1), background .2s;
   }
   .list-row:hover { padding-left: 12px; background: rgba(255,255,255,.03); }
-  .lr-num { font: 700 14px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; color: rgba(255,255,255,.4); }
+  .lr-num { font: 700 14px/1 "Cal Sans", "Nokia Cellphone FC Small", ui-monospace, monospace; color: rgba(255,255,255,.4); }
   .lr-main { min-width: 0; }
-  .lr-title { display: block; font: 800 clamp(20px,2.6vw,30px)/1.15 "Open Sans",sans-serif; letter-spacing: -.01em; transition: color .2s; }
+  .lr-title { display: block; font: 800 clamp(20px,2.6vw,30px)/1.15 "Cal Sans","Open Sans",sans-serif; letter-spacing: -.01em; transition: color .2s; }
   .list-row:hover .lr-title { color: #5451f2; }
-  .lr-tags { display: block; margin-top: 6px; font: 600 11px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .04em; color: #5451f2; }
-  .lr-date { font: 400 13px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .04em; color: rgba(255,255,255,.55); white-space: nowrap; }
-  .lr-arrow { font: 400 18px/1 "Open Sans",sans-serif; color: rgba(255,255,255,.3); transition: color .2s, transform .2s; }
+  .lr-tags { display: block; margin-top: 6px; font: 600 11px/1 "Cal Sans", "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .04em; color: #5451f2; }
+  .lr-date { font: 400 13px/1 "Cal Sans", "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .04em; color: rgba(255,255,255,.55); white-space: nowrap; }
+  .lr-arrow { font: 400 18px/1 "Cal Sans","Open Sans",sans-serif; color: rgba(255,255,255,.3); transition: color .2s, transform .2s; }
   .list-row:hover .lr-arrow { color: #5451f2; transform: translateX(4px); }
 
   /* ===== 移动端：介绍在上、卡片横滑在下 ===== */
-  @media (max-width: 860px) {
+  @media (max-width: 860px), (hover: none) and (pointer: coarse) {
     .showcase { flex-direction: column; margin-top: clamp(32px,6vh,64px); }
     .show-intro { flex: none; align-self: stretch; padding-block: 0; padding-inline: clamp(16px,5vw,24px); }
     .intro-title { font-size: clamp(32px,9vw,48px); }
@@ -242,11 +241,11 @@ const searchEntries = groups.flatMap((g) =>
   }
 
   /* ===== 悬浮搜索栏（固定底部居中） ===== */
-  .logs-search { position: fixed; left: 50%; bottom: clamp(18px, 4vh, 34px); transform: translateX(-50%); z-index: 60; width: min(92vw, 540px); }
+  .logs-search { position: fixed; left: 50%; bottom: clamp(18px, 4vh, 34px); transform: translateX(-50%); z-index: 60; width: min(88vw, 460px); }
 
   .ls-bar {
     position: relative;
-    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 9px 13px; box-sizing: border-box;
     background: rgba(12,12,12,.82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 10px 34px rgba(0,0,0,.55);
   }
@@ -260,13 +259,13 @@ const searchEntries = groups.flatMap((g) =>
     transition: stroke-dashoffset .6s cubic-bezier(.16,1,.3,1);
   }
   .logs-search:focus-within .ls-b-solid { stroke-dashoffset: 0; }
-  .ls-ico { display: inline-flex; color: rgba(255,255,255,.5); transition: color .2s; }
-  .logs-search:focus-within .ls-ico { color: #fff; }
-  .ls-input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: #fff; font: 800 15px/1 "Open Sans", sans-serif; letter-spacing: .01em; }
+  .ls-trigger { display: inline-flex; flex: none; align-items: center; justify-content: center; padding: 0; border: 0; background: none; color: rgba(255,255,255,.5); cursor: pointer; transition: color .2s; }
+  .logs-search:focus-within .ls-trigger, .ls-trigger:hover { color: #fff; }
+  .ls-input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: #fff; font: 800 14px/1 "Cal Sans", "Open Sans", sans-serif; letter-spacing: .01em; }
   .ls-input::placeholder { color: rgba(255,255,255,.4); font-weight: 600; }
   .ls-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
-  .ls-kbd { flex: none; font: 700 11px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; color: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.2); padding: 4px 7px; }
-  .ls-clear { flex: none; background: none; border: none; cursor: pointer; color: rgba(255,255,255,.55); font: 400 15px/1 "Open Sans", sans-serif; padding: 2px 4px; transition: color .2s; }
+  .ls-kbd { flex: none; font: 700 11px/1 "Cal Sans", "Nokia Cellphone FC Small", ui-monospace, monospace; color: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.2); padding: 4px 7px; }
+  .ls-clear { flex: none; background: none; border: none; cursor: pointer; color: rgba(255,255,255,.55); font: 400 15px/1 "Cal Sans", "Open Sans", sans-serif; padding: 2px 4px; transition: color .2s; }
   .ls-clear:hover { color: #fff; }
 
   /* 结果浮层（向上弹出） */
@@ -285,13 +284,22 @@ const searchEntries = groups.flatMap((g) =>
   .ls-row:last-child { border-bottom: none; }
   .ls-row:hover { background: rgba(255,255,255,.04); padding-left: 22px; }
   .ls-row:hover .ls-title { color: #5451f2; }
-  .ls-cat { font: 700 10px/1.2 "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .06em; color: #5451f2; white-space: nowrap; }
-  .ls-title { min-width: 0; font: 800 15px/1.25 "Open Sans", sans-serif; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .15s; }
-  .ls-date { font: 400 11px/1 "Nokia Cellphone FC Small", ui-monospace, monospace; color: rgba(255,255,255,.5); white-space: nowrap; }
-  .ls-empty { padding: 18px 16px; font: 400 16px/1.4 "Instrument Serif", serif; color: rgba(255,255,255,.65); }
+  .ls-cat { font: 700 10px/1.2 "Cal Sans", "Nokia Cellphone FC Small", ui-monospace, monospace; letter-spacing: .06em; color: #5451f2; white-space: nowrap; }
+  .ls-title { min-width: 0; font: 800 15px/1.25 "Cal Sans", "Open Sans", sans-serif; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .15s; }
+  .ls-date { font: 400 11px/1 "Cal Sans", "Nokia Cellphone FC Small", ui-monospace, monospace; color: rgba(255,255,255,.5); white-space: nowrap; }
+  .ls-empty { padding: 18px 16px; font: 400 16px/1.4 "Cal Sans", "Instrument Serif", serif; color: rgba(255,255,255,.65); }
 
-  @media (max-width: 860px) {
-    .logs-search { width: 92vw; bottom: 14px; }
+  @media (max-width: 860px), (hover: none) and (pointer: coarse) {
+    .logs-search {
+      left: 14px; bottom: 14px; width: 42px; transform: none;
+      transition: width .3s cubic-bezier(.16,1,.3,1);
+    }
+    .logs-search.is-expanded { width: min(calc(100vw - 28px), 320px); }
+    .ls-bar { min-height: 42px; gap: 9px; padding: 8px 11px; }
+    .logs-search:not(.is-expanded) .ls-bar { justify-content: center; padding: 0; }
+    .logs-search:not(.is-expanded) .ls-input,
+    .logs-search:not(.is-expanded) .ls-kbd,
+    .logs-search:not(.is-expanded) .ls-clear { display: none; }
     .ls-row { grid-template-columns: 1fr auto; }
     .ls-cat { display: none; }
   }

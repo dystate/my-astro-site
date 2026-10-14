@@ -237,7 +237,8 @@ export default function ScrollZoomGallery({ albumTitle, photos }: Props) {
 
   if (n === 0) {
     return (
-      <main className="grid min-h-dvh place-items-center bg-black text-white/60">
+      <main className="relative grid min-h-dvh place-items-center bg-black text-white/60">
+        <a href="/" className="dystate-brand absolute left-4 top-4">Dystate</a>
         <p className="font-nokia text-sm tracking-[0.2em]">暂无图片</p>
       </main>
     );
@@ -249,14 +250,17 @@ export default function ScrollZoomGallery({ albumTitle, photos }: Props) {
       className="relative h-dvh w-full overflow-hidden bg-black text-white touch-none isolate"
       style={{ fontFamily: "'Open Sans', sans-serif" }}
     >
-      {/* 顶部：返回 + 作品名 */}
-      <header className="absolute top-0 inset-x-0 z-[4000] flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6">
-        <a href="/album" className="text-[14px] tracking-[0.12em] text-white/70 hover:text-white transition-colors" style={{ fontWeight: 800 }}>
-          ← ALBUM
-        </a>
-        <span className="text-[14px] tracking-[0.12em] text-white/70" style={{ fontWeight: 800 }}>
-          {albumTitle}
-        </span>
+      {/* 顶部：全站 logo + 相册信息 */}
+      <header className="absolute top-0 inset-x-0 z-[4000] flex items-start justify-between p-4">
+        <a href="/" className="dystate-brand">Dystate</a>
+        <div className="flex flex-col items-end gap-2 pt-1">
+          <a href="/album" className="text-[14px] tracking-[0.12em] text-white/70 hover:text-white transition-colors" style={{ fontWeight: 800 }}>
+            ← ALBUM
+          </a>
+          <span className="text-[12px] tracking-[0.12em] text-white/55" style={{ fontWeight: 800 }}>
+            {albumTitle}
+          </span>
+        </div>
       </header>
 
       {/* 散落的照片隧道层 */}

@@ -52,7 +52,7 @@ export default function MobileMenu() {
       <button
         onClick={() => setOpen((v) => !v)}
         className={[
-          "fixed top-4 right-4 z-[80] flex items-center gap-2",
+          "site-menu-label site-menu-corner flex items-center gap-2",
           "text-white",
         ].join(" ")}
         style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
@@ -81,7 +81,7 @@ export default function MobileMenu() {
           >
             {/* 顶部：仅 Logo，字号/字距直接复用首页顶栏的 .lamp-header__logo，保证两处完全一致 */}
             <div className="absolute top-0 left-0 p-4">
-              <span className="lamp-header__logo">Dystate</span>
+              <span className="lamp-header__logo dystate-brand">Dystate</span>
             </div>
 
             {/* 主导航：右对齐大标题 */}

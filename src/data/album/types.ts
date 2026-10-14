@@ -2,8 +2,8 @@
 // 相册相关的共享类型。
 
 export type AlbumMedia =
-  | { type: "video"; src: string; poster?: string }
-  | { type: "image"; src: string };
+  | { type: "video"; src: string; poster?: string; fit?: "cover" | "contain"; effects?: boolean }
+  | { type: "image"; src: string; fit?: "cover" | "contain"; effects?: boolean };
 
 /** 详情页 scroll-linked zoom 轮播里的单张图片 */
 export interface AlbumPhoto {

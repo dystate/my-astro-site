@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 @import url('https://db.onlinewebfonts.com/c/440b53b1a1c65037f944ff19259d8014?family=Nokia+Cellphone+FC+Small');
 @import "@fontsource-variable/geist";
+@import "@fontsource/cal-sans";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -81,6 +82,46 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* 全站品牌锚点：所有页面保持同一字号和左上角间距。 */
+.dystate-brand {
+    display: inline-block;
+    flex: none;
+    color: #fff;
+    font: 800 36px/1 'Open Sans', sans-serif;
+    letter-spacing: -.02em;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* 全站内容字体：拉丁字符由 Cal Sans 渲染，中文沿用 Logs 的衬线回退。 */
+body,
+body * {
+    font-family: 'Cal Sans', 'Instrument Serif', serif !important;
+}
+
+/* 顶部品牌与 MENU/CLOSE 保持原来的 Open Sans。 */
+.dystate-brand,
+.dystate-brand *,
+.site-menu-label,
+.site-menu-label * {
+    font-family: 'Open Sans', sans-serif !important;
+}
+
+.site-menu-label,
+.site-menu-label > span:first-child {
+    font-size: 30px !important;
+    line-height: 1 !important;
+    letter-spacing: -.02em !important;
+}
+
+/* 30px MENU/CLOSE 与 36px Dystate 视觉中心对齐。 */
+.site-menu-corner {
+    position: fixed !important;
+    top: 19px !important;
+    right: 16px !important;
+    z-index: 80 !important;
 }
 
 .dark {
@@ -162,8 +203,8 @@
 }
 
 /* 顶栏：左 logo / 右导航（与 album 页统一；<640px 隐藏导航，交给 MENU） */
-.lamp-header { position: absolute; inset: 0 0 auto; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 16px clamp(16px, 4vw, 40px); background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
-.lamp-header__logo { color: #fff; font: 800 clamp(24px, 6vw, 40px)/1 'Open Sans', sans-serif; letter-spacing: -.02em; text-decoration: none; }
+.lamp-header { position: absolute; inset: 0 0 auto; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 16px; background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
+.lamp-header__logo { color: #fff; text-decoration: none; }
 .lamp-header__nav { display: flex; align-items: center; gap: 2rem; }
 .lamp-header__nav a { color: #fff; font: 800 18px/1 'Open Sans', sans-serif; letter-spacing: .04em; text-decoration: none; transition: opacity .2s ease; }
 .lamp-header__nav a:hover { opacity: .6; }
@@ -355,7 +396,7 @@
    ============================================================ */
 .lamp-page {
   min-height: 100svh;
-  background: #076bf4;
+  background: #026dfb;
 }
 
 .lamp-hero {
@@ -363,7 +404,7 @@
   height: 100svh;
   min-height: 560px;
   overflow: hidden;
-  background: #076bf4;
+  background: #026dfb;
   color: #fff;
   isolation: isolate;
 }
@@ -424,7 +465,6 @@
   left: auto;
   z-index: 1;
   transform: none;
-  text-shadow: 3px 3px 0 rgba(0, 74, 190, .72);
 }
 
 .lamp-header__nav a {
@@ -435,6 +475,26 @@
 .lamp-header__nav a:hover {
   opacity: .72;
   transform: translate(2px, 2px);
+}
+
+.lamp-greeting {
+  position: absolute;
+  z-index: 8;
+  top: clamp(118px, 16svh, 180px);
+  right: clamp(42px, 7vw, 118px);
+  margin: 0;
+  color: #fff;
+  font-family: "Cal Sans", sans-serif;
+  font-size: clamp(48px, 6vw, 96px);
+  font-weight: 400;
+  line-height: .88;
+  letter-spacing: -.035em;
+  text-align: left;
+  text-shadow: 3px 3px 0 rgba(0, 74, 190, .5);
+}
+
+.lamp-greeting span {
+  display: block;
 }
 
 /* 左侧墙面拨杆：直接使用用户提供的开/关状态图。 */
@@ -495,17 +555,30 @@
 
 @media (max-width: 639.98px) {
   .lamp-scene__image {
-    inset: clamp(104px, 14svh, 132px) 0 auto auto;
-    width: auto;
-    max-width: none;
-    height: clamp(430px, 72svh, 620px);
-    object-fit: contain;
+    inset: clamp(68px, 9svh, 84px) 0 0;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
     object-position: top right;
+    transform: scaleX(-1);
+    transform-origin: center;
   }
 
   .wall-switch {
-    left: 22px;
+    top: auto;
+    right: 22px;
+    left: auto;
+    bottom: max(24px, env(safe-area-inset-bottom));
     width: 76px;
+    transform: none;
+  }
+
+  .lamp-greeting {
+    top: clamp(150px, 20svh, 188px);
+    right: 22px;
+    font-size: clamp(46px, 13vw, 64px);
+    line-height: .9;
   }
 
 }

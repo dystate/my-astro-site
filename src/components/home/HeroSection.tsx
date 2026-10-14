@@ -13,26 +13,43 @@ export default function HeroSection() {
     <main className={`lamp-page${isOn ? " is-on" : ""}`}>
       <section className="lamp-hero" aria-label="台灯互动场景">
         <div className="lamp-scene" aria-hidden="true">
-          <img
-            className="lamp-scene__image lamp-scene__image--off"
-            src="/images/hero-lamp-off.png"
-            alt=""
-          />
-          <img
-            className="lamp-scene__image lamp-scene__image--on"
-            src="/images/hero-lamp-on.png"
-            alt=""
-          />
+          <picture>
+            <source
+              media="(max-width: 639.98px)"
+              srcSet="/images/hero-lamp-mobile-off.png"
+            />
+            <img
+              className="lamp-scene__image lamp-scene__image--off"
+              src="/images/hero-lamp-off.png"
+              alt=""
+            />
+          </picture>
+          <picture>
+            <source
+              media="(max-width: 639.98px)"
+              srcSet="/images/hero-lamp-mobile-on.png"
+            />
+            <img
+              className="lamp-scene__image lamp-scene__image--on"
+              src="/images/hero-lamp-on.png"
+              alt=""
+            />
+          </picture>
         </div>
 
         <header className="lamp-header">
-          <a className="lamp-header__logo" href="/">Dystate</a>
+          <a className="lamp-header__logo dystate-brand" href="/">Dystate</a>
           <nav className="lamp-header__nav" aria-label="Site navigation">
             <a href="/album">ALBUM</a>
             <a href="/logs">LOGS</a>
           </nav>
         </header>
         <MobileMenu />
+
+        <h1 className="lamp-greeting">
+          <span>Hello，</span>
+          <span>World</span>
+        </h1>
 
         <button
           type="button"

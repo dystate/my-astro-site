@@ -125,7 +125,6 @@ export default function LogsShowcase({
     <section className="showcase">
       {/* 左侧：分类 + 介绍（移动端自动移到顶部） */}
       <div className="show-intro">
-        <div className="intro-kicker">LOGS · {pad(entries.length)} ENTRIES</div>
         <h2 className="intro-title">
           <span className="t-serif">{serif}</span>
           {sans && <span className="t-sans">{sans}</span>}

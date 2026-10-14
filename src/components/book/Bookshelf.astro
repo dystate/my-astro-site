@@ -27,11 +27,11 @@ const shelves = [booksData];
 
 {/* 顶部导航（design.md §5.3 Album 模式） */}
 <header class="site-header">
-  <a class="site-logo" href="/">Dystate</a>
+  <a class="site-logo dystate-brand" href="/">Dystate</a>
   <nav class="site-nav" aria-label="导航">
     <SiteNav />
   </nav>
-  <button class="menu-btn" id="menu-open" aria-label="打开菜单">
+  <button class="menu-btn site-menu-label site-menu-corner" id="menu-open" aria-label="打开菜单">
     MENU
     <span class="px">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -48,8 +48,8 @@ const shelves = [booksData];
 {/* 移动端全屏菜单（design.md §5.2） */}
 <div class="m-menu" id="m-menu" aria-hidden="true">
   <div class="m-menu-top">
-    <span class="site-logo">Dystate</span>
-    <button class="m-menu-x" id="menu-close" aria-label="关闭菜单">
+    <span class="site-logo dystate-brand">Dystate</span>
+    <button class="m-menu-x site-menu-label site-menu-corner" id="menu-close" aria-label="关闭菜单">
       CLOSE
       <span class="px">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -143,10 +143,10 @@ const shelves = [booksData];
   /* ---------- Header（design.md §5.3 Album 模式） ---------- */
   .site-header{ position:fixed; top:0; inset-inline:0; z-index:50;
     display:flex; align-items:center; justify-content:space-between;
-    padding:16px clamp(16px,4vw,40px); pointer-events:none;
+    padding:16px; pointer-events:none;
     background:linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
   .site-header > *{ pointer-events:auto; }
-  .site-logo{ font:800 clamp(24px,6vw,40px)/1 'Open Sans',sans-serif; letter-spacing:-.02em; color:#fff; text-decoration:none; }
+  .site-logo{ color:#fff; text-decoration:none; }
   .site-nav{ display:none; align-items:center; gap:32px; }
   .site-nav a{ font:800 18px/1 'Open Sans',sans-serif; letter-spacing:.04em; color:#fff; text-decoration:none; transition:opacity .2s; }
   .site-nav a:hover{ opacity:.6; }
