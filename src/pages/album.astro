@@ -4,6 +4,17 @@
 import Layout from "../layouts/Layout.astro";
 import AlbumGallery from "../components/AlbumGallery";
 import { ALBUM_ITEMS } from "../data/album";
+import { getRemoteAlbumState } from "../lib/remoteAlbums";
+
+export const prerender = false;
+
+const remote = await getRemoteAlbumState();
+const sourceIds = new Set(ALBUM_ITEMS.map((item) => item.id));
+const byId = new Map(ALBUM_ITEMS.filter((item) => !remote.hiddenIds.has(item.id)).map((item) => [item.id, item]));
+for (const item of remote.entries) {
+  if (sourceIds.has(item.id)) byId.set(item.id, item);
+}
+const albumItems = [...byId.values()].sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
 
 // 纯静态页，默认 prerender 即可。
 // 只有当你之后改成从 Cloudflare D1/R2 绑定动态拉取作品时，才需要：
@@ -11,5 +22,5 @@ import { ALBUM_ITEMS } from "../data/album";
 ---
 
 <Layout title="Album · Dystate">
-  <AlbumGallery client:load items={ALBUM_ITEMS} />
+  <AlbumGallery client:load items={albumItems} />
 </Layout>

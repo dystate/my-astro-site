@@ -1,0 +1,378 @@
+---
+import "@/styles/global.css";
+import {
+  createLightRoomToken,
+  LIGHT_ROOM_ACCESS_SECONDS,
+  passwordsMatch,
+  verifyLightRoomToken,
+} from "@/lib/lightRoomAuth";
+import { getPublishedSecretText } from "@/lib/remoteSecret";
+
+const COOKIE_NAME = "dystate_light_room";
+const password = import.meta.env.SPECIAL_PAGE_PASSWORD as string | undefined;
+const sessionSecret = import.meta.env.SPECIAL_PAGE_SESSION_SECRET as string | undefined;
+const configured = Boolean(password && sessionSecret);
+
+Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+Astro.response.headers.set("Pragma", "no-cache");
+
+let error = "";
+let authenticated = configured
+  ? await verifyLightRoomToken(Astro.cookies.get(COOKIE_NAME)?.value, sessionSecret!)
+  : false;
+let secretText = "";
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const intent = String(form.get("intent") ?? "login");
+
+  if (intent === "logout") {
+    Astro.cookies.delete(COOKIE_NAME, { path: "/light-room" });
+    return Astro.redirect("/");
+  }
+
+  const input = String(form.get("password") ?? "");
+  if (configured && passwordsMatch(input, password!)) {
+    Astro.cookies.set(COOKIE_NAME, await createLightRoomToken(sessionSecret!), {
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: "strict",
+      path: "/light-room",
+      maxAge: LIGHT_ROOM_ACCESS_SECONDS,
+    });
+    return Astro.redirect("/light-room");
+  }
+
+  error = configured ? "密码不对，再试一次。" : "门禁尚未配置。";
+}
+
+if (authenticated && sessionSecret) {
+  secretText = await getPublishedSecretText(sessionSecret);
+}
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Dystate</title>
+  </head>
+  <body class="light-room-page">
+    {authenticated ? (
+      <main class="light-room-shell">
+        <div class="light-room-shell__topbar">
+          <a href="/">回到台灯</a>
+          <form method="post">
+            <input type="hidden" name="intent" value="logout" />
+            <button type="submit">锁门</button>
+          </form>
+        </div>
+        <section aria-label="特别页面空壳">
+          <p>LIGHT ROOM</p>
+          <h1>灯已经打开。</h1>
+          <div class="light-room-shell__content">{secretText || "这里暂时还是空的。"}</div>
+        </section>
+      </main>
+    ) : (
+      <main class="light-room-gate">
+        <form method="post" class="light-room-gate__card">
+          <header class="light-room-gate__header">
+            <a href="/" aria-label="返回主页" class="light-room-gate__back">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m14.5 5-7 7 7 7" />
+              </svg>
+            </a>
+            <h1>输入密码</h1>
+          </header>
+
+          <div class="light-room-gate__body">
+            <label for="password">请输入您的密码以继续</label>
+            <div class="light-room-gate__input-wrap">
+              <svg class="light-room-gate__lock" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4.5" y="10" width="15" height="11" rx="2.5" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                <circle cx="12" cy="15" r="1.4" />
+                <path d="M12 16.4V18" />
+              </svg>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                autofocus
+                aria-describedby={error ? "gate-error" : undefined}
+              />
+              <button
+                class="light-room-gate__reveal"
+                type="button"
+                aria-label="显示密码"
+                aria-pressed="false"
+                data-password-toggle
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+            <button class="light-room-gate__submit" type="submit">进入</button>
+
+            {error && <p id="gate-error" class="light-room-gate__error">{error}</p>}
+            {!configured && (
+              <p class="light-room-gate__error">请配置 SPECIAL_PAGE_PASSWORD 和 SPECIAL_PAGE_SESSION_SECRET。</p>
+            )}
+          </div>
+        </form>
+      </main>
+    )}
+  </body>
+</html>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>("[data-password-toggle]");
+  const passwordInput = document.querySelector<HTMLInputElement>("#password");
+
+  toggle?.addEventListener("click", () => {
+    if (!passwordInput) return;
+    const showing = passwordInput.type === "text";
+    passwordInput.type = showing ? "password" : "text";
+    toggle.setAttribute("aria-pressed", String(!showing));
+    toggle.setAttribute("aria-label", showing ? "显示密码" : "隐藏密码");
+    passwordInput.focus();
+  });
+</script>
+
+<style>
+  :global(body.light-room-page) {
+    min-height: 100svh;
+    background: #000;
+    color: #1f314c;
+  }
+
+  .light-room-gate,
+  .light-room-shell {
+    min-height: 100svh;
+    font-family: "Geist Variable", sans-serif;
+  }
+
+  .light-room-gate {
+    display: grid;
+    place-items: center;
+    padding: clamp(16px, 4vw, 40px);
+    background: #000;
+  }
+
+  .light-room-gate__card {
+    width: min(100%, 760px);
+    overflow: hidden;
+    border: 5px solid #0876f9;
+    border-radius: clamp(28px, 5vw, 48px);
+    background: #fff;
+    box-shadow:
+      0 18px 60px rgba(0, 91, 255, .22),
+      inset 0 0 0 3px rgba(119, 196, 255, .78);
+  }
+
+  .light-room-gate__header {
+    position: relative;
+    display: grid;
+    min-height: clamp(108px, 17vw, 150px);
+    place-items: center;
+    padding: 18px clamp(22px, 5vw, 42px);
+    background: linear-gradient(145deg, #3098ff 0%, #0878fa 58%, #0065e9 100%);
+    color: #fff;
+  }
+
+  .light-room-gate__header::after {
+    position: absolute;
+    inset: 8px;
+    border: 2px solid rgba(153, 215, 255, .62);
+    border-radius: clamp(20px, 4vw, 38px) clamp(20px, 4vw, 38px) 0 0;
+    border-bottom: 0;
+    content: "";
+    pointer-events: none;
+  }
+
+  .light-room-gate__header h1 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font: 700 clamp(30px, 6vw, 52px)/1 "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    letter-spacing: .06em;
+    text-shadow: 0 3px 10px rgba(0, 70, 175, .22);
+  }
+
+  .light-room-gate__back {
+    position: absolute;
+    z-index: 2;
+    left: clamp(20px, 4vw, 38px);
+    display: grid;
+    width: clamp(54px, 9vw, 76px);
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(177, 220, 255, .52);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .light-room-gate__back svg {
+    width: 52%;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.5;
+  }
+
+  .light-room-gate__body {
+    padding: clamp(30px, 5vw, 48px) clamp(22px, 6vw, 58px) clamp(32px, 5vw, 52px);
+    border-radius: clamp(24px, 4vw, 42px) clamp(24px, 4vw, 42px) 0 0;
+    background: linear-gradient(180deg, #fff 0%, #fbfdff 100%);
+    box-shadow: 0 -8px 28px rgba(15, 84, 180, .08);
+    transform: translateY(-1px);
+  }
+
+  .light-room-gate__body > label {
+    display: block;
+    margin-bottom: clamp(22px, 4vw, 34px);
+    color: #65758f;
+    font: 700 clamp(18px, 3.4vw, 30px)/1.3 "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    text-align: center;
+  }
+
+  .light-room-gate__input-wrap {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    min-height: clamp(76px, 12vw, 112px);
+    padding: 0 clamp(18px, 4vw, 32px);
+    border: clamp(3px, .45vw, 5px) solid #e3eaf5;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(41, 105, 187, .12);
+  }
+
+  .light-room-gate__lock,
+  .light-room-gate__reveal svg {
+    width: clamp(32px, 6vw, 50px);
+    fill: none;
+    stroke: #566a88;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+
+  .light-room-gate__lock circle {
+    fill: #566a88;
+    stroke: none;
+  }
+
+  .light-room-gate input {
+    width: 100%;
+    min-width: 0;
+    padding: 12px clamp(14px, 3vw, 26px);
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #172b49;
+    font: 700 clamp(26px, 5vw, 42px)/1 "Noto Sans SC", sans-serif;
+    letter-spacing: .22em;
+  }
+
+  .light-room-gate__input-wrap:focus-within {
+    border-color: #80bbff;
+    box-shadow: 0 12px 32px rgba(0, 117, 255, .18), 0 0 0 4px rgba(26, 137, 255, .12);
+  }
+
+  .light-room-gate__reveal {
+    display: grid;
+    padding: 8px;
+    border: 0;
+    place-items: center;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .light-room-gate__submit {
+    width: 100%;
+    margin-top: clamp(22px, 4vw, 32px);
+    padding: clamp(20px, 4vw, 30px);
+    border: 0;
+    border-bottom: 8px solid #0066e8;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #2894ff 0%, #0874f6 100%);
+    box-shadow: 0 12px 24px rgba(0, 102, 232, .22), inset 0 2px 0 rgba(255, 255, 255, .3);
+    color: #fff;
+    font: 700 clamp(28px, 5vw, 44px)/1 "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    cursor: pointer;
+  }
+
+  .light-room-gate__submit:active {
+    border-bottom-width: 3px;
+    transform: translateY(5px);
+  }
+
+  .light-room-gate__error {
+    margin: 16px 0 0;
+    color: #d63838;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .light-room-shell section > p {
+    margin: 0 0 16px;
+    color: #ffd458;
+    font: 400 13px/1 "Cal Sans", sans-serif;
+    letter-spacing: .2em;
+  }
+
+  .light-room-shell button {
+    padding: 12px 18px;
+    border: 0;
+    border-radius: 12px;
+    background: #ffd458;
+    color: #101a2e;
+    font: 700 14px/1 inherit;
+    cursor: pointer;
+  }
+
+  .light-room-shell {
+    padding: clamp(20px, 4vw, 54px);
+    background: #f3edda;
+    color: #15181f;
+  }
+
+  .light-room-shell__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .light-room-shell__topbar a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .light-room-shell section {
+    display: grid;
+    min-height: calc(100svh - 140px);
+    place-content: center;
+    text-align: center;
+  }
+
+  .light-room-shell h1 {
+    margin: 0;
+    font: 400 clamp(48px, 9vw, 110px)/.9 "Cal Sans", sans-serif;
+  }
+
+  .light-room-shell__content {
+    max-width: min(760px, 88vw);
+    margin-top: 18px;
+    color: #6b675e;
+    line-height: 1.9;
+    white-space: pre-wrap;
+  }
+</style>

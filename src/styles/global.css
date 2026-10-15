@@ -499,6 +499,23 @@ body * {
   display: block;
 }
 
+.lamp-bulb-link {
+  position: absolute;
+  z-index: 30;
+  top: 20%;
+  left: 64%;
+  display: block;
+  width: 24%;
+  height: 34%;
+  border-radius: 42%;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.lamp-bulb-link:focus-visible {
+  outline: none;
+}
+
 /* 左侧墙面拨杆：直接使用用户提供的开/关状态图。 */
 .wall-switch {
   position: absolute;
@@ -557,7 +574,7 @@ body * {
 
 @media (max-width: 639.98px) {
   .lamp-scene__image {
-    inset: clamp(68px, 9svh, 84px) 0 0;
+    inset: 0;
     width: 100%;
     max-width: 100%;
     height: auto;
@@ -577,13 +594,20 @@ body * {
   }
 
   .lamp-greeting {
-    top: clamp(150px, 20svh, 188px);
+    top: clamp(108px, 14svh, 136px);
     left: auto;
     right: 22px;
     transform: none;
     font-size: clamp(46px, 13vw, 64px);
     line-height: .9;
     text-align: left;
+  }
+
+  .lamp-bulb-link {
+    top: 17%;
+    left: 7%;
+    width: 63%;
+    height: 32%;
   }
 
 }

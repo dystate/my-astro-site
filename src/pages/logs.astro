@@ -31,14 +31,18 @@ const serialize = (e: (typeof all)[number]) => ({
 
 // Log Studio 可创建新分类。预配置分类继续使用自定义标题和介绍；
 // 未预配置的 category 自动追加，避免新日志因分类未登记而从列表消失。
-const configuredCategorySlugs = new Set(LOG_CATEGORIES.map((cat) => cat.slug));
+const configuredCategories = LOG_CATEGORIES.map((cat) => ({
+  ...cat,
+  title: remoteState.categoryTitles[cat.slug] || cat.title,
+}));
+const configuredCategorySlugs = new Set(configuredCategories.map((cat) => cat.slug));
 const discoveredCategories = Array.from(
   new Set(all.map((entry) => entry.data.category ?? "dev")),
 )
   .filter((slug) => !configuredCategorySlugs.has(slug))
-  .map((slug) => ({ slug, title: slug }));
+  .map((slug) => ({ slug, title: remoteState.categoryTitles[slug] || slug }));
 
-const categories = [...LOG_CATEGORIES, ...discoveredCategories];
+const categories = [...configuredCategories, ...discoveredCategories];
 
 const groups = categories.map((cat) => ({
   cat,
@@ -85,10 +89,6 @@ const searchEntries = groups.flatMap((g) =>
     <nav>
       <SiteNav current="logs" />
     </nav>
-    <div class="socials">
-      <a href="https://douyin.com" target="_blank" rel="noreferrer">TIKTOK</a>
-      <a href="https://vimeo.com" target="_blank" rel="noreferrer">VIMEO</a>
-    </div>
   </div>
 
   <main class="logs-dark">
@@ -154,9 +154,6 @@ const searchEntries = groups.flatMap((g) =>
   .m-menu.open nav a:nth-child(1) { transition-delay: .10s; }
   .m-menu.open nav a:nth-child(2) { transition-delay: .18s; }
   .m-menu.open nav a:nth-child(3) { transition-delay: .26s; }
-  .m-menu .socials { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding: 16px 16px 32px; }
-  .m-menu .socials a { font: 800 16px/1.2 "Cal Sans","Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; opacity: 0; transition: opacity .4s ease; }
-  .m-menu.open .socials a { opacity: 1; transition-delay: .34s; }
 
   /* ===== 页面 ===== */
   .logs-dark { min-height: 100dvh; background: #000; color: #fff; padding-bottom: 12vh; padding-top: clamp(40px, 6vh, 75px); }
@@ -303,6 +300,6 @@ const searchEntries = groups.flatMap((g) =>
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .show-card, .card-media, .list-row, .m-menu, .m-menu nav a, .m-menu .socials a, .ls-b-solid { transition: none; }
+    .show-card, .card-media, .list-row, .m-menu, .m-menu nav a, .ls-b-solid { transition: none; }
   }
 </style>

@@ -6,12 +6,15 @@ export const prerender = false;
 
 export const GET: APIRoute = async () => {
   const remote = await getRemoteAlbumState();
+  const sourceIds = new Set(ALBUM_ITEMS.map((item) => item.id));
   const byId = new Map(
     ALBUM_ITEMS
       .filter((item) => !remote.hiddenIds.has(item.id))
       .map((item) => [item.id, item]),
   );
-  for (const item of remote.entries) byId.set(item.id, item);
+  for (const item of remote.entries) {
+    if (sourceIds.has(item.id)) byId.set(item.id, item);
+  }
   const albums = [...byId.values()].sort(
     (a, b) =>
       (a.order ?? Number.MAX_SAFE_INTEGER) -

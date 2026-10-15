@@ -38,7 +38,6 @@ export default function HeroSection() {
         </div>
 
         <header className="lamp-header">
-          <a className="lamp-header__logo dystate-brand" href="/">Dystate</a>
           <nav className="lamp-header__nav" aria-label="Site navigation">
             <a href="/album">ALBUM</a>
             <a href="/logs">LOGS</a>
@@ -50,6 +49,14 @@ export default function HeroSection() {
           <span>Hello，</span>
           <span>World</span>
         </h1>
+
+        {isOn && (
+          <a
+            className="lamp-bulb-link"
+            href="/light-room"
+            aria-label="通过灯泡进入特别页面"
+          />
+        )}
 
         <button
           type="button"

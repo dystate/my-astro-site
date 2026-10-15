@@ -14,7 +14,7 @@ export const PHOTO_BASE = (
  * 把 photos[].src / media.src 的写法解析成完整地址：
  *  - 留空            → undefined（显示占位渐变）
  *  - "http(s)://..." → 原样使用（已是完整地址）
- *  - "/..." 开头     → 当作本地/绝对路径，原样使用（如 /images/eye.mp4）
+ *  - "/..." 开头     → 当作本地/绝对路径，原样使用（如 /images/cover.jpg）
  *  - "01.jpg" 等裸键 → 解析为 <基地址>/<相册名>/01.jpg
  *      · 本地模式：/photos/newjourney/01.jpg（即 public/photos/newjourney/01.jpg）
  *      · 云模式：  https://你的域名/newjourney/01.jpg

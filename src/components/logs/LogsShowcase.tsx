@@ -20,12 +20,26 @@ export interface ShowCategory { slug: string; title: string }
 
 // 色卡上重复关键词的固定散布点（top%, left%, rotate, em）
 const SPOTS = [
-  [6, 4, -12, 2.4], [18, 60, 8, 1.8], [30, 22, -22, 3.2], [44, 70, 18, 2.0],
-  [54, 6, 10, 2.6], [66, 46, -8, 3.0], [78, 18, 22, 2.2], [85, 64, -16, 2.8],
-  [14, 36, 30, 1.6], [40, 44, -30, 2.0], [73, 80, 6, 1.8], [92, 34, -10, 2.4],
+  [24, 5, -10, 1.8],
+  [30, 64, 8, 1.4],
+  [38, 28, -14, 1.7],
+  [65, 62, 10, 1.6],
+  [76, 6, 12, 1.5],
+  [88, 38, -9, 1.6],
+] as const;
+
+// 年度封面的数字较宽，单独使用更稀疏的排布，并避开中央主标题。
+const YEAR_SPOTS = [
+  [24, 4, -9, 1.6],
+  [30, 60, 8, 1.25],
+  [38, 24, -12, 1.45],
+  [65, 58, 9, 1.45],
+  [76, 5, 11, 1.35],
+  [88, 34, -8, 1.4],
 ] as const;
 
 function Card({ e, n, color }: { e: ShowEntry; n: number; color: string }) {
+  const motifSpots = e.motif === "2026" ? YEAR_SPOTS : SPOTS;
   return (
     <a className={`show-card ${e.cover ? "is-image" : "is-text"}`} href={`/logs/${e.slug}`}>
       <div
@@ -38,7 +52,7 @@ function Card({ e, n, color }: { e: ShowEntry; n: number; color: string }) {
       >
         {!e.cover && (
           <div className="card-motif" aria-hidden="true">
-            {SPOTS.map(([t, l, r, s], i) => (
+            {motifSpots.map(([t, l, r, s], i) => (
               <span key={i} style={{ top: `${t}%`, left: `${l}%`, transform: `rotate(${r}deg)`, fontSize: `${s}em` }}>
                 {e.motif ?? e.title}
               </span>

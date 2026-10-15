@@ -1,31 +1,99 @@
 ---
 // src/pages/album/[id].astro
 // 点进某个作品后展示的详情页。
-// kind === "shelf" → 书架 + 翻书阅读器；默认 → scroll-linked zoom 画廊。
+// kind === "book" → 直接打开翻页书；默认 → scroll-linked zoom 画廊。
 import Layout from "../../layouts/Layout.astro";
 import ScrollZoomGallery from "../../components/album/ScrollZoomGallery";
-import Bookshelf from "../../components/book/Bookshelf.astro";
+import BookReader from "../../components/book/BookReader.astro";
 import { ALBUM_ITEMS } from "../../data/album";
+import { books as booksData } from "../../data/books";
+import { getPublishedRemoteAlbum } from "../../lib/remoteAlbums";
 
-// server 输出模式下需显式预渲染，getStaticPaths 才会生效（否则 item 为空）
-export const prerender = true;
+export const prerender = false;
 
-export function getStaticPaths() {
-  return ALBUM_ITEMS.map((item) => ({
-    params: { id: item.id },
-    props: { item },
-  }));
-}
-
-const { item } = Astro.props;
+const id = Astro.params.id ?? "";
+const sourceItem = ALBUM_ITEMS.find((entry) => entry.id === id);
+const item = sourceItem ? await getPublishedRemoteAlbum(id) ?? sourceItem : undefined;
+if (!item) return Astro.redirect("/404");
 const photos = item.photos ?? [];
-const title = item.kind === "shelf" ? "Dystate · 书架" : `${item.title} · Dystate`;
+const isBook = item.kind === "book";
+const title = `${item.title} · Dystate`;
+const albumPages = item.pages
+  ?? [...booksData]
+      .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999))
+      .flatMap((book) => book.pages.map((page, pageIndex) => ({
+        ...page,
+        title: page.title ?? (pageIndex === 0 && book.name ? book.name : undefined),
+      })));
 ---
 
 <Layout title={title}>
-  {item.kind === "shelf" ? (
-    <Bookshelf />
+  {isBook ? (
+    <main class="nj-book-page">
+      <header class="nj-header">
+        <a class="dystate-brand" href="/">Dystate</a>
+      </header>
+      <div class="nj-reader-zone">
+        <BookReader
+          name={item.title}
+          cover={item.media?.type === "image" ? item.media.src : (item.media?.poster || (item.id === "newjourney" ? "/images/newjourney-book-cover.png" : undefined))}
+          color="#008F55"
+          pageWidth={827}
+          pageHeight={1315}
+          coverScale={122}
+          coverLabel={item.client}
+          pages={albumPages}
+        />
+      </div>
+    </main>
   ) : (
     <ScrollZoomGallery client:load albumTitle={item.title} photos={photos} />
   )}
 </Layout>
+
+<style is:global>
+  .nj-book-page {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: #000;
+    color: #fff;
+  }
+
+  .nj-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0));
+  }
+
+  .nj-header > * { pointer-events: auto; }
+
+  .nj-reader-zone {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nj-reader-zone .reader-widget {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-direction: column;
+    padding-top: clamp(64px, 9vh, 96px);
+  }
+
+  html:has(.nj-book-page),
+  body:has(.nj-book-page) {
+    overflow: hidden;
+    background: #000;
+  }
+</style>

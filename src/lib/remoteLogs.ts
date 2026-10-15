@@ -19,6 +19,23 @@ export interface RemoteLogEntry {
 export interface RemoteLogState {
   entries: RemoteLogEntry[];
   hiddenIds: Set<string>;
+  categoryTitles: Record<string, string>;
+}
+
+const LOG_CATEGORY_CONFIG_PATH = "__config__/log-categories.json";
+
+function parseCategoryTitles(source: string): Record<string, string> {
+  try {
+    const value = JSON.parse(source) as unknown;
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([key, title]) => key.trim() && typeof title === "string" && title.trim())
+        .map(([key, title]) => [key.trim(), (title as string).trim()]),
+    );
+  } catch {
+    return {};
+  }
 }
 
 function parseDocument(path: string, source: string): RemoteLogEntry | null {
@@ -50,20 +67,23 @@ export async function getRemoteLogState(): Promise<RemoteLogState> {
   // Publishable credentials are intentionally safe to expose; RLS remains the authorization boundary.
   const url = import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || "https://tsckvnducjsjmfyoblyu.supabase.co";
   const key = import.meta.env.SUPABASE_ANON_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_ou0HOOnOt1PN6TwUifIz3g_zISEWRBO";
-  if (!url || !key) return { entries: [], hiddenIds: new Set() };
+  if (!url || !key) return { entries: [], hiddenIds: new Set(), categoryTitles: {} };
   try {
     const response = await fetch(`${url.replace(/\/$/, "")}/rest/v1/log_entries?select=path,content,published`, {
       headers: { apikey: key, authorization: `Bearer ${key}` },
     });
-    if (!response.ok) return { entries: [], hiddenIds: new Set() };
+    if (!response.ok) return { entries: [], hiddenIds: new Set(), categoryTitles: {} };
     const rows = await response.json() as Array<{ path: string; content: string; published: boolean }>;
-    const hiddenIds = new Set(rows.filter((row) => !row.published).map((row) => row.path.replace(/\.(md|mdx)$/i, "")));
-    const entries = rows
+    const categoryConfig = rows.find((row) => row.path === LOG_CATEGORY_CONFIG_PATH && row.published);
+    const categoryTitles = parseCategoryTitles(categoryConfig?.content ?? "");
+    const contentRows = rows.filter((row) => row.path !== LOG_CATEGORY_CONFIG_PATH && !row.path.startsWith("__secret__/"));
+    const hiddenIds = new Set(contentRows.filter((row) => !row.published).map((row) => row.path.replace(/\.(md|mdx)$/i, "")));
+    const entries = contentRows
       .filter((row) => row.published)
       .map((row) => parseDocument(row.path, row.content))
       .filter((entry): entry is RemoteLogEntry => Boolean(entry));
-    return { entries, hiddenIds };
-  } catch { return { entries: [], hiddenIds: new Set() }; }
+    return { entries, hiddenIds, categoryTitles };
+  } catch { return { entries: [], hiddenIds: new Set(), categoryTitles: {} }; }
 }
 
 export async function getPublishedRemoteLogs(): Promise<RemoteLogEntry[]> {

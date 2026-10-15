@@ -8,11 +8,6 @@ const NAV = [
   { label: "ALBUM", href: "/album" },
   { label: "LOGS", href: "/logs" },
 ];
-const SOCIALS = [
-  { label: "TIKTOK", href: "https://douyin.com" },
-  { label: "VIMEO", href: "https://vimeo.com" },
-];
-
 /* ── 像素加号（与站点菜单一致） ── */
 function PixelCross({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
   const cells: [number, number][] = [
@@ -77,7 +72,7 @@ function MediaTile({ item }: { item: AlbumItem }) {
   const mediaFit = item.media?.fit ?? "cover";
   const useEffects = item.media?.effects ?? true;
   const mediaClass = mediaFit === "contain"
-    ? "absolute left-1/2 top-1/2 h-[92%] w-[90%] -translate-x-1/2 -translate-y-1/2 object-contain"
+    ? "absolute left-1/2 top-1/2 h-[90%] w-[90%] -translate-x-1/2 -translate-y-1/2 object-contain"
     : "absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]";
 
   return (
@@ -364,23 +359,6 @@ export default function AlbumGallery({ items }: { items: AlbumItem[] }) {
               ))}
             </nav>
 
-            <div className="flex flex-col items-end gap-1 p-4 pb-8">
-              {SOCIALS.map((s, i) => (
-                <motion.a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.35 + i * 0.06 }}
-                  className="text-[16px] tracking-[0.04em]"
-                  style={{ fontWeight: 800 }}
-                >
-                  {s.label}
-                </motion.a>
-              ))}
-            </div>
           </motion.div>
         )}
       </AnimatePresence>

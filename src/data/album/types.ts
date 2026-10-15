@@ -3,7 +3,23 @@
 
 export type AlbumMedia =
   | { type: "video"; src: string; poster?: string; fit?: "cover" | "contain"; effects?: boolean }
-  | { type: "image"; src: string; fit?: "cover" | "contain"; effects?: boolean };
+  | { type: "image"; src: string; fit?: "cover" | "contain"; effects?: boolean }
+  | { type: "audio"; src: string; poster?: string; fit?: "cover" | "contain"; effects?: boolean };
+
+export interface AlbumPageMedia {
+  type: "image" | "video" | "audio";
+  src: string;
+  title?: string;
+  caption?: string;
+}
+
+/** A published page may freely combine text with image, video, and audio. */
+export interface AlbumPage {
+  id?: string;
+  title?: string;
+  text?: string;
+  media?: AlbumPageMedia[];
+}
 
 /** 详情页 scroll-linked zoom 轮播里的单张图片 */
 export interface AlbumPhoto {
@@ -29,8 +45,11 @@ export interface AlbumItem {
   accent?: [string, string];
   /** 详情页轮播图集（点进该作品后展示的 scroll-linked zoom 画廊） */
   photos?: AlbumPhoto[];
+  /** Mixed-media pages created by Life Manager. */
+  pages?: AlbumPage[];
+  description?: string;
   /** 列表排序，数字越小越靠前；不填按文件夹名排序 */
   order?: number;
-  /** 详情页类型：gallery=滚动缩放画廊（默认）；shelf=书架 + 翻书阅读器 */
-  kind?: "gallery" | "shelf";
+  /** 详情页类型：gallery=滚动缩放画廊（默认）；book=直接打开翻页书 */
+  kind?: "gallery" | "book";
 }

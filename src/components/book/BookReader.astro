@@ -13,24 +13,43 @@ interface Props {
   cover?: string;
   /** 封面底色（与书脊同色最协调） */
   color?: string;
-  pages: { image?: string | null; text?: string | null; title?: string | null }[];
+  /** 单页原始宽高；默认沿用旧版 3:4。 */
+  pageWidth?: number;
+  pageHeight?: number;
+  /** 封面图缩放百分比，用于消除素材自带的透明留白。 */
+  coverScale?: number;
+  /** 可选的封面题字；提供时显示在图片封面上。 */
+  coverLabel?: string;
+  pages: {
+    image?: string | null;
+    text?: string | null;
+    title?: string | null;
+    media?: { type: "image" | "video" | "audio"; src: string; title?: string; caption?: string }[];
+  }[];
 }
-const { name, cover = "", color = "#2f4858", pages = [] } = Astro.props;
-const bookJson = JSON.stringify({ name, cover, color, pages });
+const {
+  name,
+  cover = "",
+  color = "#2f4858",
+  pageWidth = 1200,
+  pageHeight = 1600,
+  coverScale = 100,
+  coverLabel = "",
+  pages = [],
+} = Astro.props;
+const bookJson = JSON.stringify({ name, cover, color, pageWidth, pageHeight, coverScale, coverLabel, pages });
 const total = pages.length;
 ---
 
 <div class="reader-widget" id="reader-widget">
-  <div class="bv-counter"><span id="bv-cur">封面</span> / <span id="bv-total">{total}</span></div>
   <div class="flip-stage">
-    <div id="flip-wind" class="flip-wind">
-      <div id="flipbook" class="flipbook"></div>
-      <i class="book-spine" aria-hidden="true"></i>
+    <div class="flip-cluster">
+      <div id="flip-wind" class="flip-wind">
+        <div id="flipbook" class="flipbook"></div>
+        <i class="book-spine" aria-hidden="true"></i>
+      </div>
+      <div class="bv-counter is-hidden"><span id="bv-cur"></span>/<span id="bv-total">{total}</span></div>
     </div>
-  </div>
-  <div class="bv-bottom">
-    <span class="bv-drag-hint">drag to turn</span>
-    <span class="bv-credit">Dystate</span>
   </div>
 </div>
 
@@ -46,19 +65,65 @@ const total = pages.length;
     const windEl = document.getElementById('flip-wind') as HTMLElement;
     const curEl = document.getElementById('bv-cur') as HTMLElement;
     const totEl = document.getElementById('bv-total') as HTMLElement;
+    const counterEl = widget.querySelector('.bv-counter') as HTMLElement;
 
     const book = JSON.parse((document.getElementById('book-data') as HTMLScriptElement).textContent || '{}');
     const total: number = (book.pages || []).length;
+    const imageRatios = new Map<string, number>();
     totEl.textContent = String(total);
     const isMobile = () => window.matchMedia('(max-width: 760px)').matches;
 
     /* ===== 页面渲染 ===== */
     function setPage(el: HTMLElement, i: number) {
-      el.classList.remove('type-image', 'type-media', 'type-text');
+      el.classList.remove('type-image', 'type-media', 'type-text', 'type-mixed', 'type-single-image', 'is-portrait-image', 'is-wide-image');
       const pg = book.pages[i];
       if (!pg) { el.innerHTML = ''; return; }
 
-      if (pg.image) {
+      if (pg.media && pg.media.length) {
+        el.classList.add('type-mixed');
+        const onlyMedia = pg.media.length === 1 ? pg.media[0] : null;
+        if (onlyMedia?.type === 'image') {
+          const ratio = imageRatios.get(onlyMedia.src);
+          el.classList.add('type-single-image');
+          el.classList.add(ratio !== undefined && ratio < 1 ? 'is-portrait-image' : 'is-wide-image');
+        }
+        const heading = pg.title ? document.createElement('p') : null;
+        if (heading) { heading.className = 'bv-leaf-title'; heading.textContent = pg.title; el.appendChild(heading); }
+        const stack = document.createElement('div');
+        stack.className = 'bv-media-stack';
+        pg.media.forEach((media: any) => {
+          const figure = document.createElement('figure');
+          figure.className = 'bv-media-item';
+          let node: HTMLElement;
+          if (media.type === 'video') {
+            const video = document.createElement('video');
+            video.src = media.src; video.controls = true; video.playsInline = true; video.preload = 'metadata';
+            node = video;
+          } else if (media.type === 'audio') {
+            const audio = document.createElement('audio');
+            audio.src = media.src; audio.controls = true; audio.preload = 'metadata';
+            node = audio;
+          } else {
+            const image = document.createElement('img');
+            image.src = media.src; image.alt = media.title || '';
+            node = image;
+          }
+          figure.appendChild(node);
+          if (media.title || media.caption) {
+            const caption = document.createElement('figcaption');
+            caption.textContent = [media.title, media.caption].filter(Boolean).join(' · ');
+            figure.appendChild(caption);
+          }
+          stack.appendChild(figure);
+        });
+        el.appendChild(stack);
+        if (pg.text && (!onlyMedia || onlyMedia.type !== 'image' || (imageRatios.get(onlyMedia.src) ?? 1) < 1)) {
+          const text = document.createElement('p');
+          text.className = 'bv-page-text';
+          text.textContent = pg.text;
+          el.appendChild(text);
+        }
+      } else if (pg.image) {
         el.innerHTML = '<img src="' + pg.image + '" alt="" draggable="false" />';
         el.classList.add('type-image');
       } else if (pg.text) {
@@ -73,7 +138,7 @@ const total = pages.length;
     /* 构建一张软内容页 */
     function buildContentPage(i: number) {
       const page = document.createElement('div');
-      page.className = 'page';
+      page.className = 'page content-page';
       page.setAttribute('data-density', 'soft');
       const content = document.createElement('div');
       content.className = 'page-content';
@@ -83,9 +148,9 @@ const total = pages.length;
     }
 
     /* 构建硬壳封面 / 封底 */
-    function buildCoverPage(opts: { title: string; image?: string; color?: string; back?: boolean }) {
+    function buildCoverPage(opts: { title: string; image?: string; color?: string; scale?: number; label?: string; back?: boolean }) {
       const page = document.createElement('div');
-      page.className = 'page';
+      page.className = 'page cover-page';
       page.setAttribute('data-density', 'hard');
       const content = document.createElement('div');
       content.className = 'page-content is-cover';
@@ -95,10 +160,12 @@ const total = pages.length;
       if (opts.image && !opts.back) {
         art.classList.add('has-image');
         art.style.backgroundImage = 'url("' + opts.image + '")';
+        art.style.backgroundSize = 'auto ' + (opts.scale || 100) + '%';
+        if (opts.label) art.classList.add('has-label');
       }
       const t = document.createElement('span');
       t.className = 'cover-title';
-      t.textContent = opts.back ? (opts.title ? opts.title + ' · 完' : '完') : (opts.title || '');
+      t.textContent = opts.back ? (opts.title ? opts.title + ' · 完' : '完') : (opts.label || opts.title || '');
       art.appendChild(t);
       content.appendChild(art);
       page.appendChild(content);
@@ -107,12 +174,12 @@ const total = pages.length;
 
     function buildPages() {
       const pages: HTMLElement[] = [];
-      pages.push(buildCoverPage({ title: book.name, image: book.cover, color: book.color }));
+      pages.push(buildCoverPage({ title: book.name, image: book.cover, color: book.color, scale: book.coverScale, label: book.coverLabel }));
       for (let i = 0; i < total; i++) pages.push(buildContentPage(i));
       // showCover 模式下内容页为奇数时补一张空白，让封底单独成页
       if (total % 2 === 1) {
         const blank = document.createElement('div');
-        blank.className = 'page'; blank.setAttribute('data-density', 'soft');
+        blank.className = 'page content-page'; blank.setAttribute('data-density', 'soft');
         blank.innerHTML = '<div class="page-content"></div>';
         pages.push(blank);
       }
@@ -124,7 +191,8 @@ const total = pages.length;
       const stage = flipRoot.closest('.flip-stage') as HTMLElement || flipRoot.parentElement as HTMLElement;
       const availH = (stage.clientHeight || 600) - 6;
       const availW = (stage.clientWidth || 360) - 6;
-      const PAGE_W = 1200, PAGE_H = 1600;
+      const PAGE_W = Number(book.pageWidth) || 1200;
+      const PAGE_H = Number(book.pageHeight) || 1600;
       const PAGE_RATIO = PAGE_H / PAGE_W;
       const landscape = !isMobile();
 
@@ -194,8 +262,11 @@ const total = pages.length;
     function updateCounter(index: number) {
       if (!pageFlip) return;
       const last = pageFlip.getPageCount() - 1;
-      if (index <= 0) { curEl.textContent = '封面'; return; }
-      if (index >= last) { curEl.textContent = '封底'; return; }
+      if (index <= 0 || index >= last) {
+        counterEl.classList.add('is-hidden');
+        return;
+      }
+      counterEl.classList.remove('is-hidden');
       const landscape = !isMobile();
       const a = Math.min(index, total);
       const b = landscape && index + 1 <= total ? index + 1 : null;
@@ -203,10 +274,17 @@ const total = pages.length;
     }
 
     /* ===== 启动：预加载图片 → 构建翻页器 ===== */
-    const imgUrls = (book.pages || []).filter((p: any) => p.image).map((p: any) => p.image);
+    const imgUrls = Array.from(new Set((book.pages || []).flatMap((page: any) => [
+      ...(page.image ? [page.image] : []),
+      ...((page.media || []).filter((media: any) => media.type === 'image').map((media: any) => media.src)),
+    ]))) as string[];
     const preload = imgUrls.map((url: string) => new Promise((resolve) => {
       const img = new Image();
-      img.onload = img.onerror = resolve;
+      img.onload = () => {
+        if (img.naturalHeight > 0) imageRatios.set(url, img.naturalWidth / img.naturalHeight);
+        resolve(undefined);
+      };
+      img.onerror = () => resolve(undefined);
       img.src = url;
     }));
     Promise.all(preload).then(() => {
@@ -244,14 +322,17 @@ const total = pages.length;
      BookReader —— 翻页阅读器小组件样式（从 Bookshelf 抽出）
      ============================================================ */
 
-  /* 悬浮页码（右上角，Nokia 等宽） */
-  .reader-widget .bv-counter{ position:absolute; top:max(16px, env(safe-area-inset-top)); right:16px; z-index:31;
+  /* 页码：固定在书页正下方 */
+  .reader-widget .bv-counter{ position:absolute; top:calc(100% + 8px); left:50%; z-index:31;
+    transform:translateX(-50%); width:max-content; text-align:center;
     font:400 13px/1 'Nokia Cellphone FC Small',ui-monospace,"SFMono-Regular",monospace; letter-spacing:.06em;
-    color:rgba(255,255,255,.72); pointer-events:none; }
+    color:#fff; pointer-events:none; }
+  .reader-widget .bv-counter.is-hidden{ visibility:hidden; }
 
   /* 舞台（perspective 在外层，给 .flip-wind 的 rotateX 提供透视） */
   .reader-widget .flip-stage{ position:relative; flex:1 1 auto; min-height:0; display:flex; align-items:center; justify-content:center;
     padding: 8px 8px 8px; perspective:2400px; perspective-origin:50% 42%; }
+  .reader-widget .flip-cluster{ position:relative; flex:0 0 auto; display:flex; align-items:center; justify-content:center; }
   .reader-widget .flipbook{ filter:drop-shadow(0 30px 50px rgba(0,0,0,.6)); -webkit-user-select:none; user-select:none; touch-action:pan-y; }
 
   /* 轻微整体晃动 + 微俯视角（立体感），翻页时暂停晃动 */
@@ -289,6 +370,12 @@ const total = pages.length;
 
   /* 单页（纸张为浅色，故内页文字强制深色） */
   .page{ background:#EDEDED; overflow:hidden; }
+  .page.cover-page{ background:transparent; }
+  .page.content-page{ background:transparent; }
+  .page.content-page .page-content{
+    width:94%; height:96%; margin:2% 3%; background:#EDEDED;
+    box-shadow:0 1px 4px rgba(0,0,0,.2);
+  }
   .page-content{ width:100%; height:100%; position:relative; box-sizing:border-box; padding:0; overflow:hidden; scrollbar-width:none; color:#2a2620; }
   .page-content::-webkit-scrollbar{ display:none; }
   .page-content.is-cover{ padding:0; }
@@ -299,9 +386,15 @@ const total = pages.length;
     display:flex; align-items:center; justify-content:center; padding:22px; box-sizing:border-box; position:relative; }
   .cover-art::after{ content:""; position:absolute; inset:12px; border-radius:4px; border:1px solid rgba(115,245,154,.5); }
   .cover-art::before{ content:""; position:absolute; top:14px; right:14px; width:14px; height:14px; background:var(--phosphor,#73F59A); border-radius:2px; z-index:2; }
-  .cover-art.has-image{ background-size:cover; background-position:center; padding:0; }
+  .cover-art.has-image{ background-color:transparent; background-size:contain; background-position:center; background-repeat:no-repeat; padding:0; }
   .cover-art.has-image::after, .cover-art.has-image::before{ display:none; }
   .cover-art.has-image .cover-title{ display:none; }
+  .cover-art.has-image.has-label .cover-title{
+    display:block; position:absolute; top:20%; right:18%; padding:0;
+    writing-mode:vertical-rl; text-orientation:upright;
+    font-size:clamp(26px,4.2vw,48px); font-weight:700; line-height:1;
+    letter-spacing:.22em; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.32);
+  }
   .cover-title{ font:700 clamp(16px,5vw,26px)/1.3 "Noto Serif SC","Songti SC",serif; color:rgba(255,255,255,.94); text-align:center; text-shadow:0 2px 6px rgba(0,0,0,.5); z-index:1; word-break:break-word; padding:0 14px; }
   .cover-art.cover-back{ background:linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.6)), var(--cover-c,#2f4858); }
   .cover-art.cover-back::before{ display:none; }
@@ -311,14 +404,25 @@ const total = pages.length;
   .page-content.type-image{ padding:0; display:flex; align-items:center; justify-content:center; }
   .page-content.type-image img{ width:100%; height:100%; object-fit:contain; display:block; margin:0; }
   .page-content.type-text{ padding:clamp(22px,3.5vw,48px); overflow-y:auto; }
+  .page-content.type-mixed{ padding:16px; overflow-y:auto; }
+  .page-content.type-single-image{ display:flex; flex-direction:column; }
+  .page-content.type-single-image.is-wide-image{ padding:0; overflow:hidden; }
+  .page-content.type-single-image.is-wide-image .bv-media-stack,
+  .page-content.type-single-image.is-wide-image .bv-media-item{ width:100%; height:100%; }
+  .page-content.type-single-image.is-wide-image .bv-media-item img{ width:100%; height:100%; max-height:none; object-fit:contain; }
+  .page-content.type-single-image.is-portrait-image .bv-media-stack{ flex:1 1 auto; min-height:0; }
+  .page-content.type-single-image.is-portrait-image .bv-media-item{ height:100%; }
+  .page-content.type-single-image.is-portrait-image .bv-media-item img{ width:100%; height:100%; max-height:none; object-fit:contain; }
+  .page-content.type-single-image.is-portrait-image .bv-page-text{ margin:8px 0 0 !important; }
+  .bv-media-stack{ display:flex; flex-direction:column; gap:10px; }
+  .bv-media-item{ margin:0; min-width:0; }
+  .bv-media-item img,.bv-media-item video{ display:block; width:100%; max-height:52vh; object-fit:contain; background:#111; }
+  .bv-media-item audio{ display:block; width:100%; margin:10px 0; }
+  .bv-media-item figcaption{ margin-top:4px; font-size:11px; line-height:1.35; color:#5f594f; }
+  .bv-page-text{ white-space:pre-wrap; margin-top:12px !important; }
   .page-content.type-text img{ display:block; margin:10px auto; max-width:100%; max-height:55%; height:auto; object-fit:contain; border-radius:4px; }
   .page-content p{ line-height:1.7; margin:0 0 .8em; font-size:15px; color:#2a2620; }
   .bv-leaf-title{ font:700 14px/1.4 "Noto Serif SC",serif; color:#3a342a; margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid #e6e0d4; }
-
-  /* 底栏（Instrument 斜体提示 + 署名） */
-  .reader-widget .bv-bottom{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:14px; width:min(92vw,920px); margin:0 auto; padding:8px 4px max(16px, env(safe-area-inset-bottom)); border-top:1px solid rgba(255,255,255,.14); position:relative; z-index:31; }
-  .reader-widget .bv-drag-hint{ font:italic 400 clamp(16px,3.4vw,24px)/1 'Instrument Serif',Georgia,serif; color:#fff; }
-  .reader-widget .bv-credit{ font:800 clamp(14px,2.6vw,18px)/1 'Open Sans',system-ui,sans-serif; color:#fff; }
 
   /* ---------- 手机端 ---------- */
   @media (max-width:760px){
