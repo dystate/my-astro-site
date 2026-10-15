@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import {
   ArrowLeft, BookOpen, CalendarDays, Check, ChevronDown, CloudUpload, FolderPlus,
-  ImagePlus, LogOut, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings,
+  ImagePlus, LogOut, MoreHorizontal, Plus, RefreshCw, Search, Send,
   SlidersHorizontal, Trash2, X,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -15,9 +15,10 @@ import { randomAccent } from "../lib/accents";
 import { logMetadataSchema, parseLogDocument, previewableMarkdown, serializeLogDocument } from "../lib/frontmatter";
 import { getSupabase, storageBucket, supabaseConfigured } from "../lib/supabase";
 import { createMobileFolder, listMobileLogs, readMobileLog, removeMobileLog, saveMobileLog } from "../lib/mobile-store";
+import { readSecret, saveSecret } from "../lib/api";
 import type { LogFile, LogMetadata, SaveState, UploadState } from "../lib/types";
 
-type Screen = "journal" | "editor" | "settings";
+type Screen = "journal" | "editor" | "secret" | "settings";
 type EditorMode = "write" | "preview";
 
 function safeUploadName(name: string): string {
@@ -63,6 +64,8 @@ export default function MobileLogApp() {
   const [newCategoryDialog, setNewCategoryDialog] = useState(false);
   const [metaOpen, setMetaOpen] = useState(false);
   const [upload, setUpload] = useState<UploadState>({ status: "idle" });
+  const [secretText, setSecretText] = useState("2026.10.15");
+  const [secretSaveState, setSecretSaveState] = useState<SaveState>("idle");
   const [previews, setPreviews] = useState<Record<string, { metadata: LogMetadata; excerpt: string }>>({});
   const imageInputRef = useRef<HTMLInputElement>(null);
   const token = session?.access_token ?? "";
@@ -138,6 +141,33 @@ export default function MobileLogApp() {
     }
   };
 
+  const openSecret = async () => {
+    if (!token) return;
+    setScreen("secret");
+    setSecretSaveState("saving");
+    try {
+      const result = await readSecret(token);
+      setSecretText(result.text || "2026.10.15");
+      setSecretSaveState("saved");
+    } catch (error) {
+      setSecretSaveState("error");
+      setNotice(error instanceof Error ? error.message : "无法读取 Light Room");
+    }
+  };
+
+  const persistSecret = async () => {
+    if (!token) return;
+    setSecretSaveState("saving");
+    try {
+      await saveSecret(secretText, token);
+      setSecretSaveState("saved");
+      setNotice("Light Room 已同步");
+    } catch (error) {
+      setSecretSaveState("error");
+      setNotice(error instanceof Error ? error.message : "Light Room 同步失败");
+    }
+  };
+
   const persist = async (publish = false) => {
     if (!metadata || !selectedPath || !token) return false;
     const nextMetadata = publish ? { ...metadata, draft: false } : metadata;
@@ -154,7 +184,7 @@ export default function MobileLogApp() {
         sha,
         previousPath: originalPath && originalPath !== selectedPath ? originalPath : null,
         message: publish ? `logs: publish ${selectedPath} from iOS` : `logs: save ${selectedPath} from iOS`,
-      }, session.user.id, publish || !nextMetadata.draft);
+      }, session!.user.id, publish || !nextMetadata.draft);
       setSha(result.sha);
       setOriginalPath(result.path);
       setMetadata(nextMetadata);
@@ -263,6 +293,13 @@ export default function MobileLogApp() {
           </section>
           <section className="journal-list">
             <div className="list-heading"><div><h2>最近记录</h2><span>{visibleFiles.length} 篇日志</span></div><button onClick={() => setNewCategoryDialog(true)}><FolderPlus size={17} />分类</button></div>
+            <button className="journal-card light-room-card" onClick={openSecret}>
+              <i className="accent-line" />
+              <span className="card-date">PRIVATE · SYNCED</span>
+              <strong>Light Room</strong>
+              <p>网页与 App 共用这一页文字，保存后刷新网页即可看到。</p>
+              <span className="card-meta"><em>特别页面</em>加密同步</span>
+            </button>
             {visibleFiles.map((file) => {
               const preview = previews[file.path];
               const accent = preview?.metadata.accent || ["#2d7dff", "#1146a8"];
@@ -310,6 +347,32 @@ export default function MobileLogApp() {
             <label><span>标签</span><input value={metadata.tags.join(", ")} onChange={(event) => { setMetadata({ ...metadata, tags: event.target.value.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean) }); setSaveState("dirty"); }} placeholder="生活, 旅行" /></label>
             <button className="accent-reroll" onClick={() => { setMetadata({ ...metadata, accent: randomAccent(metadata.accent) }); setSaveState("dirty"); }}><i style={{ background: `linear-gradient(135deg, ${metadata.accent[0]}, ${metadata.accent[1]})` }} /><span>随机一组日志点缀色</span><RefreshCw size={17} /></button>
           </section>}
+        </main>
+      )}
+
+      {screen === "secret" && (
+        <main className="mobile-editor secret-editor">
+          <header className="editor-nav">
+            <button onClick={() => setScreen("journal")} aria-label="返回"><ArrowLeft size={23} /></button>
+            <span className={`mobile-save-state is-${secretSaveState}`}>
+              {secretSaveState === "saving" ? "正在同步…" : secretSaveState === "dirty" ? "未保存" : secretSaveState === "error" ? "同步失败" : "已同步"}
+            </span>
+            <button className="publish-pill" onClick={persistSecret} disabled={secretSaveState === "saving"}><CloudUpload size={15} />保存</button>
+          </header>
+          <section className="editor-title-card" style={{ "--accent-a": "#f0c85b", "--accent-b": "#b68a2f" } as React.CSSProperties}>
+            <span>PRIVATE · LIGHT ROOM</span>
+            <textarea value="Light Room" readOnly rows={1} aria-label="Light Room" />
+          </section>
+          <section className="mobile-editor-body secret-editor-body">
+            <textarea
+              className="mobile-markdown-input"
+              value={secretText}
+              onChange={(event) => { setSecretText(event.target.value); setSecretSaveState("dirty"); }}
+              placeholder="从这里开始写……"
+              autoCapitalize="sentences"
+              autoFocus
+            />
+          </section>
         </main>
       )}
 

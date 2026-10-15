@@ -38,3 +38,6 @@ log-studio/github-artifacts/
 
 # runtime data (comments etc.)
 src/data/comments-runtime.json
+
+.vercel
+.env*

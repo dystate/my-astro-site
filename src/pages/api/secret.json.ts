@@ -9,6 +9,21 @@ import {
 
 export const prerender = false;
 
+function corsHeaders(request: Request): HeadersInit {
+  const origin = request.headers.get("origin") ?? "";
+  const allowedOrigins = (import.meta.env.LIGHT_ROOM_ALLOWED_ORIGINS || "capacitor://localhost,http://localhost")
+    .split(",")
+    .map((value: string) => value.trim())
+    .filter(Boolean);
+  const allowed = allowedOrigins.includes("*") || allowedOrigins.includes(origin);
+  return {
+    "access-control-allow-origin": allowed ? origin : allowedOrigins[0] || "capacitor://localhost",
+    "access-control-allow-headers": "authorization, content-type",
+    "access-control-allow-methods": "GET, POST, OPTIONS",
+    vary: "Origin",
+  };
+}
+
 async function authenticatedUser(request: Request) {
   const authorization = request.headers.get("authorization") ?? "";
   if (!authorization.toLowerCase().startsWith("bearer ")) return null;
@@ -22,34 +37,39 @@ async function authenticatedUser(request: Request) {
   return user.id ? { id: user.id, authorization } : null;
 }
 
-function json(body: unknown, status = 200) {
+function json(request: Request, body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
+      ...corsHeaders(request),
     },
   });
 }
 
+export const OPTIONS: APIRoute = async ({ request }) => (
+  new Response(null, { status: 204, headers: corsHeaders(request) })
+);
+
 export const GET: APIRoute = async ({ request }) => {
   const user = await authenticatedUser(request);
-  if (!user) return json({ error: "Unauthorized" }, 401);
+  if (!user) return json(request, { error: "Unauthorized" }, 401);
   const secret = import.meta.env.SPECIAL_PAGE_SESSION_SECRET as string | undefined;
-  if (!secret) return json({ error: "Secret storage is not configured" }, 503);
+  if (!secret) return json(request, { error: "Secret storage is not configured" }, 503);
   const ciphertext = await readSecretCiphertext(user.authorization);
-  return json({ text: await decryptSecretText(ciphertext, secret) });
+  return json(request, { text: await decryptSecretText(ciphertext, secret) });
 };
 
 export const POST: APIRoute = async ({ request }) => {
   const user = await authenticatedUser(request);
-  if (!user) return json({ error: "Unauthorized" }, 401);
+  if (!user) return json(request, { error: "Unauthorized" }, 401);
   const secret = import.meta.env.SPECIAL_PAGE_SESSION_SECRET as string | undefined;
-  if (!secret) return json({ error: "Secret storage is not configured" }, 503);
+  if (!secret) return json(request, { error: "Secret storage is not configured" }, 503);
 
   const body = await request.json().catch(() => null) as { text?: unknown } | null;
-  if (!body || typeof body.text !== "string") return json({ error: "Invalid text" }, 400);
-  if (body.text.length > 200_000) return json({ error: "Text is too long" }, 413);
+  if (!body || typeof body.text !== "string") return json(request, { error: "Invalid text" }, 400);
+  if (body.text.length > 200_000) return json(request, { error: "Text is too long" }, 413);
 
   const { url, key } = secretSupabaseCredentials();
   const response = await fetch(`${url.replace(/\/$/, "")}/rest/v1/log_entries?on_conflict=path`, {
@@ -68,6 +88,6 @@ export const POST: APIRoute = async ({ request }) => {
       updated_at: new Date().toISOString(),
     }),
   });
-  if (!response.ok) return json({ error: "Could not save Secret" }, response.status);
-  return json({ ok: true });
+  if (!response.ok) return json(request, { error: "Could not save Secret" }, response.status);
+  return json(request, { ok: true });
 };

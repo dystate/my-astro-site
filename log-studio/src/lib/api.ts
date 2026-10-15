@@ -3,6 +3,9 @@ import type { LogDocument, LogFile, SaveLogInput } from "./types";
 const configuredApiBase = (import.meta.env.PUBLIC_API_BASE_URL ?? "").trim().replace(/\/$/, "");
 
 function apiUrl(path: string): string {
+  if (!configuredApiBase && import.meta.env.PUBLIC_MOBILE_MODE === "true") {
+    throw new Error("App 尚未配置网站同步地址");
+  }
   return `${configuredApiBase}${path}`;
 }
 
@@ -46,5 +49,16 @@ export function removeLog(path: string, sha: string | null, token: string): Prom
   return request(`/api/logs/${encodeURIComponent(path)}`, token, {
     method: "DELETE",
     body: JSON.stringify({ sha }),
+  });
+}
+
+export function readSecret(token: string): Promise<{ text: string }> {
+  return request("/api/secret.json", token);
+}
+
+export function saveSecret(text: string, token: string): Promise<{ ok: true }> {
+  return request("/api/secret.json", token, {
+    method: "POST",
+    body: JSON.stringify({ text }),
   });
 }

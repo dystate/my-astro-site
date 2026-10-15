@@ -93,6 +93,7 @@ GITHUB_LOGS_BASE=src/data/logs
 - Markdown 书写/预览、元数据编辑、随机 accent
 - 手机照片上传到 Supabase Storage，并自动插入 Markdown
 - 保存/发布直接写入 Supabase `log_entries`，网站 SSR 合并读取，发布后立即可见
+- Light Room 独立编辑入口，通过主网站的加密 API 与 `/light-room` 同步
 
 本机构建静态资源：
 
@@ -116,6 +117,7 @@ npm run mobile:open
 
 - `SUPABASE_URL`：Supabase Project URL
 - `SUPABASE_PUBLISHABLE_KEY`：Supabase publishable key（不是 service-role）
+- `SITE_API_BASE_URL`：主网站地址（例如 `https://example.com`），用于同步 Light Room
 
 没有 Apple 签名材料时，Actions 会生成 `BlueJournal-unsigned.ipa`，用于后续自行签名。若要生成可直接安装的签名 IPA，再添加 Secrets：
 

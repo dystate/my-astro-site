@@ -3,6 +3,8 @@
 // 内页沿用 src/data/books.ts 中已有的内容。
 // 列表封面使用 NEW JOURNEY 自己的视频，并使用 Album 卡片原始的全尺寸展示。
 import type { AlbumItem } from "../types";
+import { parseAlbumBook } from "../book-format";
+import bookSource from "./book.md?raw";
 
 const album: AlbumItem = {
   id: "newjourney",
@@ -20,21 +22,7 @@ const album: AlbumItem = {
   accent: ["#3a4a4a", "#0b1110"],
   order: 1,
   kind: "book",
-  pages: [
-    {
-      id: "newjourney-page-image",
-      media: [
-        {
-          type: "image",
-          src: "/images/gsx-01.png",
-        },
-      ],
-    },
-    {
-      id: "newjourney-page-letter",
-      text: "以前不懂那些情侣就分开一下下有什么好哭的。但刚刚躺下发现床上只有自己一个人，感觉自己的身体直接被孤独感填满了…眼泪就这么留下来。\n\n好想我的女朋友。我感觉二十天我都受不了，我完蛋了，真的。",
-    },
-  ],
+  pages: parseAlbumBook(bookSource),
 };
 
 export default album;

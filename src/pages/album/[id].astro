@@ -7,13 +7,12 @@ import ScrollZoomGallery from "../../components/album/ScrollZoomGallery";
 import BookReader from "../../components/book/BookReader.astro";
 import { ALBUM_ITEMS } from "../../data/album";
 import { books as booksData } from "../../data/books";
-import { getPublishedRemoteAlbum } from "../../lib/remoteAlbums";
 
 export const prerender = false;
 
 const id = Astro.params.id ?? "";
 const sourceItem = ALBUM_ITEMS.find((entry) => entry.id === id);
-const item = sourceItem ? await getPublishedRemoteAlbum(id) ?? sourceItem : undefined;
+const item = sourceItem;
 if (!item) return Astro.redirect("/404");
 const photos = item.photos ?? [];
 const isBook = item.kind === "book";

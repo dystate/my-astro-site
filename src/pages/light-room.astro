@@ -6,7 +6,7 @@ import {
   passwordsMatch,
   verifyLightRoomToken,
 } from "@/lib/lightRoomAuth";
-import { getPublishedSecretText } from "@/lib/remoteSecret";
+import { Content as SecretContent } from "@/data/secret.md";
 
 const COOKIE_NAME = "dystate_light_room";
 const password = import.meta.env.SPECIAL_PAGE_PASSWORD as string | undefined;
@@ -20,7 +20,6 @@ let error = "";
 let authenticated = configured
   ? await verifyLightRoomToken(Astro.cookies.get(COOKIE_NAME)?.value, sessionSecret!)
   : false;
-let secretText = "";
 
 if (Astro.request.method === "POST") {
   const form = await Astro.request.formData();
@@ -46,9 +45,6 @@ if (Astro.request.method === "POST") {
   error = configured ? "密码不对，再试一次。" : "门禁尚未配置。";
 }
 
-if (authenticated && sessionSecret) {
-  secretText = await getPublishedSecretText(sessionSecret);
-}
 ---
 
 <html lang="zh-CN">
@@ -68,10 +64,8 @@ if (authenticated && sessionSecret) {
             <button type="submit">锁门</button>
           </form>
         </div>
-        <section aria-label="特别页面空壳">
-          <p>LIGHT ROOM</p>
-          <h1>灯已经打开。</h1>
-          <div class="light-room-shell__content">{secretText || "这里暂时还是空的。"}</div>
+        <section aria-label="特别页面正文">
+          <div class="light-room-shell__content"><SecretContent /></div>
         </section>
       </main>
     ) : (
@@ -322,13 +316,6 @@ if (authenticated && sessionSecret) {
     text-align: center;
   }
 
-  .light-room-shell section > p {
-    margin: 0 0 16px;
-    color: #ffd458;
-    font: 400 13px/1 "Cal Sans", sans-serif;
-    letter-spacing: .2em;
-  }
-
   .light-room-shell button {
     padding: 12px 18px;
     border: 0;
@@ -357,22 +344,14 @@ if (authenticated && sessionSecret) {
   }
 
   .light-room-shell section {
-    display: grid;
-    min-height: calc(100svh - 140px);
-    place-content: center;
-    text-align: center;
-  }
-
-  .light-room-shell h1 {
-    margin: 0;
-    font: 400 clamp(48px, 9vw, 110px)/.9 "Cal Sans", sans-serif;
+    padding-top: clamp(28px, 5vw, 56px);
+    text-align: left;
   }
 
   .light-room-shell__content {
-    max-width: min(760px, 88vw);
-    margin-top: 18px;
-    color: #6b675e;
-    line-height: 1.9;
+    max-width: min(860px, 100%);
+    color: #2f2d28;
+    font: 400 clamp(18px, 2.2vw, 24px)/1.9 "Noto Sans SC", "Microsoft YaHei", sans-serif;
     white-space: pre-wrap;
   }
 </style>

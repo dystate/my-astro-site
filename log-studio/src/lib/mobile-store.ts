@@ -25,7 +25,9 @@ export async function listMobileLogs(userId: string): Promise<{ files: LogFile[]
   if (entryError) throw new Error(entryError.message);
   if (folderError) throw new Error(folderError.message);
   return {
-    files: ((entries || []) as LogRow[]).map((row) => ({ path: row.path, name: row.path.split("/").pop() || row.path, sha: pseudoSha(`${row.updated_at}:${row.content}`) })),
+    files: ((entries || []) as LogRow[])
+      .filter((row) => !row.path.startsWith("__secret__/"))
+      .map((row) => ({ path: row.path, name: row.path.split("/").pop() || row.path, sha: pseudoSha(`${row.updated_at}:${row.content}`) })),
     folders: (folders || []).map((row) => row.path),
     provider: "supabase",
   };

@@ -9,5 +9,5 @@
     }
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "dist-desktop", "release", "desktop-release"]
+  "exclude": ["dist", "dist-desktop", "mobile-dist", "release", "desktop-release", "ios/App/App/public"]
 }

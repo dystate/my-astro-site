@@ -26,6 +26,7 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.PUBLIC_SUPABASE_URL": JSON.stringify(env.PUBLIC_SUPABASE_URL || ""),
       "import.meta.env.PUBLIC_SUPABASE_ANON_KEY": JSON.stringify(env.PUBLIC_SUPABASE_ANON_KEY || ""),
       "import.meta.env.PUBLIC_SUPABASE_BUCKET": JSON.stringify(env.PUBLIC_SUPABASE_BUCKET || "log-assets"),
+      "import.meta.env.PUBLIC_API_BASE_URL": JSON.stringify(env.PUBLIC_API_BASE_URL || ""),
       "import.meta.env.PUBLIC_DEV_BYPASS_AUTH": JSON.stringify("false"),
       "import.meta.env.PUBLIC_DESKTOP_MODE": JSON.stringify("false"),
     },

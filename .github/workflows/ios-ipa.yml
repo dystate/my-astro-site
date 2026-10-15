@@ -29,6 +29,7 @@ jobs:
       PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
       PUBLIC_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
       PUBLIC_SUPABASE_BUCKET: log-assets
+      PUBLIC_API_BASE_URL: ${{ vars.SITE_API_BASE_URL }}
 
     steps:
       - name: Checkout
@@ -49,6 +50,7 @@ jobs:
         run: |
           test -n "$PUBLIC_SUPABASE_URL" || { echo "Missing repository variable SUPABASE_URL"; exit 1; }
           test -n "$PUBLIC_SUPABASE_ANON_KEY" || { echo "Missing repository variable SUPABASE_PUBLISHABLE_KEY"; exit 1; }
+          test -n "$PUBLIC_API_BASE_URL" || { echo "Missing repository variable SITE_API_BASE_URL"; exit 1; }
 
       - name: Build and sync Capacitor
         run: npm run mobile:sync
