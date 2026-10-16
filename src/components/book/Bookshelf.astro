@@ -29,7 +29,7 @@ const shelves = [booksData];
 <header class="site-header">
   <a class="site-logo dystate-brand" href="/">Dystate</a>
   <nav class="site-nav" aria-label="导航">
-    <SiteNav />
+    <SiteNav current="album" />
   </nav>
   <button class="menu-btn site-menu-label site-menu-corner" id="menu-open" aria-label="打开菜单">
     MENU
@@ -63,7 +63,7 @@ const shelves = [booksData];
     </button>
   </div>
   <nav>
-    <SiteNav />
+    <SiteNav current="album" />
   </nav>
 </div>
 
@@ -144,8 +144,8 @@ const shelves = [booksData];
   .site-header > *{ pointer-events:auto; }
   .site-logo{ color:#fff; text-decoration:none; }
   .site-nav{ display:none; align-items:center; gap:32px; }
-  .site-nav a{ font:800 18px/1 'Open Sans',sans-serif; letter-spacing:.04em; color:#fff; text-decoration:none; transition:opacity .2s; }
-  .site-nav a:hover{ opacity:.6; }
+  .site-nav a{ font:800 18px/1 'Open Sans',sans-serif; letter-spacing:.04em; color:#fff; text-decoration:none; transition:opacity .2s, color .2s; }
+  .site-nav a:hover, .site-nav a.active{ color:var(--nav-accent, #fff); opacity:1; }
   .menu-btn{ display:flex; align-items:center; gap:8px; background:none; border:none; cursor:pointer;
     color:#fff; font:800 22px/1 'Open Sans',sans-serif; letter-spacing:.04em; z-index:80; }
   .menu-btn .px, .m-menu-x .px{ display:inline-flex; }
@@ -165,7 +165,8 @@ const shelves = [booksData];
   .m-menu.open .m-menu-x .px{ transform:rotate(45deg); }
   .m-menu nav{ flex:1; display:flex; flex-direction:column; align-items:flex-end; justify-content:center; padding:0 16px; }
   .m-menu nav a{ font:800 64px/.95 'Open Sans',sans-serif; letter-spacing:-.02em; color:#fff; text-decoration:none;
-    opacity:0; transform:translateY(24px); transition:opacity .5s var(--ease), transform .5s var(--ease); }
+    opacity:0; transform:translateY(24px); transition:color .3s, opacity .5s var(--ease), transform .5s var(--ease); }
+  .m-menu nav a:hover, .m-menu nav a.active{ color:var(--nav-accent, #fff); }
   .m-menu.open nav a{ opacity:1; transform:none; }
   .m-menu.open nav a:nth-child(1){ transition-delay:.10s; }
   .m-menu.open nav a:nth-child(2){ transition-delay:.18s; }

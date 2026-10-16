@@ -22,10 +22,8 @@ function PixelCross({ size = 22, color = "currentColor" }: { size?: number; colo
   );
 }
 
-const LINKS = [
-  { label: "ALBUM", href: "/album" },
-  { label: "LOGS", href: "/logs" },
-];
+import { SITE_NAV } from "../../data/siteNav";
+import type { CSSProperties } from "react";
 
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
@@ -86,7 +84,7 @@ export default function MobileMenu() {
 
             {/* 主导航：右对齐大标题 */}
             <nav className="flex flex-1 flex-col items-end justify-center px-4">
-              {LINKS.map((link, i) => (
+              {SITE_NAV.map((link, i) => (
                 <motion.a
                   key={link.label}
                   href={link.href}
@@ -97,8 +95,8 @@ export default function MobileMenu() {
                     delay: 0.12 + i * 0.08,
                     ease: [0.16, 1, 0.3, 1],
                   }}
-                  className="text-[64px] leading-[0.95] tracking-[-0.02em]"
-                  style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 800 }}
+                  className="text-[64px] leading-[0.95] tracking-[-0.02em] transition-colors hover:text-[var(--nav-accent)]"
+                  style={{ "--nav-accent": link.accent, fontFamily: "'Open Sans', sans-serif", fontWeight: 800 } as CSSProperties}
                   onClick={() => setOpen(false)}
                 >
                   {link.label}

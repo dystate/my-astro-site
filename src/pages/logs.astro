@@ -135,8 +135,9 @@ const searchEntries = groups.flatMap((g) =>
   .logs-header > * { pointer-events: auto; }
   .logs-logo { color: #fff; text-decoration: none; }
   .logs-nav { display: none; align-items: center; gap: 32px; }
-  .logs-nav a { font: 800 18px/1 "Cal Sans","Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; transition: opacity .2s; }
-  .logs-nav a:hover { opacity: .6; }
+  .logs-nav a { font: 800 18px/1 "Cal Sans","Open Sans",sans-serif; letter-spacing: .04em; color: #fff; text-decoration: none; transition: opacity .2s, color .2s; }
+  .logs-nav a:hover, .logs-nav a.active { opacity: 1; color: var(--nav-accent, #fff); }
+  .logs-nav a.active { box-shadow: inset 0 -2px 0 var(--nav-accent, #fff); padding-bottom: 3px; }
   .menu-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; color: #fff; font: 800 22px/1 "Open Sans",sans-serif; letter-spacing: .04em; }
   @media (min-width: 860px) { .logs-nav { display: flex; } .menu-btn { display: none; } }
   .px { display: inline-flex; }
@@ -149,7 +150,8 @@ const searchEntries = groups.flatMap((g) =>
   .m-menu-x .px { transition: transform .3s cubic-bezier(.16,1,.3,1); }
   .m-menu.open .m-menu-x .px { transform: rotate(45deg); }
   .m-menu nav { flex: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 0 16px; }
-  .m-menu nav a { font: 800 64px/.95 "Cal Sans","Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-decoration: none; opacity: 0; transform: translateY(24px); transition: opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1); }
+  .m-menu nav a { font: 800 64px/.95 "Cal Sans","Open Sans",sans-serif; letter-spacing: -.02em; color: #fff; text-decoration: none; transition: color .3s, opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1); opacity: 0; transform: translateY(24px); }
+  .m-menu nav a:hover, .m-menu nav a.active { color: var(--nav-accent, #fff); }
   .m-menu.open nav a { opacity: 1; transform: none; }
   .m-menu.open nav a:nth-child(1) { transition-delay: .10s; }
   .m-menu.open nav a:nth-child(2) { transition-delay: .18s; }

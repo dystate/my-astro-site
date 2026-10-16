@@ -30,4 +30,22 @@ const logs = defineCollection({
   }),
 });
 
-export const collections = { woaidan, logs };
+// 网站更新日志（/update）。一条 md = 一个版本。
+const updates = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/data/updates' }),
+  schema: z.object({
+    version: z.string(),                  // 如 "v0.6.0"
+    date: z.coerce.date(),
+    kind: z.enum(['feature', 'design', 'fix']).default('feature'),
+    title: z.string(),
+    summary: z.string().optional(),
+    // 变更清单：add → "+"，change → "~"，remove → "−"
+    changes: z
+      .array(z.object({ type: z.enum(['add', 'change', 'remove']).default('add'), text: z.string() }))
+      .default([]),
+    tags: z.array(z.string()).default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { woaidan, logs, updates };

@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { AlbumItem } from "../data/album";
+import type { CSSProperties } from "react";
+import { SITE_NAV } from "../data/siteNav";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
-
-const NAV = [
-  { label: "ALBUM", href: "/album" },
-  { label: "LOGS", href: "/logs" },
-];
 /* ── 像素加号（与站点菜单一致） ── */
 function PixelCross({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
   const cells: [number, number][] = [
@@ -168,11 +165,13 @@ export default function AlbumGallery({ items }: { items: AlbumItem[] }) {
 
           {/* 桌面导航 */}
           <nav className="hidden sm:flex items-center gap-8" style={{ fontWeight: 800 }}>
-            {NAV.map((n) => (
+            {SITE_NAV.map((n) => (
               <a
-                key={n.label}
+                key={n.key}
                 href={n.href}
-                className="text-[18px] tracking-[0.04em] hover:opacity-60 transition-opacity"
+                aria-current={n.key === "album" ? "page" : undefined}
+                style={{ "--nav-accent": n.accent } as CSSProperties}
+                className={`text-[18px] tracking-[0.04em] transition-colors hover:text-[var(--nav-accent)] ${n.key === "album" ? "text-[var(--nav-accent)]" : "text-white"}`}
               >
                 {n.label}
               </a>
@@ -343,16 +342,17 @@ export default function AlbumGallery({ items }: { items: AlbumItem[] }) {
             </div>
 
             <nav className="flex flex-1 flex-col items-end justify-center px-4">
-              {NAV.map((n, i) => (
+              {SITE_NAV.map((n, i) => (
                 <motion.a
-                  key={n.label}
+                  key={n.key}
                   href={n.href}
                   onClick={() => setOpen(false)}
+                  aria-current={n.key === "album" ? "page" : undefined}
+                  style={{ "--nav-accent": n.accent, fontWeight: 800 } as CSSProperties}
                   initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 + i * 0.08, ease: EASE }}
-                  className="text-[64px] leading-[0.95] tracking-[-0.02em]"
-                  style={{ fontWeight: 800 }}
+                  className={`text-[64px] leading-[0.95] tracking-[-0.02em] transition-colors hover:text-[var(--nav-accent)] ${n.key === "album" ? "text-[var(--nav-accent)]" : "text-white"}`}
                 >
                   {n.label}
                 </motion.a>

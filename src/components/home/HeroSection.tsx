@@ -1,5 +1,7 @@
 import { useState } from "react";
 import MobileMenu from "./MobileMenu";
+import { SITE_NAV } from "../../data/siteNav";
+import type { CSSProperties } from "react";
 
 /**
  * Full-bleed lamp hero.
@@ -39,8 +41,11 @@ export default function HeroSection() {
 
         <header className="lamp-header">
           <nav className="lamp-header__nav" aria-label="Site navigation">
-            <a href="/album">ALBUM</a>
-            <a href="/logs">LOGS</a>
+            {SITE_NAV.map((item) => (
+              <a key={item.key} href={item.href} style={{ "--nav-accent": item.accent } as CSSProperties}>
+                {item.label}
+              </a>
+            ))}
           </nav>
         </header>
         <MobileMenu />

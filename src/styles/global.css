@@ -206,8 +206,8 @@ body * {
 .lamp-header { position: absolute; inset: 0 0 auto; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 16px; background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,0)); }
 .lamp-header__logo { color: #fff; text-decoration: none; }
 .lamp-header__nav { display: flex; align-items: center; gap: 2rem; }
-.lamp-header__nav a { color: #fff; font: 800 18px/1 'Open Sans', sans-serif; letter-spacing: .04em; text-decoration: none; transition: opacity .2s ease; }
-.lamp-header__nav a:hover { opacity: .6; }
+.lamp-header__nav a { color: #fff; font: 800 18px/1 'Open Sans', sans-serif; letter-spacing: .04em; text-decoration: none; transition: opacity .2s ease, color .2s ease; }
+.lamp-header__nav a:hover { opacity: 1; color: var(--nav-accent, #fff); }
 /* 与 MobileMenu 的 sm:hidden（640px）对齐，避免 640~768px 出现导航空窗 */
 @media (max-width: 639.98px) {
   .lamp-header__nav { display: none; }
@@ -468,12 +468,13 @@ body * {
 }
 
 .lamp-header__nav a {
-  text-shadow: 2px 2px 0 rgba(0, 74, 190, .72);
-  transition: opacity 120ms ease, transform 120ms ease;
+  text-shadow: none;
+  transition: opacity 120ms ease, transform 120ms ease, color 120ms ease;
 }
 
 .lamp-header__nav a:hover {
-  opacity: .72;
+  opacity: 1;
+  color: var(--nav-accent, #fff);
   transform: translate(2px, 2px);
 }
 

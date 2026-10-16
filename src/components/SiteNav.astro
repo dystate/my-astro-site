@@ -1,20 +1,22 @@
 ---
 // src/components/SiteNav.astro
 // 共享导航链接 —— 桌面端和移动端共用同一份数据，避免重复
+import { SITE_NAV } from "../data/siteNav";
+
 export interface Props {
-  current?: string; // 当前页面标识，如 "logs" | "album"
+  current?: string; // 当前页面标识，如 "logs" | "album" | "update"
   class?: string;   // 附加到每个 <a> 的类名（可选）
 }
 const { current, class: linkClass } = Astro.props;
-
-const LINKS = [
-  { href: "/album",  label: "ALBUM",  key: "album" },
-  { href: "/logs",   label: "LOGS",   key: "logs" },
-] as const;
 ---
 
-{LINKS.map((l) => (
-  <a href={l.href} class={`${linkClass ?? ""} ${l.key === current ? "active" : ""}`.trim() || undefined}>
+{SITE_NAV.map((l) => (
+  <a
+    href={l.href}
+    aria-current={l.key === current ? "page" : undefined}
+    style={`--nav-accent:${l.accent}`}
+    class={`${linkClass ?? ""} ${l.key === current ? "active" : ""}`.trim() || undefined}
+  >
     {l.label}
   </a>
 ))}
